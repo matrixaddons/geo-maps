@@ -37,16 +37,11 @@ Thank you for awesome library creators and maintainer of following. Without thos
 Install Geo Maps for WordPress either via the WordPress plugin directory or by uploading the files to your server at wp-content/plugins.
 
 == Screenshots ==
-1. World map example
-2. Add HTML Tooltips to your maps
-3. USA Map
-4. US county maps example
-5. World Map with coloured countries
-6. Single country map
-7. Administration 01
-8. Administration 02
-9. Administration 03
-10. Administration 04
+1. Map Creation from Map Menu
+2. Marker Creation with Tooltip & ToolTip Content
+3. Front View of Map with shortcode
+4. Geo Maps Gutenberg Block
+
 == Changelog ==
 
 = 1.0 - 2022-03-21 =
