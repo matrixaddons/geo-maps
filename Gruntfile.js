@@ -249,7 +249,6 @@ module.exports = function (grunt) {
 					'!*.zip',
 					'!.*/**',
 					'!sass/**',
-					'!vendor/**',
 					'!Gruntfile.js',
 					'!package-lock.json',
 					'!composer.json',
