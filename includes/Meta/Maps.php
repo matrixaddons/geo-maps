@@ -21,13 +21,13 @@ class Maps
 		add_action('edit_form_after_editor', array($this, 'maps_setting_template'));
 
 
-		add_meta_box('geo-maps-map-type',
-			__('Map Type', 'geo-maps'), array($this, 'map_type_template'), 'geo-maps', 'side', 'high');
 
 		if (isset($_GET['action']) && $_GET['action'] === 'edit') {
 			add_meta_box('geo-maps-shortcode',
 				__('Shortcode', 'geo-maps'), array($this, 'shortcode_template'), 'geo-maps', 'side', 'high');
 		}
+		add_meta_box('geo-maps-map-type',
+			__('Map Type', 'geo-maps'), array($this, 'map_type_template'), 'geo-maps', 'side', 'high');
 
 	}
 
