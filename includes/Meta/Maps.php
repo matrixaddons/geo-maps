@@ -1,0 +1,154 @@
+<?php
+
+namespace MatrixAddons\GeoMaps\Meta;
+
+use MatrixAddons\GeoMaps\Admin\Fields\MapTypeFields;
+use MatrixAddons\GeoMaps\Admin\Fields\MarkerFields;
+
+class Maps
+{
+
+	public function metabox()
+	{
+		$current_screen = get_current_screen();
+
+		$screen_id = $current_screen->id ?? '';
+
+		if ($screen_id != 'geo-maps') {
+			return;
+		}
+		add_action('edit_form_after_editor', array($this, 'maps_template'));
+		add_action('edit_form_after_editor', array($this, 'maps_setting_template'));
+
+
+		add_meta_box('geo-maps-map-type',
+			__('Map Type', 'geo-map'), array($this, 'map_type_template'), 'geo-maps', 'side', 'high');
+
+		if (isset($_GET['action']) && $_GET['action'] === 'edit') {
+			add_meta_box('geo-maps-shortcode',
+				__('Shortcode', 'geo-map'), array($this, 'shortcode_template'), 'geo-maps', 'side', 'high');
+		}
+
+	}
+
+
+	public function save($post_id)
+	{
+
+		if (get_post_type($post_id) !== 'geo-maps') {
+			return;
+		}
+		// Save MarkerFields
+		$markerFields = new MarkerFields();
+		$markerFields->save($_POST, $post_id);
+
+		//Save MapTypeFields
+		$mapTypeFields = new MapTypeFields();
+		$mapTypeFields->save($_POST, $post_id);
+
+	}
+
+	public function maps_template($post)
+	{
+
+		if ($post->post_type !== 'geo-maps') {
+			return;
+		}
+
+		geo_maps_load_admin_template('Metabox.Map');
+	}
+
+	public function shortcode_template($post)
+	{
+		if ($post->post_type !== 'geo-maps') {
+			return;
+		}
+		echo __('You can place this shortcode where you want to display the map.', 'geo-maps');
+
+		$map_id = get_the_ID();
+
+		echo '<br/>';
+
+		echo "<textarea class='geo-maps-shortcode-copy' disabled>[geo_maps id=\"{$map_id}\"]</textarea>";
+	}
+
+	public function map_type_template($post)
+	{
+		if ($post->post_type !== 'geo-maps') {
+			return;
+		}
+		$mapTypeFields = new MapTypeFields();
+
+		$mapTypeFields->render();
+	}
+
+	public function maps_setting_template($post)
+	{
+		if ($post->post_type !== 'geo-maps') {
+			return;
+		}
+
+		$setting_tabs = array(
+			'map_marker_options' => __('Map Markers', 'geo-maps'),
+
+		);
+		geo_maps_load_admin_template('Metabox.Settings', array(
+				'setting_tabs' => $setting_tabs,
+				'active_tab' => 'map_marker_options'
+			)
+		);
+
+	}
+
+	public function marker_template($post)
+	{
+
+		$markerFields = new MarkerFields();
+
+		$markerFields->render();
+
+	}
+
+	public function scripts()
+	{
+		$screen = get_current_screen();
+
+		$screen_id = $screen->id ?? '';
+
+		if ($screen_id != 'geo-maps') {
+			return;
+		}
+
+		wp_enqueue_style('geo-maps-admin-style', GEO_MAPS_PLUGIN_URI . '/assets/admin/css/geo-maps-admin.css', array('geo-maps-render-engine-style'), GEO_MAPS_VERSION);
+		wp_enqueue_script('geo-maps-admin-script', GEO_MAPS_PLUGIN_URI . '/assets/admin/js/geo-maps-admin.js', array('geo-maps-render-engine-script'), GEO_MAPS_VERSION, true);
+		wp_localize_script('geo-maps-admin-script', 'geoMapsAdminParams', array(
+			'options' => geo_maps_get_map_settings(),
+			'default_marker' => geo_maps_get_default_marker_item()
+		));
+
+
+	}
+
+	public function render_map()
+	{
+
+		$map_id = get_the_ID();
+
+		$map_settings = geo_maps_get_map_settings($map_id);
+
+		geo_maps_render_map($map_settings);
+	}
+
+	public static function init()
+	{
+		$self = new self();
+		add_action('add_meta_boxes', array($self, 'metabox'));
+		add_action('save_post', array($self, 'save'));
+		add_action('admin_enqueue_scripts', array($self, 'scripts'), 10);
+		add_action('geo_maps_metabox_postbox_item', array($self, 'render_map'), 10);
+		add_action('geo_maps_meta_tab_content_map_marker_options', array($self, 'marker_template'), 10);
+
+	}
+
+}
+

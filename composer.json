@@ -1,0 +1,14 @@
+{
+  "name": "matrixaddons/geomaps",
+  "description": "Google Maps & OpenStreetMap Block For Gutenberg Editor – Geo Maps",
+  "authors": [
+	{
+	  "name": "matrixaddons"
+	}
+  ],
+  "autoload": {
+	"psr-4": {
+	  "MatrixAddons\\GeoMaps\\": "./includes"
+	}
+  }
+}

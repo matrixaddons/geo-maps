@@ -1,0 +1,409 @@
+import React, { useState } from "react";
+import {
+	RadioControl,
+	TextControl,
+	TextareaControl,
+	Button,
+	Panel,
+	PanelBody,
+	RangeControl,
+	FormToggle,
+	ToggleControl,
+} from "@wordpress/components";
+import { __ } from "@wordpress/i18n";
+import { MediaUpload, MediaUploadCheck } from "@wordpress/block-editor";
+import { Icon, chevronDown, close } from "@wordpress/icons";
+import { OpenStreetMapProvider } from "leaflet-geosearch";
+const { InspectorControls } = wp.blockEditor;
+import PropTypes from "prop-types";
+
+const propTypes = {};
+
+const defaultProps = {};
+
+export default function EditorSettings({ attributes, setAttributes }) {
+	const [searchText, setSearchText] = useState("");
+	const [isRequestSend, setIsRequestSend] = useState(false);
+	const [locationSearchResults, setLocationSearchResutls] = useState([]);
+	const [mapMarkerToggle, setMapMarkerToggle] = useState({
+		id: null,
+		isOpen: false,
+	});
+	const toggleRepeater = (key) => {
+		setMapMarkerToggle({
+			id: key,
+			isOpen:
+				mapMarkerToggle.id === key && mapMarkerToggle.isOpen === true
+					? false
+					: true,
+		});
+	};
+	const removeRepeater = (key) => {
+		const map_marker_list = attributes.map_marker_list.filter(
+			(item, index) => index != key
+		);
+
+		setAttributes({ map_marker_list: map_marker_list });
+	};
+	const setMarkerAttributeValue = (index, name, value) => {
+		const map_marker_list = attributes.map_marker_list.map((item, key) => {
+			const returnValue = { ...item };
+
+			if (index === key) {
+				returnValue[name] = value;
+			}
+
+			return returnValue;
+		});
+		setAttributes({
+			map_marker_list,
+		});
+	};
+	const addMarkerHandler = () => {
+		setAttributes({
+			map_marker_list: [
+				...attributes.map_marker_list,
+				{
+					lat: "",
+					lng: "",
+					title: "",
+					content: "",
+					iconType: "default",
+					customIconUrl: "",
+					customIconWidth: 25,
+					customIconHeight: 40,
+				},
+			],
+		});
+		setSearchText("");
+	};
+	const setLatLngHandler = (index, lat, lng) => {
+		const map_marker_list = attributes.map_marker_list.map((item, key) => {
+			const returnValue = { ...item };
+			if (index === key) {
+				returnValue["lat"] = lat;
+				returnValue["lng"] = lng;
+			}
+			return returnValue;
+		});
+		setAttributes({
+			map_marker_list,
+		});
+		setLocationSearchResutls([]);
+	};
+	// Location Search
+	const provider = new OpenStreetMapProvider();
+	const onChangeSearchLocation = async (value) => {
+		setIsRequestSend(true);
+		const results = await provider.search({ query: value });
+		setLocationSearchResutls(results.slice(0, 5));
+		setIsRequestSend(false);
+	};
+
+	return (
+		<React.Fragment>
+			<InspectorControls>
+				<Panel>
+					<PanelBody
+						title={__("Map Settings", "geo-maps")}
+						initialOpen={true}
+					>
+						<RangeControl
+							label={__("Width (%)", "geo-maps")}
+							value={parseInt(attributes.map_width)}
+							onChange={(width) => setAttributes({ map_width: width })}
+							min={0}
+							max={100}
+						/>
+						<RangeControl
+							label={__("Height (px)", "geo-maps")}
+							value={parseInt(attributes.map_height)}
+							onChange={(height) => setAttributes({ map_height: height })}
+							min={0}
+							max={1500}
+						/>
+						<RadioControl
+							label={__("Choose Map", "geo-maps")}
+							selected={attributes.map_type}
+							options={[
+								{ label: "Google Map", value: "GM" },
+								{ label: "Open Street map", value: "OSM" },
+							]}
+							onChange={(value) => setAttributes({ map_type: value })}
+						/>
+						<RangeControl
+							label={__("Zoom Level", "geo-maps")}
+							value={attributes.map_zoom}
+							min={0}
+							max={20}
+							onChange={(value) => setAttributes({ map_zoom: value })}
+						/>
+						<div>
+							<FormToggle
+								id="scroll_wheel_zoom"
+								checked={attributes.scroll_wheel_zoom}
+								onChange={() =>
+									setAttributes({
+										scroll_wheel_zoom: !attributes.scroll_wheel_zoom,
+									})
+								}
+							/>
+							{"  "}
+							<label htmlFor="scroll_wheel_zoom">
+								{__("Enable Scroll Wheel Zoom", "geo-maps")}
+							</label>
+						</div>
+					</PanelBody>
+				</Panel>
+				<Panel>
+					<PanelBody
+						title={__("Map Marker", "geo-maps")}
+						initialOpen={false}
+					>
+						<div className="ti-repeater-fields-wrapper">
+							{attributes.map_marker_list !== undefined &&
+								attributes.map_marker_list.map((item, index) => (
+									<div className="ti-repeater-fields" key={index}>
+										<div
+											className={`ti-repeater-control ${
+												attributes.center_index === index &&
+												"ti-repeater-control--is-center"
+											}`}
+										>
+											<button
+												className="ti-repeater-control__left btn-ti-repeater"
+												onClick={() => {
+													toggleRepeater(index);
+												}}
+											>
+												<div className="text">
+													{__("Marker ", "geo-maps")} {1 + index}
+												</div>
+												<div className="icon">
+													<Icon icon={chevronDown} />
+												</div>
+											</button>
+											<button
+												className="ti-repeater-control__right btn-ti-repeater"
+												onClick={() => removeRepeater(index)}
+											>
+												<Icon width="15" icon={close} />
+											</button>
+										</div>
+										<div
+											className={`ti-repeater-toggle-body ${
+												mapMarkerToggle.id === index &&
+												mapMarkerToggle.isOpen === true
+													? "ti-toggle-open"
+													: ""
+											}`}
+										>
+											<div style={{ marginBottom: "10px" }}>
+												<div className="ti-location-search">
+													<TextControl
+														placeholder={__("Enter address")}
+														value={searchText}
+														onChange={(value) => setSearchText(value)}
+													/>
+													<Button
+														onClick={() => onChangeSearchLocation(searchText)}
+													>
+														{isRequestSend ? (
+															<span className="dashicons dashicons-ellipsis"></span>
+														) : (
+															<span className="dashicons dashicons-search"></span>
+														)}
+													</Button>
+													{locationSearchResults.length > 0 && (
+														<ul className="ti-location-search-results">
+															{locationSearchResults.map(
+																(searchItem, searchIndex) => (
+																	<li
+																		key={searchIndex}
+																		onClick={() => {
+																			setSearchText(searchItem.label);
+																			setLatLngHandler(
+																				index,
+																				searchItem.raw.lat,
+																				searchItem.raw.lon
+																			);
+																		}}
+																	>
+																		{searchItem.label}
+																	</li>
+																)
+															)}
+														</ul>
+													)}
+												</div>
+											</div>
+											<div className="ti-group-control">
+												<TextControl
+													label={__("Latitude", "geo-maps")}
+													onChange={(num) =>
+														setMarkerAttributeValue(
+															index,
+															"lat",
+															!isNaN(num) ? num : 0
+														)
+													}
+													value={attributes.map_marker_list[index].lat}
+												/>
+												<TextControl
+													label={__("longitude", "geo-maps")}
+													onChange={(num) =>
+														setMarkerAttributeValue(
+															index,
+															"lng",
+															!isNaN(num) ? num : 0
+														)
+													}
+													value={attributes.map_marker_list[index].lng}
+												/>
+											</div>
+
+											<ToggleControl
+												label={`${
+													attributes.center_index === index
+														? __("Disable Map Center Position", "geo-maps")
+														: __("Enable Map Center Position", "geo-maps")
+												}`}
+												checked={attributes.center_index === index}
+												onChange={(option) => {
+													setAttributes({ center_index: option ? index : 0 });
+												}}
+											/>
+											<TextControl
+												label={__("Title", "geo-maps")}
+												onChange={(text) =>
+													setMarkerAttributeValue(index, "title", text)
+												}
+												value={attributes.map_marker_list[index].title}
+											/>
+											<TextareaControl
+												label={__("Content", "geo-maps")}
+												help={__("HTML Supported", "geo-maps")}
+												onChange={(text) =>
+													setMarkerAttributeValue(index, "content", text)
+												}
+												value={attributes.map_marker_list[index].content}
+											/>
+											<RadioControl
+												label={__("Choose Icon Type", "geo-maps")}
+												selected={attributes.map_marker_list[index].iconType}
+												options={[
+													{
+														label: __("Default Icon", "geo-maps"),
+														value: "default",
+													},
+													{ label: "Custom Icon", value: "custom" },
+												]}
+												onChange={(option) => {
+													setMarkerAttributeValue(index, "iconType", option);
+												}}
+											/>
+											{attributes.map_marker_list[index].iconType ==
+												"custom" && (
+												<MediaUploadCheck>
+													<MediaUpload
+														onSelect={(media) =>
+															setMarkerAttributeValue(
+																index,
+																"customIconUrl",
+																media.url
+															)
+														}
+														allowedTypes={["image"]}
+														render={({ open }) => (
+															<div>
+																{attributes.map_marker_list[index]
+																	.customIconUrl !== "" && (
+																	<div>
+																		<RangeControl
+																			label={__("Icon Width", "geo-maps")}
+																			value={parseInt(
+																				attributes.map_marker_list[index]
+																					.customIconWidth
+																			)}
+																			onChange={(width) =>
+																				setMarkerAttributeValue(
+																					index,
+																					"customIconWidth",
+																					width
+																				)
+																			}
+																			min={0}
+																			max={500}
+																		/>
+																		<RangeControl
+																			label={__("Icon Height", "geo-maps")}
+																			value={parseInt(
+																				attributes.map_marker_list[index]
+																					.customIconHeight
+																			)}
+																			onChange={(height) =>
+																				setMarkerAttributeValue(
+																					index,
+																					"customIconHeight",
+																					height
+																				)
+																			}
+																			min={0}
+																			max={500}
+																		/>
+																		<img
+																			src={
+																				attributes.map_marker_list[index]
+																					.customIconUrl
+																			}
+																			alt={__("Icon", "geo-maps")}
+																		/>
+																	</div>
+																)}
+																<Button onClick={open}>
+																	{attributes.map_marker_list[index]
+																		.customIconUrl == ""
+																		? __("Upload Icon", "geo-maps")
+																		: __("Replace Icon", "geo-maps")}
+																</Button>
+																{attributes.map_marker_list[index]
+																	.customIconUrl !== "" && (
+																	<button
+																		type="button"
+																		className="components-button"
+																		onClick={() =>
+																			setMarkerAttributeValue(
+																				index,
+																				"customIconUrl",
+																				""
+																			)
+																		}
+																	>
+																		{__("Remove Icon", "geo-maps")}
+																	</button>
+																)}
+															</div>
+														)}
+													/>
+												</MediaUploadCheck>
+											)}
+										</div>
+									</div>
+								))}
+
+							<button
+								className="ti-repeater-btn-add"
+								onClick={() => addMarkerHandler()}
+							>
+								{__("+ Add Item", "geo-maps")}
+							</button>
+						</div>
+					</PanelBody>
+				</Panel>
+			</InspectorControls>
+		</React.Fragment>
+	);
+}
+
+EditorSettings.propTypes = propTypes;
+EditorSettings.defaultProps = defaultProps;
