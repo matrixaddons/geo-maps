@@ -36,8 +36,8 @@ const Edit = (props) => {
 
 registerBlockType('geo-maps/map', {
 	apiVersion: 2,
-	title: __('Geo Maps', 'yatra'),
-	description: __('This block is used to show map', 'yatra'),
+	title: __('Geo Maps', 'geo-maps'),
+	description: __('This block is used to show map', 'geo-maps'),
 	icon: Icon,
 	keywords: [__("map"), __("google map"), __("openstreet map")],
 	edit: Edit,

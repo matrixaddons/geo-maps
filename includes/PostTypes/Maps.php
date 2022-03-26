@@ -37,7 +37,7 @@ class Maps
 		);
 		register_post_type($this->slug, $args);
 
-		do_action('yatra_after_register_post_type');
+		do_action('geo_maps_after_register_post_type');
 
 	}
 
