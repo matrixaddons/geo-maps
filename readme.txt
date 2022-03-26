@@ -4,7 +4,7 @@ Tags: maps, world map, openstreet map, google maps, map block
 Requires at least: 5.4
 Tested up to: 5.9
 Requires PHP: 5.6
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv3
 License URI: https://opensource.org/licenses/GPL-3.0
 
@@ -53,5 +53,5 @@ Please find Geo Blocks on your gutenberg WordPress editor.
 
 == Changelog ==
 
-= 1.0 - 2022-03-21 =
+= 1.0.1 - 2022-03-26 =
 - initial release
