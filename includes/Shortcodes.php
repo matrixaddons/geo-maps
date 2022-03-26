@@ -45,6 +45,8 @@ class Shortcodes
 
 	public static function map($atts)
 	{
+		wp_enqueue_script('geo-maps-main-script');
+		wp_enqueue_style('geo-maps-render-engine-style');
 		return self::shortcode_wrapper(array('\MatrixAddons\GeoMaps\Shortcodes\MapShortcode', 'output'), $atts);
 	}
 
