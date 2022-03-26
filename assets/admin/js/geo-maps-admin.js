@@ -91,7 +91,6 @@
 				wrap.find('input.geo-maps-marker-location').val(title);
 				wrap.find('input.geo-maps-marker-latitude').val(lat).trigger('change');
 				wrap.find('input.geo-maps-marker-longitude').val(lng).trigger('change');
-				wrap.find('.geo-maps-marker-content').val(lng).trigger('change');
 
 			});
 			$('body').on('change', '.geo-maps-marker-latitude, .geo-maps-marker-longitude, .geo-maps-marker-title, .geo-maps-marker-content', function () {
