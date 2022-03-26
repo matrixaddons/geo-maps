@@ -2,6 +2,8 @@
 
 namespace MatrixAddons\GeoMaps;
 
+use MatrixAddons\GeoMaps\Hooks\ListTable;
+
 final class Main
 {
 	private static $instances = [];
@@ -46,6 +48,10 @@ final class Main
 		PostTypes\Maps::init();
 		Meta\Maps::init();
 		Api::init();
+
+		if (is_admin()) {
+			new ListTable();
+		}
 	}
 
 	public function load_textdomain()
