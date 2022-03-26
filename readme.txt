@@ -36,6 +36,15 @@ Thank you for awesome library creators and maintainer of following. Without thos
 
 Install Geo Maps for WordPress either via the WordPress plugin directory or by uploading the files to your server at wp-content/plugins.
 
+== Shortcodes ==
+Shortcode for Map. To create new map you can find Maps menu on admin menu of your dashboard
+
+<pre>[geo_maps id="YOUR_MAP_ID_GOES_HERE"]</pre>
+
+== Blocks ==
+
+Please find Geo Blocks on your gutenberg WordPress editor.
+
 == Screenshots ==
 1. Map Creation from Map Menu
 2. Marker Creation with Tooltip & ToolTip Content
