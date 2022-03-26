@@ -108,7 +108,7 @@ if (!function_exists('geo_maps_get_all_map_lists')) {
 	function geo_maps_get_all_map_lists()
 	{
 		$all_posts = get_posts(array('posts_per_page' => -1, 'post_type' => 'geo-maps'));
-		$all_maps[] = ['label' => __('Select Map', 'geo-mpas'), 'value' => 0];
+		$all_maps[] = ['label' => __('Select Map', 'geo-maps'), 'value' => 0];
 		foreach ($all_posts as $post_id => $post) {
 			$all_maps[] = ['label' => $post->post_title, 'value' => $post->ID];
 		}
@@ -123,8 +123,8 @@ if (!function_exists('geo_maps_get_default_marker_item')) {
 		return array(
 				'lat' => '27.7172',
 				'lng' => '85.3240',
-				'title' => __('Tooltip Title'),
-				'content' => __('Tooltip Content')
+				'title' => __('Tooltip Title', 'geo-maps'),
+				'content' => __('Tooltip Content', 'geo-maps')
 		);
 	}
 }

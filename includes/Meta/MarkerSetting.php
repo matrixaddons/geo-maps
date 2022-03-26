@@ -8,8 +8,8 @@ class MarkerSetting
 	{
 		return array(
 			array(
-				'title' => __('Enable booking notification email for customer', 'yatra'),
-				'desc' => __('This option allows you to enable/disable booking notification email for customer.', 'yatra'),
+				'title' => __('Enable booking notification email for customer', 'geo-maps'),
+				'desc' => __('This option allows you to enable/disable booking notification email for customer.', 'geo-maps'),
 				'type' => 'repeater',
 				'new_item_text' => __('Add new marker', 'geo-maps'),
 				'fields' => self::repeater_fields()

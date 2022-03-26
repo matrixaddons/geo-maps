@@ -22,11 +22,11 @@ class Maps
 
 
 		add_meta_box('geo-maps-map-type',
-			__('Map Type', 'geo-map'), array($this, 'map_type_template'), 'geo-maps', 'side', 'high');
+			__('Map Type', 'geo-maps'), array($this, 'map_type_template'), 'geo-maps', 'side', 'high');
 
 		if (isset($_GET['action']) && $_GET['action'] === 'edit') {
 			add_meta_box('geo-maps-shortcode',
-				__('Shortcode', 'geo-map'), array($this, 'shortcode_template'), 'geo-maps', 'side', 'high');
+				__('Shortcode', 'geo-maps'), array($this, 'shortcode_template'), 'geo-maps', 'side', 'high');
 		}
 
 	}

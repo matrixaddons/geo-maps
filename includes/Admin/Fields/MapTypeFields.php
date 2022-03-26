@@ -11,8 +11,8 @@ class MapTypeFields extends Base
 				'type' => 'select',
 				'class' => 'geo-maps-map-type',
 				'options' => array(
-					'google_map' => __('Google Map', 'geo-map'),
-					'open_street_map' => __('Open Street Map', 'geo-map')
+					'google_map' => __('Google Map', 'geo-maps'),
+					'open_street_map' => __('Open Street Map', 'geo-maps')
 				),
 			],
 

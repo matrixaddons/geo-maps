@@ -11,17 +11,17 @@ class Maps
 	{
 
 		$labels = array(
-			'name' => __('Maps', 'yatra'),
-			'singular_name' => __('map', 'yatra'),
-			'add_new' => __('Add New', 'yatra'),
-			'add_new_item' => __('Add New map', 'yatra'),
-			'edit_item' => __('Edit map', 'yatra'),
-			'new_item' => __('New map', 'yatra'),
-			'all_items' => __('All Maps', 'yatra'),
-			'view_item' => __('View map', 'yatra'),
-			'search_items' => __('Search map', 'yatra'),
-			'not_found' => __('No Maps found', 'yatra'),
-			'not_found_in_trash' => __('No Maps found in the Trash', 'yatra'),
+			'name' => __('Maps', 'geo-maps'),
+			'singular_name' => __('Map', 'geo-maps'),
+			'add_new' => __('Add New', 'geo-maps'),
+			'add_new_item' => __('Add New map', 'geo-maps'),
+			'edit_item' => __('Edit map', 'geo-maps'),
+			'new_item' => __('New map', 'geo-maps'),
+			'all_items' => __('All Maps', 'geo-maps'),
+			'view_item' => __('View map', 'geo-maps'),
+			'search_items' => __('Search map', 'geo-maps'),
+			'not_found' => __('No Maps found', 'geo-maps'),
+			'not_found_in_trash' => __('No Maps found in the Trash', 'geo-maps'),
 			'parent_item_colon' => '',
 		);
 

@@ -1,0 +1,176 @@
+# Copyright (C) 2022 matrixaddons
+# This file is distributed under the GPL2+.
+msgid ""
+msgstr ""
+"Project-Id-Version: Geo Maps 1.0.0\n"
+"Report-Msgid-Bugs-To: matrixaddons@gmail.com\n"
+"POT-Creation-Date: 2022-03-26 11:59:51+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2022-MO-DA HO:MI+ZONE\n"
+"Last-Translator: matrixaddons <matrixaddons@gmail.com>\n"
+"Language-Team: matrixaddons <matrixaddons@gmail.com>\n"
+"X-Generator: grunt-wp-i18n 1.0.3\n"
+
+#: includes/Admin/FieldItems/Group.php:15
+msgid "You cant remove this item. At least one item needed."
+msgstr ""
+
+#: includes/Admin/FieldItems/Group.php:60
+msgid "Sample Title"
+msgstr ""
+
+#: includes/Admin/Fields/MapTypeFields.php:14
+msgid "Google Map"
+msgstr ""
+
+#: includes/Admin/Fields/MapTypeFields.php:15
+msgid "Open Street Map"
+msgstr ""
+
+#: includes/Admin/Fields/MarkerFields.php:13
+msgid "Add New Marker"
+msgstr ""
+
+#: includes/Admin/Fields/MarkerFields.php:18 includes/Meta/MarkerSetting.php:25
+msgid "Title"
+msgstr ""
+
+#: includes/Admin/Fields/MarkerFields.php:23
+msgid "Coordinates"
+msgstr ""
+
+#: includes/Admin/Fields/MarkerFields.php:28
+msgid "Location"
+msgstr ""
+
+#: includes/Admin/Fields/MarkerFields.php:39
+msgid "Latitude"
+msgstr ""
+
+#: includes/Admin/Fields/MarkerFields.php:45
+msgid "Longitude"
+msgstr ""
+
+#: includes/Admin/Fields/MarkerFields.php:53 includes/Helpers/map.php:127
+msgid "Tooltip Content"
+msgstr ""
+
+#: includes/Admin/Templates/Metabox/Map.php:2
+msgid "Map Preview"
+msgstr ""
+
+#: includes/Admin/Templates/Metabox/Settings.php:2
+msgid "Map Settings"
+msgstr ""
+
+#: includes/Api.php:40 includes/Assets.php:72
+msgid "Please select at least one map from block setting."
+msgstr ""
+
+#: includes/Api.php:44
+msgid "Permission denied."
+msgstr ""
+
+#: includes/Api.php:48
+msgid "The map doesnt exists."
+msgstr ""
+
+#: includes/Helpers/map.php:111
+msgid "Select Map"
+msgstr ""
+
+#: includes/Helpers/map.php:126
+msgid "Tooltip Title"
+msgstr ""
+
+#: includes/Meta/Maps.php:25
+msgid "Map Type"
+msgstr ""
+
+#: includes/Meta/Maps.php:29
+msgid "Shortcode"
+msgstr ""
+
+#: includes/Meta/Maps.php:66
+msgid "You can place this shortcode where you want to display the map."
+msgstr ""
+
+#: includes/Meta/Maps.php:92
+msgid "Map Markers"
+msgstr ""
+
+#: includes/Meta/MarkerSetting.php:11
+msgid "Enable booking notification email for customer"
+msgstr ""
+
+#: includes/Meta/MarkerSetting.php:12
+msgid ""
+"This option allows you to enable/disable booking notification email for "
+"customer."
+msgstr ""
+
+#: includes/Meta/MarkerSetting.php:14
+msgid "Add new marker"
+msgstr ""
+
+#: includes/PostTypes/Maps.php:14
+msgid "Maps"
+msgstr ""
+
+#: includes/PostTypes/Maps.php:15
+msgid "Map"
+msgstr ""
+
+#: includes/PostTypes/Maps.php:16
+msgid "Add New"
+msgstr ""
+
+#: includes/PostTypes/Maps.php:17
+msgid "Add New map"
+msgstr ""
+
+#: includes/PostTypes/Maps.php:18
+msgid "Edit map"
+msgstr ""
+
+#: includes/PostTypes/Maps.php:19
+msgid "New map"
+msgstr ""
+
+#: includes/PostTypes/Maps.php:20
+msgid "All Maps"
+msgstr ""
+
+#: includes/PostTypes/Maps.php:21
+msgid "View map"
+msgstr ""
+
+#: includes/PostTypes/Maps.php:22
+msgid "Search map"
+msgstr ""
+
+#: includes/PostTypes/Maps.php:23
+msgid "No Maps found"
+msgstr ""
+
+#: includes/PostTypes/Maps.php:24
+msgid "No Maps found in the Trash"
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "Geo Maps"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://wordpress.org/plugins/geo-maps"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "Google map & OpenStreet map for WordPress"
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "matrixaddons"
+msgstr ""

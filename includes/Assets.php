@@ -13,8 +13,8 @@ class Assets
 	public function register_assets()
 	{
 
-		wp_register_script('geo-maps-leaflet', GEO_MAPS_ASSETS_URI . 'js/leaflet.js', array('jquery'), null, true);
-		wp_register_script('geo-maps-leaflet-fullscreen', GEO_MAPS_ASSETS_URI . 'js/Control.FullScreen.js', array('jquery'), null, true);
+		wp_register_script('geo-maps-leaflet', GEO_MAPS_ASSETS_URI . 'vendor/leaflet/leaflet.js', array('jquery'), null, true);
+		wp_register_script('geo-maps-leaflet-fullscreen', GEO_MAPS_ASSETS_URI . 'js/fullscreen.js', array('jquery'), null, true);
 
 		$map_render_engine_dependencies = include_once GEO_MAPS_ASSETS_DIR_PATH . 'build/render-engine.min.asset.php';
 		$css_dependencies = $map_render_engine_dependencies['dependencies'];
