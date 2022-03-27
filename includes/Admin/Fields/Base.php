@@ -36,7 +36,6 @@ abstract class Base
 		}
 		$valid_data = $this->get_valid_data($post_data);
 
-	
 		foreach ($valid_data as $valid_data_index => $valid_data_item) {
 
 			update_post_meta($map_id, $valid_data_index, $valid_data_item);

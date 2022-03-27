@@ -148,7 +148,7 @@
 	padding: 15px;
 }
 
-.matrixaddons-field + .matrixaddons-field {
+.matrixaddons-field:not(.matrixaddons-field-hidden) + .matrixaddons-field:not(.matrixaddons-field-hidden) {
 	border-top: 1px solid #eee;
 }
 
@@ -264,4 +264,133 @@ textarea.geo-maps-shortcode-copy {
 
 select.geo-maps-map-type {
 	width: 100%;
+}
+
+.matrixaddons-image-field-wrap {
+	width: 100%;
+	display: inline-block;
+}
+
+.matrixaddons-image-field-wrap .matrixaddons-image-field-add {
+
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-orient: vertical;
+	-webkit-box-direction: normal;
+	-ms-flex-direction: column;
+	flex-direction: column;
+	-webkit-box-align: center;
+	-ms-flex-align: center;
+	align-items: center;
+	-webkit-box-pack: center;
+	-ms-flex-pack: center;
+	justify-content: center;
+	text-decoration: none;
+	padding: 10px 0px 20px 0px;
+	background: #FFFFFF;
+	border: 1px dashed #074771;
+	border-radius: 4px;
+}
+
+.matrixaddons-image-field-wrap .image-container {
+	max-width: 100%;
+	overflow: hidden;
+}
+
+.matrixaddons-image-field-wrap .image-container {
+	float: left;
+	position: relative;
+	cursor: pointer;
+	width: 150px;
+}
+
+.field-container {
+	width: calc(100% - 150px);
+	float: right;
+}
+
+.matrixaddons-image-field-wrap .image-container:before {
+	content: "";
+	display: block;
+	padding-top: 100%;
+}
+
+.matrixaddons-image-field-wrap .image-wrapper {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.matrixaddons-image-field-wrap .image-content {
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+.matrixaddons-image-field-wrap .image-container img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	-o-object-fit: cover;
+	object-fit: cover;
+	border-radius: 4px;
+}
+
+.matrixaddons-image-field-wrap .image-container .image-overlay {
+	-webkit-transition: all .2s ease-in-out;
+	-o-transition: all .2s ease-in-out;
+	transition: all .2s ease-in-out;
+	display: none;
+	position: absolute;
+	-webkit-box-align: center;
+	-ms-flex-align: center;
+	align-items: center;
+	-webkit-box-pack: center;
+	-ms-flex-pack: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	z-index: 9;
+	top: 0;
+	left: 0;
+	border-radius: 4px;
+	background: -webkit-gradient(linear, left bottom, left top, from(rgba(0, 7, 63, 0.7)), to(rgba(0, 7, 63, 0.7)));
+	background: -o-linear-gradient(bottom, rgba(0, 7, 63, 0.7), rgba(0, 7, 63, 0.7));
+	background: linear-gradient(0deg, rgba(0, 7, 63, 0.7), rgba(0, 7, 63, 0.7));
+	cursor: -webkit-grab;
+	cursor: grab;
+}
+
+.matrixaddons-image-field-wrap .image-container a.remove {
+	color: #fff;
+	cursor: pointer;
+	width: 13%;
+	height: 13%;
+	min-width: 16px;
+	min-height: 16px;
+	background-size: 100%;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+.matrixaddons-image-field-wrap .image-container:hover .image-overlay {
+	display: flex;
+}
+
+.matrixaddons-image-field-wrap .matrixaddons-field .matrixaddons-title {
+	position: relative;
+	width: 30%;
+	float: left;
+}
+
+.matrixaddons-image-field-wrap .matrixaddons-field .matrixaddons-fieldset {
+	float: right;
+	width: calc(70% - 20px);
+}
+
+.matrixaddons-field-hidden {
+	display: none;
 }

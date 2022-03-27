@@ -11,10 +11,13 @@ class HTML
 		$class = 'matrixaddons-field matrixaddons-field-' . esc_attr($type);
 
 		$title = $field['title'] ?? '';
+
 		$desc = $field['desc'] ?? '';
 
 		echo '<div class="' . esc_attr($class) . '" id="' . esc_attr($field_id) . '">';
+
 		echo '<div class="matrixaddons-title">';
+
 		if ($title != '') {
 			echo '<h4>' . esc_html($title) . '</h4>';
 		}
@@ -22,37 +25,15 @@ class HTML
 			echo '<small>' . esc_html($desc) . '</small>';
 		}
 		echo '</div>';
-		$class = '';
-		switch ($type) {
-			case "group":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Group";
-				break;
-			case "fieldset":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Fieldset";
-				break;
-			case "content":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Content";
-				break;
-			case "text":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Text";
-				break;
-			case "textarea":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Textarea";
-				break;
-			case "select":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Select";
-				break;
-			case "checkbox":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Checkbox";
-				break;
-			case "image":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Image";
-				break;
-		}
-		if (class_exists($class)) {
-			$class::render($field, $field_id, $value, $group_id);
-		}
 
+		$type_class_name = ucwords($type);
+
+		$class_name = "\MatrixAddons\GeoMaps\Admin\FieldItems\\" . $type_class_name;
+
+		if (class_exists($class_name)) {
+
+			$class_name::render($field, $field_id, $value, $group_id);
+		}
 
 		echo '<div class="clear"></div>';
 
@@ -101,33 +82,19 @@ class HTML
 	{
 		$type = $field['type'] ?? '';
 
-		$class = '';
+		$type_class_name = ucwords($type);
 
-		switch ($type) {
-			case "group":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Group";
-				break;
-			case "fieldset":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Fieldset";
-				break;
-			case "text":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Text";
-				break;
-			case "textarea":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Textarea";
-				break;
-			case "select":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Select";
-				break;
-			case "checkbox":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Checkbox";
-				break;
-			case "image":
-				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Image";
-				break;
-		}
-		if (class_exists($class)) {
-			return $class::sanitize($field, $raw_data, $field_id);
+		$class_name = "\MatrixAddons\GeoMaps\Admin\FieldItems\\" . $type_class_name;
+
+		$sanitize_callback = isset($field['sanitize_callback']) ? $field['sanitize_callback'] : '';
+
+		if ($sanitize_callback != '' && is_callable($sanitize_callback)) {
+
+			return $sanitize_callback($field, $raw_data, $field_id);
+
+		} else if (class_exists($class_name)) {
+
+			return $class_name::sanitize($field, $raw_data, $field_id);
 		}
 
 

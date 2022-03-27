@@ -75,6 +75,32 @@ class MarkerFields extends Base
 				'title' => __('Marker Image', 'geo-maps'),
 				'class' => 'geo-maps-marker-image',
 				'desc' => __("No need to add any image if you want to use default marker.", 'geo-maps'),
+				'image_id_field' => 'id',
+				'fields' => [
+					'id' => [
+						'type' => 'hidden',
+						'title' => __('Height [in px]', 'geo-maps'),
+						'class' => 'geo-maps-marker-image-id',
+						'sanitize_callback' => function ($field, $raw_data, $field_id) {
+							return absint($raw_data);
+						}
+
+					],
+					'height' => [
+						'type' => 'number',
+						'title' => __('Height [in px]', 'geo-maps'),
+						'class' => 'geo-maps-marker-image-height',
+						'default' => 50
+
+					],
+					'width' => [
+						'type' => 'number',
+						'title' => __('Width [in px]', 'geo-maps'),
+						'class' => 'geo-maps-marker-image-width',
+						'default' => 50
+
+					]
+				]
 
 
 			],
