@@ -46,12 +46,20 @@ if (!function_exists('geo_maps_get_map_settings')) {
 		$center_marker_index = null;
 		/** @var \MatrixAddons\GeoMaps\Models\MarkerModel $marker */
 		foreach ($markers as $marker_index => $marker) {
-			$map_markers[] = array(
+
+			$marker_item = array(
 					'lat' => $marker->get_latitude(),
 					'lng' => $marker->get_longitude(),
 					'title' => $marker->get_title(),
 					'content' => $marker->get_tooltip_content()
 			);
+			if ($marker->get_icon_url() != '') {
+				$marker_item['iconType'] = 'custom';
+				$marker_item['customIconUrl'] = $marker->get_icon_url();
+				$marker_item['customIconWidth'] = $marker->get_icon_width();
+				$marker_item['customIconHeight'] = $marker->get_icon_height();
+			}
+			$map_markers[] = $marker_item;
 			if (is_null($center_marker_index)) {
 				$center_marker_index = $marker->is_centered_marker() ? $marker_index : null;
 

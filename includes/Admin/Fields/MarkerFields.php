@@ -70,7 +70,7 @@ class MarkerFields extends Base
 
 				],
 			],
-			'marker_image' => [
+			'geo_maps_marker_image' => [
 				'type' => 'image',
 				'title' => __('Marker Image', 'geo-maps'),
 				'class' => 'geo-maps-marker-image',
@@ -82,7 +82,7 @@ class MarkerFields extends Base
 						'title' => __('Height [in px]', 'geo-maps'),
 						'class' => 'geo-maps-marker-image-id',
 						'sanitize_callback' => function ($field, $raw_data, $field_id) {
-							return absint($raw_data);
+							return $raw_data != '' ? absint($raw_data) : null;
 						}
 
 					],
@@ -90,14 +90,14 @@ class MarkerFields extends Base
 						'type' => 'number',
 						'title' => __('Height [in px]', 'geo-maps'),
 						'class' => 'geo-maps-marker-image-height',
-						'default' => 50
+						'default' => 40
 
 					],
 					'width' => [
 						'type' => 'number',
 						'title' => __('Width [in px]', 'geo-maps'),
 						'class' => 'geo-maps-marker-image-width',
-						'default' => 50
+						'default' => 25
 
 					]
 				]

@@ -16,12 +16,18 @@ class MarkerModel
 
 	private $is_centered_marker;
 
+	private $icon_url;
+
+	private $icon_height;
+
+	private $icon_width;
+
 	private static function get_instance()
 	{
 		return new self;
 	}
 
-	public static function map($markers = array())
+	public static function map($markers = array(), $icon = array())
 	{
 
 		$marker_obj = array();
@@ -36,7 +42,16 @@ class MarkerModel
 			$self->latitude = $coordinate['latitude'] ?? '';
 			$self->longitude = $coordinate['longitude'] ?? '';
 			$self->is_centered_marker = isset($marker['is_centered_marker']) && (boolean)$marker['is_centered_marker'];
+
+			$icon_id = isset($icon['id']) ? absint($icon['id']) : 0;
+			if ($icon_id > 0) {
+				$self->icon_url = wp_get_attachment_image_url($icon_id);
+				$self->icon_height = isset($icon['height']) ? absint($icon['height']) : '';
+				$self->icon_width = isset($icon['width']) ? absint($icon['width']) : '';
+
+			}
 			$marker_obj[] = $self;
+
 
 		}
 
@@ -74,6 +89,25 @@ class MarkerModel
 	public function is_centered_marker()
 	{
 		return $this->is_centered_marker;
+
+	}
+
+	public function get_icon_url()
+	{
+		return $this->icon_url;
+
+	}
+
+	public function get_icon_height()
+	{
+		return $this->icon_height;
+
+	}
+
+	public function get_icon_width()
+	{
+		return $this->icon_width;
+
 
 	}
 }

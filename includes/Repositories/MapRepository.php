@@ -19,12 +19,17 @@ class MapRepository
 
 		$markers = is_array($markers) ? $markers : array();
 
-		return MarkerModel::map($markers);
+		return MarkerModel::map($markers, $this->get_marker_icon());
 
 	}
 
 	public function get_map_type()
 	{
 		return get_post_meta($this->map_id, 'geo_maps_map_type', true);
+	}
+
+	public function get_marker_icon()
+	{
+		return get_post_meta($this->map_id, 'geo_maps_marker_image', true);
 	}
 }
