@@ -45,6 +45,9 @@ class HTML
 			case "checkbox":
 				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Checkbox";
 				break;
+			case "image":
+				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Image";
+				break;
 		}
 		if (class_exists($class)) {
 			$class::render($field, $field_id, $value, $group_id);
@@ -109,6 +112,9 @@ class HTML
 				break;
 			case "checkbox":
 				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Checkbox";
+				break;
+			case "image":
+				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Image";
 				break;
 		}
 		if (class_exists($class)) {

@@ -64,6 +64,14 @@ class MarkerFields extends Base
 
 				],
 			],
+			'marker_image' => [
+				'type' => 'image',
+				'title' => __('Marker Image', 'geo-maps'),
+				'class' => 'geo-maps-marker-image',
+				'desc' => __("No need to add any image if you want to use default marker.", 'geo-maps')
+
+
+			],
 
 		];
 	}
