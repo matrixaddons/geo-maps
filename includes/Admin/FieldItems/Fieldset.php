@@ -19,8 +19,14 @@ class Fieldset
 
 			foreach ($child_fields as $child_field_item_id => $child_field_item) {
 
-				$item_value = $value[$child_field_item_id] ?? '';
+				$default = $child_field_item['default'] ?? null;
 
+				if (!is_array($value)) {
+
+					$item_value = $default;
+				} else {
+					$item_value = $value[$child_field_item_id] ?? '';
+				}
 				HTML::render_item($child_field_item, $child_field_item_id, $item_value, $field_group_id);
 
 			}

@@ -6,6 +6,7 @@ class MarkerFields extends Base
 {
 	public function get_settings()
 	{
+		$defaults = geo_maps_get_default_marker_item();
 		return [
 
 			'geo_maps_markers' => [
@@ -16,18 +17,20 @@ class MarkerFields extends Base
 					'title' => [
 						'type' => 'text',
 						'title' => __('Title', 'geo-maps'),
-						'class' => 'geo-maps-marker-title'
+						'class' => 'geo-maps-marker-title',
+						'default' => $defaults['title']
 					],
 					'coordinates' => [
 						'type' => 'fieldset',
 						'title' => __('Coordinates', 'geo-maps'),
 						'fields' => [
-
 							'location' => [
 								'type' => 'text',
 								'title' => __('Location', 'geo-maps'),
 								'class' => 'geo-maps-marker-location',
+								'default' => $defaults['title'],
 								'after' => '<a href="#" class="dashicons dashicons-search geo-maps-location-search-button"></a>'
+
 
 							],
 							'geo_maps_marker_map' => [
@@ -38,12 +41,14 @@ class MarkerFields extends Base
 								'type' => 'text',
 								'title' => __('Latitude', 'geo-maps'),
 								'class' => 'geo-maps-marker-latitude',
+								'default' => $defaults['lat']
 
 							],
 							'longitude' => [
 								'type' => 'text',
 								'title' => __('Longitude', 'geo-maps'),
 								'class' => 'geo-maps-marker-longitude',
+								'default' => $defaults['lng']
 
 							],
 						],
@@ -51,7 +56,8 @@ class MarkerFields extends Base
 					'tooltip_content' => [
 						'type' => 'textarea',
 						'title' => __('Tooltip Content', 'geo-maps'),
-						'class' => 'geo-maps-marker-content'
+						'class' => 'geo-maps-marker-content',
+						'default' => $defaults['content']
 
 					],
 					'is_centered_marker' => [
@@ -68,7 +74,7 @@ class MarkerFields extends Base
 				'type' => 'image',
 				'title' => __('Marker Image', 'geo-maps'),
 				'class' => 'geo-maps-marker-image',
-				'desc' => __("No need to add any image if you want to use default marker.", 'geo-maps')
+				'desc' => __("No need to add any image if you want to use default marker.", 'geo-maps'),
 
 
 			],

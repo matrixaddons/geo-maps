@@ -63,7 +63,16 @@ class HTML
 	{
 		foreach ($fields as $field_id => $field) {
 
-			$value = get_post_meta(get_the_ID(), $field_id, true);
+			$object_id = get_the_ID();
+
+			$value = get_post_meta($object_id, $field_id, true);
+
+			$default = $field['default'] ?? null;
+
+			if (!metadata_exists('post', $object_id, $field_id)) {
+
+				$value = is_null($value) || $value == '' ? $default : $value;
+			}
 
 			self::render_item($field, $field_id, $value, $group_id);
 
