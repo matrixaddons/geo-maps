@@ -41,28 +41,38 @@ if (!function_exists('geo_maps_get_map_settings')) {
 
 		$map_type = $map_repository->get_map_type();
 
+		$center_index = 0;
 
+		$center_marker_index = null;
 		/** @var \MatrixAddons\GeoMaps\Models\MarkerModel $marker */
-		foreach ($markers as $marker) {
+		foreach ($markers as $marker_index => $marker) {
 			$map_markers[] = array(
 					'lat' => $marker->get_latitude(),
 					'lng' => $marker->get_longitude(),
 					'title' => $marker->get_title(),
 					'content' => $marker->get_tooltip_content()
 			);
+			if (is_null($center_marker_index)) {
+				$center_marker_index = $marker->is_centered_marker() ? $marker_index : null;
+
+			}
 		}
+		$center_index = is_null($center_marker_index) ? $center_index : absint($center_marker_index);
+
 		if (count($map_markers) < 1) {
 			$map_markers[] = geo_maps_get_default_marker_item();
 		}
+		$center_index = count($map_markers) > $center_index ? $center_index : 0;
 		$settings = [
 				'map_marker' => $map_markers,
 				'map_zoom' => 8,
 				'scroll_wheel_zoom' => false,
 				'map_type' => $map_type,
-				'center_index' => 0,
+				'center_index' => $center_index,
 		];
 
 		$map_width = '100%';
+
 		$map_height = '500px';
 
 		return array(

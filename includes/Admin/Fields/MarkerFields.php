@@ -54,6 +54,13 @@ class MarkerFields extends Base
 						'class' => 'geo-maps-marker-content'
 
 					],
+					'is_centered_marker' => [
+						'type' => 'checkbox',
+						'title' => __('Center Position', 'geo-maps'),
+						'class' => 'geo-maps-marker-center-position',
+						'desc' => __("Make this marker to center position on the map.", 'geo-maps')
+
+					],
 
 				],
 			],

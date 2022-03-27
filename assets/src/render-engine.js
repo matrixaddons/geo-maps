@@ -85,11 +85,11 @@ window.Geo_Maps_Rendered = {};
 
 
 		window.Geo_Maps_Rendered[ID] = L.map(ID, config);
-		var osm = L.TileLayer.boundaryCanvas("https://{s}.tile.osm.org/{z}/{x}/{y}.png", {
+		/*var osm = L.TileLayer.boundaryCanvas("https://{s}.tile.osm.org/{z}/{x}/{y}.png", {
 			boundary: geom(),
 			attribution: "Map data &copy; 2012 OpenStreetMap contributors",
 			trackAttribution: true
-		}).addTo(window.Geo_Maps_Rendered[ID]);
+		}).addTo(window.Geo_Maps_Rendered[ID]);*/
 		window.Geo_Maps_Rendered[ID].invalidateSize();
 	};
 

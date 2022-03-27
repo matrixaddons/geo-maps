@@ -4,7 +4,7 @@
  * Plugin URI: https://wordpress.org/plugins/geo-maps
  * Description: Google map & OpenStreet map for WordPress
  * Author: matrixaddons
- * Author URI:
+ * Author URI: https://profiles.wordpress.org/matrixaddons
  * Version: 1.0.1
  * License: GPL2+
  * License URI: https://www.gnu.org/licenses/gpl-2.0.txt

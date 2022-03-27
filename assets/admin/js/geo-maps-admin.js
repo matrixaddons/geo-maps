@@ -104,6 +104,17 @@
 			$('body').on('input', '.geo-maps-marker-longitude', function () {
 				_that.validateLatLong($(this));
 			});
+			$('body').on('click', '.geo-maps-marker-center-position', function () {
+				var isChecked = $(this).is(':checked');
+				if (isChecked) {
+					var wrap = $(this).closest('.matrixaddons-repeater-wrapper');
+					wrap.find('.geo-maps-marker-center-position').prop('checked', false);
+					$(this).prop('checked', true);
+					var index = $(this).closest('.matrixaddons-repeater-item').attr('data-item-id');
+					_that.settings.center_index = index;
+					_that.renderPreviewMap();
+				}
+			})
 		},
 		validateLatLong: function (el) {
 			var validNumber = new RegExp(/^\d*\.?\d*$/);

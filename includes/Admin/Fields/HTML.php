@@ -11,12 +11,17 @@ class HTML
 		$class = 'matrixaddons-field matrixaddons-field-' . esc_attr($type);
 
 		$title = $field['title'] ?? '';
+		$desc = $field['desc'] ?? '';
 
 		echo '<div class="' . esc_attr($class) . '" id="' . esc_attr($field_id) . '">';
-
+		echo '<div class="matrixaddons-title">';
 		if ($title != '') {
-			echo '<div class="matrixaddons-title"><h4>' . esc_html($title) . '</h4></div>';
+			echo '<h4>' . esc_html($title) . '</h4>';
 		}
+		if ($desc != '') {
+			echo '<small>' . esc_html($desc) . '</small>';
+		}
+		echo '</div>';
 		$class = '';
 		switch ($type) {
 			case "group":
@@ -36,6 +41,9 @@ class HTML
 				break;
 			case "select":
 				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Select";
+				break;
+			case "checkbox":
+				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Checkbox";
 				break;
 		}
 		if (class_exists($class)) {
@@ -98,6 +106,9 @@ class HTML
 				break;
 			case "select":
 				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Select";
+				break;
+			case "checkbox":
+				$class = "\MatrixAddons\GeoMaps\Admin\FieldItems\Checkbox";
 				break;
 		}
 		if (class_exists($class)) {

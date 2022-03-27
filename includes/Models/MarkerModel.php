@@ -14,6 +14,8 @@ class MarkerModel
 
 	private $tooltip_content;
 
+	private $is_centered_marker;
+
 	private static function get_instance()
 	{
 		return new self;
@@ -21,6 +23,7 @@ class MarkerModel
 
 	public static function map($markers = array())
 	{
+
 		$marker_obj = array();
 
 		foreach ($markers as $marker) {
@@ -32,10 +35,11 @@ class MarkerModel
 			$self->location = $coordinate['location'] ?? '';
 			$self->latitude = $coordinate['latitude'] ?? '';
 			$self->longitude = $coordinate['longitude'] ?? '';
-
+			$self->is_centered_marker = isset($marker['is_centered_marker']) && (boolean)$marker['is_centered_marker'];
 			$marker_obj[] = $self;
 
 		}
+
 		return $marker_obj;
 
 	}
@@ -64,6 +68,12 @@ class MarkerModel
 	public function get_tooltip_content()
 	{
 		return $this->tooltip_content;
+
+	}
+
+	public function is_centered_marker()
+	{
+		return $this->is_centered_marker;
 
 	}
 }
