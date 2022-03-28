@@ -33,7 +33,7 @@ class MapShortcode
 
 			return;
 		}
-		if (get_post_type($map_id) !== 'geo-maps') {
+		if (get_post_type($map_id) != 'geo-maps' || get_post_status($map_id) != 'publish') {
 
 			echo '<h2>Invalid shortcode. Please contact site administrator.</h2>';
 
