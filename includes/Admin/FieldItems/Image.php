@@ -28,8 +28,8 @@ class Image
 		<div class="matrixaddons-fieldset">
 			<div class="matrixaddons-image-field-wrap">
 				<a class="matrixaddons-image-field-add <?php echo $image_id > 1 ? 'matrixaddons-hide' : ''; ?>" href="#"
-				   data-uploader-title="Add image(s) to gallery"
-				   data-uploader-button-text="Add image(s)">
+				   data-uploader-title="Add new image"
+				   data-uploader-button-text="Add new image">
 					<img src="http://localhost/WordPressPlugins/wp-content/plugins/yatra/assets/images/upload-image.png">
 					<h3>Drop your file here, or <span>browse</span></h3>
 					<p>Supports: JPG, JPEG, PNG</p>
@@ -41,11 +41,13 @@ class Image
 						$image_src = wp_get_attachment_image_url($image_id);
 
 						?>
-						<div class="image-wrapper">
+						<div class="image-wrapper" data-url="<?php echo esc_url_raw($image_src) ?>">
 							<div class="image-content"><img
 										src="<?php echo esc_url_raw($image_src) ?>"
 										alt="">
-								<div class="image-overlay"><a class="remove dashicons dashicons-trash"></a></div>
+								<div class="image-overlay"><a
+											class="matrixaddons-image-delete remove dashicons dashicons-trash"></a>
+								</div>
 							</div>
 						</div>
 					<?php } ?>

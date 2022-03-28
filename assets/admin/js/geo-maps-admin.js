@@ -6,6 +6,8 @@
 			this.settings = (geoMapsAdminParams.options.settings);
 			this.bindEvents();
 			this.renderPreviewMap();
+			this.image_upload_frame = '';
+			this.initMediaUploader();
 		},
 		bindEvents: function () {
 			var _that = this;
@@ -114,7 +116,11 @@
 					_that.settings.center_index = index;
 					_that.renderPreviewMap();
 				}
-			})
+			});
+			$('body').on('change', '.geo-maps-marker-image-id', function (e) {
+				e.preventDefault();
+				_that.renderPreviewMap();
+			});
 		},
 		validateLatLong: function (el) {
 			var validNumber = new RegExp(/^\d*\.?\d*$/);
@@ -207,6 +213,7 @@
 		renderPreviewMap: function () {
 			var _that = this;
 			_that.settings.map_type = _that.getMapType();
+			_that.getMarkerIcon();
 			$(".geo_maps_map_render_element").each((index, element) => {
 				const Element = jQuery(element);
 				window.Geo_Maps_Render(
@@ -295,8 +302,84 @@
 			wrap.find('.geo-maps-marker-latitude').val(position.lat).trigger('change');
 			wrap.find('.geo-maps-marker-longitude').val(position.lng).trigger('change');
 
-		}
+		},
+		initMediaUploader: function () {
+			var uploadBtn = $('.matrixaddons-image-field-add');
+			var parent = uploadBtn.closest('.matrixaddons-image-field-wrap');
+			var _this = this;
+			uploadBtn.on('click', function (event) {
+				event.preventDefault();
+				_this.uploadWindow(uploadBtn, parent);
+			});
+			$('body').on('click', '.matrixaddons-image-delete', function (event) {
+				event.preventDefault();
+				var imageField = $(this).closest('.matrixaddons-field-image');
+				imageField.find('.geo-maps-marker-image-id').val(0);
+				imageField.find('.image-container, .field-container').addClass('matrixaddons-hide');
+				imageField.find('.matrixaddons-image-field-add').removeClass('matrixaddons-hide');
+			});
+		},
+		uploadWindow: function (uploadBtn, wrapper) {
 
+			var _this = this;
+			if (this.image_upload_frame) this.image_upload_frame.close();
+
+			this.image_upload_frame = wp.media.frames.file_frame = wp.media({
+				title: uploadBtn.data('uploader-title'),
+				button: {
+					text: uploadBtn.data('uploader-button-text'),
+				},
+				multiple: false
+			});
+
+			this.image_upload_frame.on('select', function () {
+
+				var selection = _this.image_upload_frame.state().get('selection');
+				var selected_list_node = wrapper.find('.image-container');
+				var imageHtml = '';
+				var attachment_id = 0;
+				selection.map(function (attachment_object, i) {
+					var attachment = attachment_object.toJSON();
+					attachment_id = attachment.id;
+
+					var attachment_url = attachment.sizes.full.url;
+					imageHtml = _this.getImageElement(attachment_url);
+
+				});
+
+				if (attachment_id > 0) {
+					wrapper.find('.field-container').find('.geo-maps-marker-image-id').val(attachment_id).trigger('change');
+					wrapper.find('.image-container, .field-container').removeClass('matrixaddons-hide');
+					wrapper.find('.matrixaddons-image-field-add').addClass('matrixaddons-hide');
+					selected_list_node.append(imageHtml);
+				}
+			});
+
+
+			this.image_upload_frame.open();
+		},
+		getImageElement: function (src) {
+			return '<div data-url="' + src + '" class="image-wrapper"><div class="image-content"><img src="' + src + '" alt=""><div class="image-overlay"><a class="matrixaddons-image-delete remove dashicons dashicons-trash"></a></div></div></div>';
+		},
+		getMarkerIcon: function () {
+			var wrap = $('#geo_maps_marker_image');
+			if (parseInt(wrap.find('.geo-maps-marker-image-id').val()) < 1) {
+				return {};
+			}
+			var _that = this;
+			var height = parseInt(wrap.find('.geo-maps-marker-image-height').val());
+			var width = parseInt(wrap.find('.geo-maps-marker-image-width').val());
+			_that.settings.map_marker.forEach(function (item, index) {
+				var icon = _that.getMarkerIcon();
+				if (typeof icon.iconType !== "undefined") {
+					_that.settings.map_marker[index].iconType = 'custom';
+					_that.settings.map_marker[index].customIconUrl = wrap.find('.image-wrapper').attr('data-url');
+					_that.settings.map_marker[index].customIconWidth = width < 1 ? 25 : width;
+					_that.settings.map_marker[index].customIconHeight = height < 1 ? 40 : height;
+				}
+
+			});
+		}
 
 	};
 
