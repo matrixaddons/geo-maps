@@ -130,12 +130,12 @@
 			});
 			$('body').on('change', '.geo-maps-marker-image-id, .geo-maps-marker-image-height, .geo-maps-marker-image-width', function (e) {
 				e.preventDefault();
-				_that.renderPreviewMap();
+				_that.reCalculateMarkerContent();
 			});
 			$('body').on('click', '.geo-maps-marker-scroll-wheel-zoom', function () {
 				_that.settings.scroll_wheel_zoom = false;
 				var isChecked = $(this).is(':checked');
- 				if (isChecked) {
+				if (isChecked) {
 					_that.settings.scroll_wheel_zoom = true;
 				}
 				_that.renderPreviewMap();
@@ -231,8 +231,8 @@
 		},
 		renderPreviewMap: function () {
 			var _that = this;
+			console.log(JSON.stringify(_that.settings));
 			_that.settings.map_type = _that.getMapType();
-			_that.getMarkerIcon();
 			$(".geo_maps_map_render_element").each((index, element) => {
 				const Element = jQuery(element);
 				window.Geo_Maps_Render(
@@ -301,12 +301,13 @@
 					var latitude = item.find('input.geo-maps-marker-latitude').val();
 					var longitude = item.find('input.geo-maps-marker-longitude').val();
 					var content = item.find('.geo-maps-marker-content').val();
-					mapMarkers[markerIndex] = {
+					var custom_marker = {
 						lat: latitude,
 						lng: longitude,
 						title: title,
 						content: content
 					};
+					mapMarkers[markerIndex] = _that.getItemMarkerImage(markerIndex, custom_marker);
 
 				});
 			}
@@ -323,12 +324,10 @@
 
 		},
 		initMediaUploader: function () {
-			var uploadBtn = $('.matrixaddons-image-field-add');
-			var parent = uploadBtn.closest('.matrixaddons-image-field-wrap');
 			var _this = this;
-			uploadBtn.on('click', function (event) {
+			$('body').on('click', '.matrixaddons-image-field-add', function (event) {
 				event.preventDefault();
-				_this.uploadWindow(uploadBtn, parent);
+				_this.uploadWindow($(this), $(this).closest('.matrixaddons-image-field-wrap'));
 			});
 			$('body').on('click', '.matrixaddons-image-delete', function (event) {
 				event.preventDefault();
@@ -383,34 +382,45 @@
 		getImageElement: function (src) {
 			return '<div data-url="' + src + '" class="image-wrapper"><div class="image-content"><img src="' + src + '" alt=""><div class="image-overlay"><a class="matrixaddons-image-delete remove dashicons dashicons-trash"></a></div></div></div>';
 		},
-		getMarkerIcon: function () {
-			var wrap = $('#geo_maps_marker_image');
-
+		getItemMarkerImage: function (item_index, new_item) {
+			var wrap = $('.matrixaddons-repeater-wrapper').find('.matrixaddons-repeater-item[data-item-id="' + item_index + '"]').find('#geo_maps_marker_item_image');
 			var _that = this;
 			var height = parseInt(wrap.find('.geo-maps-marker-image-height').val());
 			var width = parseInt(wrap.find('.geo-maps-marker-image-width').val());
-			var custom_marker = []
+			var image_id = wrap.find('.geo-maps-marker-image-id').val();
+			if (image_id === '' || parseInt(image_id) < 1) {
 
-			_that.settings.map_marker.forEach(function (item, index) {
-				var new_item = Object.assign({}, item);
+				new_item.iconType = 'default';
 
-				if (parseInt(wrap.find('.geo-maps-marker-image-id').val()) < 1) {
-					new_item.iconType = 'default';
+				return _that.getMainMarker(new_item);
 
-				} else {
-					new_item.iconType = 'custom';
-
-				}
-				new_item.customIconUrl = wrap.find('.image-wrapper').attr('data-url');
-				new_item.customIconWidth = width < 1 ? 25 : width;
-				new_item.customIconHeight = height < 1 ? 40 : height;
-				custom_marker.push(new_item);
-
-			});
-			if (custom_marker.length > 0) {
-				_that.settings.map_marker = custom_marker;
 			}
-			console.log(_that.settings.map_marker);
+			new_item.iconType = 'custom';
+			new_item.customIconUrl = wrap.find('.image-wrapper').attr('data-url');
+			new_item.customIconWidth = width < 1 ? 25 : width;
+			new_item.customIconHeight = height < 1 ? 40 : height;
+
+			return new_item;
+
+		},
+		getMainMarker: function (new_item) {
+			var wrap = $('#geo_maps_marker_image');
+			var image_id = wrap.find('.geo-maps-marker-image-id').val();
+
+			if (image_id === '' || parseInt(image_id) < 1) {
+				return new_item;
+
+			}
+			var height = parseInt(wrap.find('.geo-maps-marker-image-height').val());
+			var width = parseInt(wrap.find('.geo-maps-marker-image-width').val());
+
+			new_item.iconType = 'custom';
+			new_item.customIconUrl = wrap.find('.image-wrapper').attr('data-url');
+			new_item.customIconWidth = width < 1 ? 25 : width;
+			new_item.customIconHeight = height < 1 ? 40 : height;
+
+			return new_item;
+
 		}
 
 	};

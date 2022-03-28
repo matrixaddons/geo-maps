@@ -67,43 +67,44 @@ class MarkerFields extends Base
 						'desc' => __("Make this marker to center position on the map.", 'geo-maps')
 
 					],
+					'geo_maps_marker_item_image' => [
+						'type' => 'image',
+						'title' => __('Individual Marker Image', 'geo-maps'),
+						'class' => 'geo-maps-marker-image',
+						'desc' => __("No need to add any image if you want to use default marker.", 'geo-maps'),
+						'image_id_field' => 'id',
+						'fields' => [
+							'id' => [
+								'type' => 'hidden',
+								'title' => __('Height [in px]', 'geo-maps'),
+								'class' => 'geo-maps-marker-image-id',
+								'sanitize_callback' => function ($field, $raw_data, $field_id) {
+									return $raw_data != '' ? absint($raw_data) : null;
+								}
+
+							],
+							'height' => [
+								'type' => 'number',
+								'title' => __('Height [in px]', 'geo-maps'),
+								'class' => 'geo-maps-marker-image-height',
+								'default' => 40
+
+							],
+							'width' => [
+								'type' => 'number',
+								'title' => __('Width [in px]', 'geo-maps'),
+								'class' => 'geo-maps-marker-image-width',
+								'default' => 25
+
+							]
+						]
+
+
+					],
 
 				],
 			],
-			'geo_maps_marker_image' => [
-				'type' => 'image',
-				'title' => __('Marker Image', 'geo-maps'),
-				'class' => 'geo-maps-marker-image',
-				'desc' => __("No need to add any image if you want to use default marker.", 'geo-maps'),
-				'image_id_field' => 'id',
-				'fields' => [
-					'id' => [
-						'type' => 'hidden',
-						'title' => __('Height [in px]', 'geo-maps'),
-						'class' => 'geo-maps-marker-image-id',
-						'sanitize_callback' => function ($field, $raw_data, $field_id) {
-							return $raw_data != '' ? absint($raw_data) : null;
-						}
 
-					],
-					'height' => [
-						'type' => 'number',
-						'title' => __('Height [in px]', 'geo-maps'),
-						'class' => 'geo-maps-marker-image-height',
-						'default' => 40
-
-					],
-					'width' => [
-						'type' => 'number',
-						'title' => __('Width [in px]', 'geo-maps'),
-						'class' => 'geo-maps-marker-image-width',
-						'default' => 25
-
-					]
-				]
-
-
-			],
 
 		];
 	}

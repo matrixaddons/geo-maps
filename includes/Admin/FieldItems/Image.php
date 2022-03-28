@@ -30,7 +30,7 @@ class Image
 				<a class="matrixaddons-image-field-add <?php echo $image_id > 1 ? 'matrixaddons-hide' : ''; ?>" href="#"
 				   data-uploader-title="Add new image"
 				   data-uploader-button-text="Add new image">
-					<img src="http://localhost/WordPressPlugins/wp-content/plugins/yatra/assets/images/upload-image.png">
+					<img src="<?php echo esc_url(GEO_MAPS_ASSETS_URI) ?>images/upload-image.png">
 					<h3>Drop your file here, or <span>browse</span></h3>
 					<p>Supports: JPG, JPEG, PNG</p>
 				</a>

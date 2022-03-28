@@ -27,10 +27,8 @@ class MarkerModel
 		return new self;
 	}
 
-	public static function map($markers = array(), $icon = array())
+	public static function map($markers = array(), $map_icon = array())
 	{
-
-		$marker_obj = array();
 
 		foreach ($markers as $marker) {
 
@@ -42,6 +40,9 @@ class MarkerModel
 			$self->latitude = $coordinate['latitude'] ?? '';
 			$self->longitude = $coordinate['longitude'] ?? '';
 			$self->is_centered_marker = isset($marker['is_centered_marker']) && (boolean)$marker['is_centered_marker'];
+			$marker_item_image = $marker['geo_maps_marker_item_image'] ?? array();
+			$marker_item_icon_id = isset($marker_item_image['id']) ? absint($marker_item_image['id']) : 0;
+			$icon = $marker_item_icon_id > 0 ? $marker_item_image : $map_icon;
 
 			$icon_id = isset($icon['id']) ? absint($icon['id']) : 0;
 			if ($icon_id > 0) {
