@@ -22,7 +22,10 @@
 				$(this).addClass('item-active');
 				$(this).closest('.matrixaddons-tabs').find('.matrixaddons-tab-section').addClass('matrixaddons-hide');
 				$(this).closest('.matrixaddons-tabs').find('.matrixaddons-tab-section.' + id + '_content').removeClass('matrixaddons-hide');
-			})
+				var tab = $(this).attr('data-tab');
+				$('[name="geo_maps_meta_active_tab"]').val(tab);
+
+			});
 			$('body').on('click', '.matrixaddons-repeater-add', function (e) {
 				e.preventDefault();
 				var parent = $(this).closest('.matrixaddons-field-group');

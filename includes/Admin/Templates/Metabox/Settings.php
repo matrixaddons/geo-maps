@@ -15,6 +15,7 @@
 						$tab_item_class = $tab_id === $active_tab ? 'matrixaddons-tab-nav-item item-active' : 'matrixaddons-tab-nav-item';
 						?>
 						<li><a href="#" class="<?php echo esc_attr($tab_item_class) ?>"
+							   data-tab="<?php echo esc_attr($tab_id) ?>"
 							   id="<?php echo 'matrixaddons_' . esc_attr($tab_id) . '_tab' ?>">
 								<?php echo esc_html($tab_label); ?>
 							</a>
@@ -40,6 +41,7 @@
 				</div>
 				<div class="matrixaddons-nav-background"></div>
 				<div class="clear"></div>
+				<input type="hidden" name="geo_maps_meta_active_tab" value="<?php echo esc_attr($active_tab) ?>"/>
 			</div>
 		</div>
 	</div>

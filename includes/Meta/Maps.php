@@ -38,7 +38,9 @@ class Maps
 		if (get_post_type($post_id) !== 'geo-maps') {
 			return;
 		}
-		// Save MarkerFields
+
+		$active_tab = isset($_POST['geo_maps_meta_active_tab']) ? sanitize_text_field($_POST['geo_maps_meta_active_tab']) : 'map_marker_options';
+
 		$markerFields = new MarkerFields();
 		$markerFields->save($_POST, $post_id);
 
@@ -50,6 +52,8 @@ class Maps
 		//Save MapTypeFields
 		$mapTypeFields = new MapTypeFields();
 		$mapTypeFields->save($_POST, $post_id);
+
+		update_post_meta($post_id, 'geo_maps_meta_active_tab', $active_tab);
 
 	}
 
@@ -100,9 +104,13 @@ class Maps
 
 
 		);
+		$active_tab = get_post_meta($post->ID, 'geo_maps_meta_active_tab', true);
+
+		$active_tab = isset($setting_tabs[$active_tab]) ? $active_tab : 'map_marker_options';
+
 		geo_maps_load_admin_template('Metabox.Settings', array(
 				'setting_tabs' => $setting_tabs,
-				'active_tab' => 'map_marker_options'
+				'active_tab' => $active_tab
 			)
 		);
 
