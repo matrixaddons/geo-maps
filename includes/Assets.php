@@ -26,8 +26,8 @@ class Assets
 		wp_register_style(
 			'geo-maps-render-engine-style',
 			GEO_MAPS_ASSETS_URI . 'css/geo-maps.css',
-			is_admin() ? array('wp-editor') : null,
-			$css_dependencies
+			(is_admin() ? array('wp-editor') : null),
+			$map_render_engine_dependencies['version']
 		);
 		// Register block script for frontend.
 		wp_register_script(
