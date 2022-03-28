@@ -132,6 +132,14 @@
 				e.preventDefault();
 				_that.renderPreviewMap();
 			});
+			$('body').on('click', '.geo-maps-marker-scroll-wheel-zoom', function () {
+				_that.settings.scroll_wheel_zoom = false;
+				var isChecked = $(this).is(':checked');
+ 				if (isChecked) {
+					_that.settings.scroll_wheel_zoom = true;
+				}
+				_that.renderPreviewMap();
+			});
 		},
 		validateLatLong: function (el) {
 			var validNumber = new RegExp(/^\d*\.?\d*$/);
