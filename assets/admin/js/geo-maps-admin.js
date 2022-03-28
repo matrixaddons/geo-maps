@@ -15,6 +15,14 @@
 				_that.settings.map_type = _that.getMapType();
 				_that.renderPreviewMap();
 			})
+			$('body').on('click', '.matrixaddons-tab-nav-item', function (e) {
+				e.preventDefault();
+				var id = $(this).attr('id');
+				$(this).closest('.matrixaddons-tabs').find('.matrixaddons-tab-nav .matrixaddons-tab-nav-item').removeClass('item-active');
+				$(this).addClass('item-active');
+				$(this).closest('.matrixaddons-tabs').find('.matrixaddons-tab-section').addClass('hide');
+				$(this).closest('.matrixaddons-tabs').find('.matrixaddons-tab-section.' + id).removeClass('hide');
+			})
 			$('body').on('click', '.matrixaddons-repeater-add', function (e) {
 				e.preventDefault();
 				var parent = $(this).closest('.matrixaddons-field-group');

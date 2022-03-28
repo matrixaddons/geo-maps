@@ -80,6 +80,15 @@ class Maps
 
 		$mapTypeFields->render();
 	}
+	public function general_template($post)
+	{
+		if ($post->post_type !== 'geo-maps') {
+			return;
+		}
+		$mapTypeFields = new MapTypeFields();
+
+		$mapTypeFields->render();
+	}
 
 	public function maps_setting_template($post)
 	{
@@ -89,6 +98,8 @@ class Maps
 
 		$setting_tabs = array(
 			'map_marker_options' => __('Map Markers', 'geo-maps'),
+			'map_general_options' => __('General Settings', 'geo-maps'),
+
 
 		);
 		geo_maps_load_admin_template('Metabox.Settings', array(
@@ -146,6 +157,7 @@ class Maps
 		add_action('admin_enqueue_scripts', array($self, 'scripts'), 10);
 		add_action('geo_maps_metabox_postbox_item', array($self, 'render_map'), 10);
 		add_action('geo_maps_meta_tab_content_map_marker_options', array($self, 'marker_template'), 10);
+		add_action('geo_maps_meta_tab_content_map_general_options', array($self, 'general_template'), 10);
 
 	}
 
