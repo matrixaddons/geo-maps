@@ -33,6 +33,12 @@ class MapShortcode
 
 			return;
 		}
+		if (get_post_type($map_id) !== 'geo-maps') {
+
+			echo '<h2>Invalid shortcode. Please contact site administrator.</h2>';
+
+			return;
+		}
 
 		$settings = geo_maps_get_map_settings($map_id);
 
