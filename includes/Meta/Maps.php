@@ -2,6 +2,7 @@
 
 namespace MatrixAddons\GeoMaps\Meta;
 
+use MatrixAddons\GeoMaps\Admin\Fields\GeneralSettings;
 use MatrixAddons\GeoMaps\Admin\Fields\MapTypeFields;
 use MatrixAddons\GeoMaps\Admin\Fields\MarkerFields;
 
@@ -42,6 +43,11 @@ class Maps
 		$markerFields->save($_POST, $post_id);
 
 		//Save MapTypeFields
+		$general_settings = new GeneralSettings();
+		$general_settings->save($_POST, $post_id);
+
+
+		//Save MapTypeFields
 		$mapTypeFields = new MapTypeFields();
 		$mapTypeFields->save($_POST, $post_id);
 
@@ -80,15 +86,7 @@ class Maps
 
 		$mapTypeFields->render();
 	}
-	public function general_template($post)
-	{
-		if ($post->post_type !== 'geo-maps') {
-			return;
-		}
-		$mapTypeFields = new MapTypeFields();
 
-		$mapTypeFields->render();
-	}
 
 	public function maps_setting_template($post)
 	{
@@ -110,9 +108,16 @@ class Maps
 
 	}
 
-	public function marker_template($post)
+	public function general_template()
 	{
 
+		$general_settings = new GeneralSettings();
+
+		$general_settings->render();
+	}
+
+	public function marker_template()
+	{
 		$markerFields = new MarkerFields();
 
 		$markerFields->render();

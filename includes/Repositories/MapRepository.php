@@ -32,4 +32,9 @@ class MapRepository
 	{
 		return get_post_meta($this->map_id, 'geo_maps_marker_image', true);
 	}
+
+	public function is_scroll_wheel_zoom()
+	{
+		return absint(get_post_meta($this->map_id, 'geo_maps_map_scroll_wheel_zoom', true)) === 1;
+	}
 }

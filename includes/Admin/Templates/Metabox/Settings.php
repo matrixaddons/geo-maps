@@ -6,7 +6,10 @@
 			<div class="matrixaddons-tabs">
 				<div class="matrixaddons-tab-nav">
 					<ul>
-						<?php foreach ($setting_tabs
+						<?php
+
+
+						foreach ($setting_tabs
 
 						as $tab_id => $tab_label) {
 						$tab_item_class = $tab_id === $active_tab ? 'matrixaddons-tab-nav-item item-active' : 'matrixaddons-tab-nav-item';
@@ -24,7 +27,7 @@
 				<div class="matrixaddons-tab-content">
 					<div class="matrixaddons-tab-sections">
 						<?php foreach ($setting_tabs as $tab_id_for_content => $tab_label_for_content) {
-							$tab_content_class = $tab_id_for_content === $active_tab ? 'matrixaddons-tab-section' : 'matrixaddons-tab-section hidden';
+							$tab_content_class = $tab_id_for_content === $active_tab ? 'matrixaddons-tab-section' : 'matrixaddons-tab-section matrixaddons-hide';
 							$tab_content_class .= ' matrixaddons_' . esc_attr($tab_id_for_content) . '_tab_content';
 							?>
 							<div class="<?php echo esc_attr($tab_content_class) ?>">

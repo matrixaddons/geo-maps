@@ -69,11 +69,9 @@ class HTML
 		foreach ($settings as $field_id => $field) {
 
 			$raw_data = $post_data[$field_id] ?? null;
+			
+			$valid_data[$field_id] = self::sanitize_item($field, $raw_data, $field_id);
 
-			if (!is_null($raw_data)) {
-
-				$valid_data[$field_id] = self::sanitize_item($field, $raw_data, $field_id);
-			}
 		}
 		return $valid_data;
 	}

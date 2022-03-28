@@ -20,8 +20,8 @@
 				var id = $(this).attr('id');
 				$(this).closest('.matrixaddons-tabs').find('.matrixaddons-tab-nav .matrixaddons-tab-nav-item').removeClass('item-active');
 				$(this).addClass('item-active');
-				$(this).closest('.matrixaddons-tabs').find('.matrixaddons-tab-section').addClass('hide');
-				$(this).closest('.matrixaddons-tabs').find('.matrixaddons-tab-section.' + id).removeClass('hide');
+				$(this).closest('.matrixaddons-tabs').find('.matrixaddons-tab-section').addClass('matrixaddons-hide');
+				$(this).closest('.matrixaddons-tabs').find('.matrixaddons-tab-section.' + id + '_content').removeClass('matrixaddons-hide');
 			})
 			$('body').on('click', '.matrixaddons-repeater-add', function (e) {
 				e.preventDefault();

@@ -74,7 +74,7 @@ if (!function_exists('geo_maps_get_map_settings')) {
 		$settings = [
 				'map_marker' => $map_markers,
 				'map_zoom' => 8,
-				'scroll_wheel_zoom' => false,
+				'scroll_wheel_zoom' => $map_repository->is_scroll_wheel_zoom(),
 				'map_type' => $map_type,
 				'center_index' => $center_index,
 		];

@@ -5,6 +5,5 @@
 		<?php
 		do_action('geo_maps_metabox_postbox_item');
 		?>
-
 	</div>
 </div>
