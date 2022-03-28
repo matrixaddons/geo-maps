@@ -2,9 +2,9 @@
 # This file is distributed under the GPL2+.
 msgid ""
 msgstr ""
-"Project-Id-Version: Geo Maps 1.0.0\n"
+"Project-Id-Version: Geo Maps 1.0.1\n"
 "Report-Msgid-Bugs-To: matrixaddons@gmail.com\n"
-"POT-Creation-Date: 2022-03-26 12:34:14+00:00\n"
+"POT-Creation-Date: 2022-03-28 10:41:54+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -13,168 +13,204 @@ msgstr ""
 "Language-Team: matrixaddons <matrixaddons@gmail.com>\n"
 "X-Generator: grunt-wp-i18n 1.0.3\n"
 
-#: geo-maps/includes/Admin/FieldItems/Group.php:15
 #: includes/Admin/FieldItems/Group.php:15
 msgid "You cant remove this item. At least one item needed."
 msgstr ""
 
-#: geo-maps/includes/Admin/FieldItems/Group.php:60
 #: includes/Admin/FieldItems/Group.php:60
 msgid "Sample Title"
 msgstr ""
 
-#: geo-maps/includes/Admin/Fields/MapTypeFields.php:14
+#: includes/Admin/Fields/GeneralSettings.php:12
+msgid "Default Marker Image"
+msgstr ""
+
+#: includes/Admin/Fields/GeneralSettings.php:14
+msgid ""
+"No need to add any image if you want to use default marker (which is red "
+"marker ). You can override this marker image by adding individual marker "
+"item image from Map Markers."
+msgstr ""
+
+#: includes/Admin/Fields/GeneralSettings.php:19
+#: includes/Admin/Fields/GeneralSettings.php:28
+#: includes/Admin/Fields/MarkerFields.php:79
+#: includes/Admin/Fields/MarkerFields.php:88
+msgid "Height [in px]"
+msgstr ""
+
+#: includes/Admin/Fields/GeneralSettings.php:35
+#: includes/Admin/Fields/MarkerFields.php:95
+msgid "Width [in px]"
+msgstr ""
+
+#: includes/Admin/Fields/GeneralSettings.php:46
+msgid "Scroll wheel zoom"
+msgstr ""
+
+#: includes/Admin/Fields/GeneralSettings.php:48
+msgid "Enable this to zoom on mouse scroll wheel."
+msgstr ""
+
 #: includes/Admin/Fields/MapTypeFields.php:14
 msgid "Google Map"
 msgstr ""
 
-#: geo-maps/includes/Admin/Fields/MapTypeFields.php:15
 #: includes/Admin/Fields/MapTypeFields.php:15
 msgid "Open Street Map"
 msgstr ""
 
-#: geo-maps/includes/Admin/Fields/MarkerFields.php:13
-#: includes/Admin/Fields/MarkerFields.php:13
+#: includes/Admin/Fields/MarkerFields.php:14
 msgid "Add New Marker"
 msgstr ""
 
-#: geo-maps/includes/Admin/Fields/MarkerFields.php:18
-#: geo-maps/includes/Meta/MarkerSetting.php:25
-#: includes/Admin/Fields/MarkerFields.php:18 includes/Meta/MarkerSetting.php:25
+#: includes/Admin/Fields/MarkerFields.php:19 includes/Meta/MarkerSetting.php:25
 msgid "Title"
 msgstr ""
 
-#: geo-maps/includes/Admin/Fields/MarkerFields.php:23
-#: includes/Admin/Fields/MarkerFields.php:23
+#: includes/Admin/Fields/MarkerFields.php:25
 msgid "Coordinates"
 msgstr ""
 
-#: geo-maps/includes/Admin/Fields/MarkerFields.php:28
-#: includes/Admin/Fields/MarkerFields.php:28
+#: includes/Admin/Fields/MarkerFields.php:29
 msgid "Location"
 msgstr ""
 
-#: geo-maps/includes/Admin/Fields/MarkerFields.php:39
-#: includes/Admin/Fields/MarkerFields.php:39
+#: includes/Admin/Fields/MarkerFields.php:42
 msgid "Latitude"
 msgstr ""
 
-#: geo-maps/includes/Admin/Fields/MarkerFields.php:45
-#: includes/Admin/Fields/MarkerFields.php:45
+#: includes/Admin/Fields/MarkerFields.php:49
 msgid "Longitude"
 msgstr ""
 
-#: geo-maps/includes/Admin/Fields/MarkerFields.php:53
-#: geo-maps/includes/Helpers/map.php:127
-#: includes/Admin/Fields/MarkerFields.php:53 includes/Helpers/map.php:129
+#: includes/Admin/Fields/MarkerFields.php:58 includes/Helpers/map.php:147
 msgid "Tooltip Content"
 msgstr ""
 
-#: geo-maps/includes/Admin/Templates/Metabox/Map.php:2
+#: includes/Admin/Fields/MarkerFields.php:65
+msgid "Center Position"
+msgstr ""
+
+#: includes/Admin/Fields/MarkerFields.php:67
+msgid "Make this marker to center position on the map."
+msgstr ""
+
+#: includes/Admin/Fields/MarkerFields.php:72
+msgid "Individual Marker Image"
+msgstr ""
+
+#: includes/Admin/Fields/MarkerFields.php:74
+msgid "No need to add any image if you want to use default marker."
+msgstr ""
+
 #: includes/Admin/Templates/Metabox/Map.php:2
 msgid "Map Preview"
 msgstr ""
 
-#: geo-maps/includes/Admin/Templates/Metabox/Settings.php:2
 #: includes/Admin/Templates/Metabox/Settings.php:2
 msgid "Map Settings"
 msgstr ""
 
-#: geo-maps/includes/Api.php:40 geo-maps/includes/Assets.php:72
-#: includes/Api.php:40 includes/Assets.php:72
+#: includes/Api.php:40 includes/Assets.php:73
 msgid "Please select at least one map from block setting."
 msgstr ""
 
-#: geo-maps/includes/Api.php:44 includes/Api.php:44
+#: includes/Api.php:44
 msgid "Permission denied."
 msgstr ""
 
-#: geo-maps/includes/Api.php:48 includes/Api.php:48
+#: includes/Api.php:48
 msgid "The map doesnt exists."
 msgstr ""
 
-#: geo-maps/includes/Helpers/map.php:111 includes/Helpers/map.php:113
+#: includes/Helpers/map.php:131
 msgid "Select Map"
 msgstr ""
 
-#: geo-maps/includes/Helpers/map.php:126 includes/Helpers/map.php:128
+#: includes/Helpers/map.php:146
 msgid "Tooltip Title"
 msgstr ""
 
-#: geo-maps/includes/Meta/Maps.php:25 includes/Meta/Maps.php:25
-msgid "Map Type"
-msgstr ""
-
-#: geo-maps/includes/Meta/Maps.php:29 includes/Meta/Maps.php:29
+#: includes/Hooks/ListTable.php:19 includes/Meta/Maps.php:27
 msgid "Shortcode"
 msgstr ""
 
-#: geo-maps/includes/Meta/Maps.php:66 includes/Meta/Maps.php:66
+#: includes/Hooks/ListTable.php:20
+msgid "Date"
+msgstr ""
+
+#: includes/Meta/Maps.php:30
+msgid "Map Type"
+msgstr ""
+
+#: includes/Meta/Maps.php:75
 msgid "You can place this shortcode where you want to display the map."
 msgstr ""
 
-#: geo-maps/includes/Meta/Maps.php:92 includes/Meta/Maps.php:92
+#: includes/Meta/Maps.php:102
+msgid "General Settings"
+msgstr ""
+
+#: includes/Meta/Maps.php:103
 msgid "Map Markers"
 msgstr ""
 
-#: geo-maps/includes/Meta/MarkerSetting.php:11
 #: includes/Meta/MarkerSetting.php:11
 msgid "Enable booking notification email for customer"
 msgstr ""
 
-#: geo-maps/includes/Meta/MarkerSetting.php:12
 #: includes/Meta/MarkerSetting.php:12
 msgid ""
 "This option allows you to enable/disable booking notification email for "
 "customer."
 msgstr ""
 
-#: geo-maps/includes/Meta/MarkerSetting.php:14
 #: includes/Meta/MarkerSetting.php:14
 msgid "Add new marker"
 msgstr ""
 
-#: geo-maps/includes/PostTypes/Maps.php:14 includes/PostTypes/Maps.php:14
+#: includes/PostTypes/Maps.php:14
 msgid "Maps"
 msgstr ""
 
-#: geo-maps/includes/PostTypes/Maps.php:15 includes/PostTypes/Maps.php:15
+#: includes/PostTypes/Maps.php:15
 msgid "Map"
 msgstr ""
 
-#: geo-maps/includes/PostTypes/Maps.php:16 includes/PostTypes/Maps.php:16
+#: includes/PostTypes/Maps.php:16
 msgid "Add New"
 msgstr ""
 
-#: geo-maps/includes/PostTypes/Maps.php:17 includes/PostTypes/Maps.php:17
+#: includes/PostTypes/Maps.php:17
 msgid "Add New map"
 msgstr ""
 
-#: geo-maps/includes/PostTypes/Maps.php:18 includes/PostTypes/Maps.php:18
+#: includes/PostTypes/Maps.php:18
 msgid "Edit map"
 msgstr ""
 
-#: geo-maps/includes/PostTypes/Maps.php:19 includes/PostTypes/Maps.php:19
+#: includes/PostTypes/Maps.php:19
 msgid "New map"
 msgstr ""
 
-#: geo-maps/includes/PostTypes/Maps.php:20 includes/PostTypes/Maps.php:20
+#: includes/PostTypes/Maps.php:20
 msgid "All Maps"
 msgstr ""
 
-#: geo-maps/includes/PostTypes/Maps.php:21 includes/PostTypes/Maps.php:21
+#: includes/PostTypes/Maps.php:21
 msgid "View map"
 msgstr ""
 
-#: geo-maps/includes/PostTypes/Maps.php:22 includes/PostTypes/Maps.php:22
+#: includes/PostTypes/Maps.php:22
 msgid "Search map"
 msgstr ""
 
-#: geo-maps/includes/PostTypes/Maps.php:23 includes/PostTypes/Maps.php:23
+#: includes/PostTypes/Maps.php:23
 msgid "No Maps found"
 msgstr ""
 
-#: geo-maps/includes/PostTypes/Maps.php:24 includes/PostTypes/Maps.php:24
+#: includes/PostTypes/Maps.php:24
 msgid "No Maps found in the Trash"
 msgstr ""
 
@@ -192,4 +228,8 @@ msgstr ""
 
 #. Author of the plugin/theme
 msgid "matrixaddons"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "https://profiles.wordpress.org/matrixaddons"
 msgstr ""

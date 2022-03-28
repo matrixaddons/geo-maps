@@ -9,9 +9,9 @@ class GeneralSettings extends Base
 		return [
 			'geo_maps_marker_image' => [
 				'type' => 'image',
-				'title' => __('Marker Image', 'geo-maps'),
+				'title' => __('Default Marker Image', 'geo-maps'),
 				'class' => 'geo-maps-marker-image',
-				'desc' => __("No need to add any image if you want to use default marker.", 'geo-maps'),
+				'desc' => __("No need to add any image if you want to use default marker (which is red marker ). You can override this marker image by adding individual marker item image from Map Markers.", 'geo-maps'),
 				'image_id_field' => 'id',
 				'fields' => [
 					'id' => [
