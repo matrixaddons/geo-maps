@@ -46,7 +46,7 @@ class MarkerModel
 
 			$icon_id = isset($icon['id']) ? absint($icon['id']) : 0;
 			if ($icon_id > 0) {
-				$self->icon_url = wp_get_attachment_image_url($icon_id);
+				$self->icon_url = wp_get_attachment_image_url($icon_id, 'full');
 				$self->icon_height = isset($icon['height']) ? absint($icon['height']) : '';
 				$self->icon_width = isset($icon['width']) ? absint($icon['width']) : '';
 

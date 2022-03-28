@@ -15,7 +15,7 @@ class Assets
 
 		wp_register_script('geo-maps-leaflet', GEO_MAPS_ASSETS_URI . 'vendor/leaflet/leaflet.js', array('jquery'), null, true);
 		wp_register_script('geo-maps-leaflet-fullscreen', GEO_MAPS_ASSETS_URI . 'js/fullscreen.js', array('jquery'), null, true);
-		wp_register_script('geo-maps-leaflet-boundary-canvas', GEO_MAPS_ASSETS_URI . 'vendor/leaflet-boundary-canvas/src/BoundaryCanvas.js', array('jquery'), null, true);
+
 
 		$map_render_engine_dependencies = include_once GEO_MAPS_ASSETS_DIR_PATH . 'build/render-engine.min.asset.php';
 		$css_dependencies = $map_render_engine_dependencies['dependencies'];
@@ -23,7 +23,6 @@ class Assets
 		$js_dependencies[] = 'jquery';
 		$js_dependencies[] = 'geo-maps-leaflet';
 		$js_dependencies[] = 'geo-maps-leaflet-fullscreen';
-		$js_dependencies[] = 'geo-maps-leaflet-boundary-canvas';
 		wp_register_style(
 			'geo-maps-render-engine-style',
 			GEO_MAPS_ASSETS_URI . 'css/geo-maps.css',

@@ -38,7 +38,7 @@ class Image
 					<?php
 
 					if ($image_id > 0) {
-						$image_src = wp_get_attachment_image_url($image_id);
+						$image_src = wp_get_attachment_image_url($image_id, 'full');
 
 						?>
 						<div class="image-wrapper" data-url="<?php echo esc_url_raw($image_src) ?>">
