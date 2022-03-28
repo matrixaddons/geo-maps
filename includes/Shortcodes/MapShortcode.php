@@ -35,7 +35,7 @@ class MapShortcode
 		}
 		if (get_post_type($map_id) != 'geo-maps' || get_post_status($map_id) != 'publish') {
 
-			echo '<h2>Invalid shortcode. Please contact site administrator.</h2>';
+			echo '<h2>Invalid map. Please contact site administrator.</h2>';
 
 			return;
 		}
