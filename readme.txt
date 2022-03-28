@@ -4,7 +4,7 @@ Tags: maps, world map, openstreet map, google maps, map block
 Requires at least: 5.4
 Tested up to: 5.9
 Requires PHP: 5.6
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv3
 License URI: https://opensource.org/licenses/GPL-3.0
 
@@ -25,6 +25,7 @@ Geo Maps is Easy to use WordPress Map Plugin with unlimited marker and marker to
 * Shortcode support
 * Location Search
 * Custom Image Marker Support
+* Show marker popup on hover or on click option
 * Draggable Marker to create latitude and longitude
 * Easy to use Map Plugin for WordPress
 * Updated with WordPress
@@ -53,6 +54,10 @@ Please find Geo Maps Block on your gutenberg WordPress editor.
 4. Geo Maps Gutenberg Block
 
 == Changelog ==
+
+= 1.0.3 - 2022-03-28 =
+- Added - Show marker on hover or click
+- Removed - Unnecessary file from svn
 
 = 1.0.2 - 2022-03-28 =
 - Fixed - Minor issue fixed
