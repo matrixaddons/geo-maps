@@ -30,6 +30,8 @@ class MarkerModel
 	public static function map($markers = array(), $map_icon = array())
 	{
 
+		$marker_obj = array();
+
 		foreach ($markers as $marker) {
 
 			$self = self::get_instance();

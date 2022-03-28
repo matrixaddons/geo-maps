@@ -30,7 +30,13 @@ class MapRepository
 
 	public function get_marker_icon()
 	{
-		return get_post_meta($this->map_id, 'geo_maps_marker_image', true);
+
+		$marker_icon = get_post_meta($this->map_id, 'geo_maps_marker_image', true);
+
+		$marker_icon = is_array($marker_icon) ? $marker_icon : array();
+
+		return $marker_icon;
+
 	}
 
 	public function is_scroll_wheel_zoom()
