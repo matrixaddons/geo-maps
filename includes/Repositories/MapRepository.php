@@ -37,4 +37,9 @@ class MapRepository
 	{
 		return absint(get_post_meta($this->map_id, 'geo_maps_map_scroll_wheel_zoom', true)) === 1;
 	}
+
+	public function get_popup_show_on()
+	{
+		return sanitize_text_field(get_post_meta($this->map_id, 'geo_maps_popup_show_on', true));
+	}
 }

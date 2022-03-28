@@ -152,7 +152,9 @@
 	border-top: 1px solid #eee;
 }
 
-.matrixaddons-field-text input {
+.matrixaddons-field-text input,
+.matrixaddons-field-select select,
+#geo_maps_map_type .matrixaddons-fieldset {
 	width: 100%;
 	max-width: 100%;
 	margin: 0;

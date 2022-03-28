@@ -44,6 +44,9 @@ if (!function_exists('geo_maps_get_map_settings')) {
 		$center_index = 0;
 
 		$center_marker_index = null;
+
+		$popup_show_on = $map_repository->get_popup_show_on();
+
 		/** @var \MatrixAddons\GeoMaps\Models\MarkerModel $marker */
 		foreach ($markers as $marker_index => $marker) {
 
@@ -51,7 +54,7 @@ if (!function_exists('geo_maps_get_map_settings')) {
 					'lat' => $marker->get_latitude(),
 					'lng' => $marker->get_longitude(),
 					'title' => $marker->get_title(),
-					'content' => $marker->get_tooltip_content()
+					'content' => $marker->get_tooltip_content(),
 			);
 			if ($marker->get_icon_url() != '') {
 				$marker_item['iconType'] = 'custom';
@@ -77,8 +80,10 @@ if (!function_exists('geo_maps_get_map_settings')) {
 				'scroll_wheel_zoom' => $map_repository->is_scroll_wheel_zoom(),
 				'map_type' => $map_type,
 				'center_index' => $center_index,
-		];
+				'popup_show_on' => $popup_show_on
 
+		];
+	
 		$map_width = '100%';
 
 		$map_height = '500px';

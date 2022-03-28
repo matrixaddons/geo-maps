@@ -16,16 +16,18 @@ class Select
 		$options = $field['options'] ?? array();
 
 		?>
-		<select id="<?php echo esc_attr($field_name) ?>" class="<?php echo esc_attr($class) ?>"
-				name="<?php echo esc_attr($field_name) ?>">
-			<?php foreach ($options as $option_id => $option) {
+		<div class="matrixaddons-fieldset">
+			<select id="<?php echo esc_attr($field_name) ?>" class="<?php echo esc_attr($class) ?>"
+					name="<?php echo esc_attr($field_name) ?>">
+				<?php foreach ($options as $option_id => $option) {
+					?>
+					<option value="<?php echo esc_attr($option_id) ?>"
+							<?php selected($value, $option_id) ?>><?php echo esc_html($option) ?></option>
+					<?php
+				}
 				?>
-				<option value="<?php echo esc_attr($option_id) ?>"
-						<?php selected($value, $option_id) ?>><?php echo esc_html($option) ?></option>
-				<?php
-			}
-			?>
-		</select>
+			</select>
+		</div>
 		<?php
 	}
 

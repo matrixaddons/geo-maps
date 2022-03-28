@@ -7,6 +7,16 @@ class GeneralSettings extends Base
 	public function get_settings()
 	{
 		return [
+			'geo_maps_popup_show_on' => [
+				'title' => __('Marker Popup Shows on', 'geo-maps'),
+				'desc' => __("You can select whether marker popup shows on mouse hover or on click.", 'geo-maps'),
+				'type' => 'select',
+				'class' => 'geo-maps-popup-show-on',
+				'options' => array(
+					'click' => __('On Mouse Click', 'geo-maps'),
+					'mouseover' => __('On Mouse Over', 'geo-maps')
+				),
+			],
 			'geo_maps_marker_image' => [
 				'type' => 'image',
 				'title' => __('Default Marker Image', 'geo-maps'),

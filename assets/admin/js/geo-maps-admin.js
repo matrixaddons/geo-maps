@@ -140,6 +140,11 @@
 				}
 				_that.renderPreviewMap();
 			});
+			$('body').on('change', '.geo-maps-popup-show-on', function (e) {
+				e.preventDefault();
+				_that.settings.popup_show_on = $(this).val();
+				_that.renderPreviewMap();
+			});
 		},
 		validateLatLong: function (el) {
 			var validNumber = new RegExp(/^\d*\.?\d*$/);
@@ -267,6 +272,7 @@
 			var title = item.find('.geo-maps-marker-title').val()
 			var content = item.find('.geo-maps-marker-content').val();
 			mapSetting.scroll_wheel_zoom = true;
+			mapSetting.popup_show_on = 'click';
 			mapSetting.map_marker = [{
 				title: title,
 				content: content,
