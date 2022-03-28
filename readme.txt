@@ -4,7 +4,7 @@ Tags: maps, world map, openstreet map, google maps, map block
 Requires at least: 5.4
 Tested up to: 5.9
 Requires PHP: 5.6
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv3
 License URI: https://opensource.org/licenses/GPL-3.0
 
@@ -24,6 +24,7 @@ Geo Maps is Easy to use WordPress Map Plugin with unlimited marker and marker to
 * Gutenberg map block
 * Shortcode support
 * Location Search
+* Custom Image Marker Support
 * Draggable Marker to create latitude and longitude
 * Easy to use Map Plugin for WordPress
 * Updated with WordPress
@@ -43,7 +44,7 @@ Shortcode for Map. To create new map you can find Maps menu on admin menu of you
 
 == Blocks ==
 
-Please find Geo Blocks on your gutenberg WordPress editor.
+Please find Geo Maps Block on your gutenberg WordPress editor.
 
 == Screenshots ==
 1. Map Creation from Map Menu
@@ -52,6 +53,12 @@ Please find Geo Blocks on your gutenberg WordPress editor.
 4. Geo Maps Gutenberg Block
 
 == Changelog ==
+
+= 1.0.2 - 2022-03-28 =
+- Fixed - Minor issue fixed
+- Added - Shortcode on map listing admin page
+- Added - Map Zoom option
+- Added - Custom Map Marker Image with height & width
 
 = 1.0.1 - 2022-03-26 =
 - initial release
