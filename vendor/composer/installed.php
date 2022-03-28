@@ -1,24 +1,23 @@
-<?php return array (
-  'root' => 
-  array (
-    'pretty_version' => 'dev-master',
-    'version' => 'dev-master',
-    'aliases' => 
-    array (
+<?php return array(
+    'root' => array(
+        'pretty_version' => 'dev-master',
+        'version' => 'dev-master',
+        'type' => 'library',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'reference' => '0af76d86959141b73e436999b0abbb6635e796b2',
+        'name' => 'matrixaddons/geomaps',
+        'dev' => true,
     ),
-    'reference' => '284655c5248e02722116406e08bb100573939d53',
-    'name' => 'matrixaddons/geomaps',
-  ),
-  'versions' => 
-  array (
-    'matrixaddons/geomaps' => 
-    array (
-      'pretty_version' => 'dev-master',
-      'version' => 'dev-master',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '284655c5248e02722116406e08bb100573939d53',
+    'versions' => array(
+        'matrixaddons/geomaps' => array(
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'reference' => '0af76d86959141b73e436999b0abbb6635e796b2',
+            'dev_requirement' => false,
+        ),
     ),
-  ),
 );
