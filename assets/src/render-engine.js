@@ -67,7 +67,7 @@ window.Geo_Maps_Rendered = {};
 					this.openPopup();
 				});
 				item_marker.on('mouseout', function (e) {
-					this.closePopup();
+					//this.closePopup();
 				});
 			}
 

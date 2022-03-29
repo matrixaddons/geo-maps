@@ -57,7 +57,21 @@ class MarkerFields extends Base
 						'type' => 'textarea',
 						'title' => __('Tooltip Content', 'geo-maps'),
 						'class' => 'geo-maps-marker-content',
-						'default' => $defaults['content']
+						'default' => $defaults['content'],
+						'allowed_html' => array(
+							'a' => array(
+								'href' => array(),
+								'title' => array(),
+								'target' => array()
+							),
+							'img' => array(
+								'src' => array(),
+								'title' => array()
+							),
+							'br' => array(),
+							
+							'strong' => array()
+						),
 
 					],
 					'is_centered_marker' => [

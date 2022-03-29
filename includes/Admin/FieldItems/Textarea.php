@@ -20,6 +20,7 @@ class Textarea
 
 	public static function sanitize($field, $raw_value, $field_id)
 	{
-		return sanitize_text_field($raw_value);
+		$allowed_html = $field['allowed_html'] ?? array();
+		return wp_kses($raw_value, $allowed_html);
 	}
 }
