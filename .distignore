@@ -13,12 +13,13 @@ webpack.config.js
 node_modules
 src
 .github/
-assets/scss
 .babelrc
 *.xml
-*.map
 .prettierignore
 .prettierrc.json
 .editorconfig
 .eslintignore
 .eslintrc.json
+Gruntfile.js
+.wordpress-org
+.gitattributes
