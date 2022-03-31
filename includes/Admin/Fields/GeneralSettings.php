@@ -57,6 +57,19 @@ class GeneralSettings extends Base
 				'class' => 'geo-maps-marker-scroll-wheel-zoom',
 				'desc' => __("Enable this to zoom on mouse scroll wheel.", 'geo-maps')
 			],
+			'geo_maps_map_control_position' => [
+				'title' => __('Map Control Position', 'geo-maps'),
+				'desc' => __("Show or hide maps control or change the position of the control.", 'geo-maps'),
+				'type' => 'select',
+				'class' => 'geo-maps-map-control-position',
+				'options' => array(
+					'topright' => __('Top Right', 'geo-maps'),
+					'topleft' => __('Top Left', 'geo-maps'),
+					'bottomright' => __('Bottom Right', 'geo-maps'),
+					'bottomleft' => __('Bottom Left', 'geo-maps'),
+					'hide' => __('Hide', 'geo-maps')
+				),
+			],
 
 		];
 	}

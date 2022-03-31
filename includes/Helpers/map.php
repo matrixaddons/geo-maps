@@ -47,6 +47,8 @@ if (!function_exists('geo_maps_get_map_settings')) {
 
 		$popup_show_on = $map_repository->get_popup_show_on();
 
+		$control_position = $map_repository->get_control_position();
+
 		/** @var \MatrixAddons\GeoMaps\Models\MarkerModel $marker */
 		foreach ($markers as $marker_index => $marker) {
 
@@ -80,10 +82,12 @@ if (!function_exists('geo_maps_get_map_settings')) {
 				'scroll_wheel_zoom' => $map_repository->is_scroll_wheel_zoom(),
 				'map_type' => $map_type,
 				'center_index' => $center_index,
-				'popup_show_on' => $popup_show_on
+				'popup_show_on' => $popup_show_on,
+				'control_position' => $control_position,
+				'show_control' => $control_position !== 'hide'
 
 		];
-	
+
 		$map_width = '100%';
 
 		$map_height = '500px';

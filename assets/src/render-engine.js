@@ -79,11 +79,12 @@ window.Geo_Maps_Rendered = {};
 		let config = {
 			zoom: Settings.map_zoom,
 			layers: [grayscale, cities],
-			fullscreenControl: true,
+			fullscreenControl: Settings.show_control,
 			scrollWheelZoom: Settings.scroll_wheel_zoom,
 			fullscreenControlOptions: {
-				position: "topright",
-			}
+				position: Settings.control_position,
+			},
+			zoomControl: Settings.show_control
 		};
 		if (Settings.map_marker.length) {
 			config.center = [

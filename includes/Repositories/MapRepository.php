@@ -48,4 +48,13 @@ class MapRepository
 	{
 		return sanitize_text_field(get_post_meta($this->map_id, 'geo_maps_popup_show_on', true));
 	}
+
+	public function get_control_position()
+	{
+		$position = sanitize_text_field(get_post_meta($this->map_id, 'geo_maps_map_control_position', true));
+		if ($position == '') {
+			return 'topright';
+		}
+		return $position;
+	}
 }

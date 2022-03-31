@@ -140,6 +140,13 @@
 				}
 				_that.renderPreviewMap();
 			});
+
+			$('body').on('click', '.geo-maps-map-control-position', function () {
+				var position = $(this).val();
+				_that.settings.control_position = position;
+				_that.settings.show_control = position !== 'hide';
+				_that.renderPreviewMap();
+			});
 			$('body').on('change', '.geo-maps-popup-show-on', function (e) {
 				e.preventDefault();
 				_that.settings.popup_show_on = $(this).val();
@@ -273,6 +280,8 @@
 			var content = item.find('.geo-maps-marker-content').val();
 			mapSetting.scroll_wheel_zoom = true;
 			mapSetting.popup_show_on = 'click';
+			mapSetting.control_position = 'topright';
+			mapSetting.show_control = true;
 			mapSetting.map_marker = [{
 				title: title,
 				content: content,
