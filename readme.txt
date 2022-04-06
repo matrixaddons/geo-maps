@@ -56,6 +56,11 @@ Please find Geo Maps Block on your gutenberg WordPress editor.
 
 == Changelog ==
 
+= 1.0.5 - 2022-04-06 =
+- Added - Change map navigation position or show/hide
+- Removed - Unnecessary file from svn
+- Fixed - Minor bug fixes
+
 = 1.0.4 - 2022-03-28 =
 - Added - Show marker on hover or click
 - Removed - Unnecessary file from svn
