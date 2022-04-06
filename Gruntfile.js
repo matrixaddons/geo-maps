@@ -270,7 +270,8 @@ module.exports = function (grunt) {
 					'!requirement.txt',
 					'!assets/admin/src/**',
 					'!assets/src/**',
-					'!geo-maps.tar'
+					'!geo-maps.tar',
+					'!leaflet.pdf'
 				],
 				dest: 'geo-maps',
 				expand: true

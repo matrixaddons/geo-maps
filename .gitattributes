@@ -31,3 +31,4 @@
 /.eslintignore  export-ignore
 /geo-maps.tar  export-ignore
 /geo-maps.zip  export-ignore
+/leaflet.pdf  export-ignore
