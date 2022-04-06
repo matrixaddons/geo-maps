@@ -4,7 +4,7 @@ Tags: maps, world map, openstreet map, google maps, map block
 Requires at least: 5.4
 Tested up to: 5.9
 Requires PHP: 5.6
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv3
 License URI: https://opensource.org/licenses/GPL-3.0
 
@@ -29,6 +29,7 @@ Geo Maps is Easy to use WordPress Map Plugin with unlimited marker and marker to
 * Draggable Marker to create latitude and longitude
 * Easy to use Map Plugin for WordPress
 * Updated with WordPress
+* Show/hide or change position of map navigation
 
 = Thank you =
 Thank you for awesome library creators and maintainer of following. Without those libraries it is not possible to create this interactive WordPress Map Plugin
