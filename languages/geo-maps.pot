@@ -2,9 +2,9 @@
 # This file is distributed under the GPL2+.
 msgid ""
 msgstr ""
-"Project-Id-Version: Geo Maps 1.0.5\n"
+"Project-Id-Version: Geo Maps 1.0.6\n"
 "Report-Msgid-Bugs-To: matrixaddons@gmail.com\n"
-"POT-Creation-Date: 2022-04-06 15:47:58+00:00\n"
+"POT-Creation-Date: 2022-04-12 15:48:39+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -128,7 +128,7 @@ msgstr ""
 msgid "Longitude"
 msgstr ""
 
-#: includes/Admin/Fields/MarkerFields.php:58 includes/Helpers/map.php:156
+#: includes/Admin/Fields/MarkerFields.php:58 includes/Helpers/map.php:157
 msgid "Tooltip Content"
 msgstr ""
 
@@ -156,7 +156,7 @@ msgstr ""
 msgid "Map Settings"
 msgstr ""
 
-#: includes/Api.php:40 includes/Assets.php:73
+#: includes/Api.php:40 includes/Assets.php:75
 msgid "Please select at least one map from block setting."
 msgstr ""
 
@@ -168,15 +168,47 @@ msgstr ""
 msgid "The map doesnt exists."
 msgstr ""
 
-#: includes/Helpers/map.php:140
+#: includes/Helpers/map.php:141
 msgid "Select Map"
 msgstr ""
 
-#: includes/Helpers/map.php:155
+#: includes/Helpers/map.php:156
 msgid "Tooltip Title"
 msgstr ""
 
-#: includes/Hooks/ListTable.php:19 includes/Meta/Maps.php:27
+#: includes/Helpers/map.php:172
+msgid "Default"
+msgstr ""
+
+#: includes/Helpers/map.php:177
+msgid "OPNVKarte"
+msgstr ""
+
+#: includes/Helpers/map.php:182
+msgid "OpenTopoMap"
+msgstr ""
+
+#: includes/Helpers/map.php:187
+msgid "Stamen_TonerBackground"
+msgstr ""
+
+#: includes/Helpers/map.php:192
+msgid "Stamen_Watercolor"
+msgstr ""
+
+#: includes/Helpers/map.php:197
+msgid "Esri_WorldImagery"
+msgstr ""
+
+#: includes/Helpers/map.php:202
+msgid " Stadia Alidade Smooth Dark"
+msgstr ""
+
+#: includes/Helpers/map.php:207
+msgid "Cycl OSM"
+msgstr ""
+
+#: includes/Hooks/ListTable.php:19 includes/Meta/Maps.php:28
 msgid "Shortcode"
 msgstr ""
 
@@ -184,19 +216,23 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
-#: includes/Meta/Maps.php:30
+#: includes/Meta/Maps.php:31
 msgid "Map Type"
 msgstr ""
 
-#: includes/Meta/Maps.php:75
+#: includes/Meta/Maps.php:34
+msgid "Providers / Map Theme"
+msgstr ""
+
+#: includes/Meta/Maps.php:84
 msgid "You can place this shortcode where you want to display the map."
 msgstr ""
 
-#: includes/Meta/Maps.php:102
+#: includes/Meta/Maps.php:123
 msgid "General Settings"
 msgstr ""
 
-#: includes/Meta/Maps.php:103
+#: includes/Meta/Maps.php:124
 msgid "Map Markers"
 msgstr ""
 
@@ -267,7 +303,7 @@ msgid "https://wordpress.org/plugins/geo-maps"
 msgstr ""
 
 #. Description of the plugin/theme
-msgid "Google map & OpenStreet map for WordPress"
+msgid "Google Map, OpenStreet Map plugin for WordPress"
 msgstr ""
 
 #. Author of the plugin/theme

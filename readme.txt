@@ -1,4 +1,4 @@
-=== Geo Maps - WordPress OpenStreet Map, Google Map Plugin for WordPress with Marker Tooltip and Title  ===
+=== WordPress OpenStreet Map, Google Map Plugin for WordPress with Marker Tooltip and Title - Geo Maps ===
 Contributors: matrixaddons
 Tags: maps, world map, openstreet map, google maps, map block
 Requires at least: 5.4

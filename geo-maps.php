@@ -2,10 +2,10 @@
 /**
  * Plugin Name: Geo Maps
  * Plugin URI: https://wordpress.org/plugins/geo-maps
- * Description: Google Map, OpenStreet Map plugin for WordPress
+ * Description: Google Map and OpenStreet Map plugin for WordPress
  * Author: matrixaddons
  * Author URI: https://profiles.wordpress.org/matrixaddons
- * Version: 1.0.5
+ * Version: 1.0.6
  * License: GPL2+
  * License URI: https://www.gnu.org/licenses/gpl-2.0.txt
  *
@@ -27,7 +27,7 @@ if (!defined('GEO_MAPS_FILE')) {
 
 // Define GEO_MAPS_VERSION.
 if (!defined('GEO_MAPS_VERSION')) {
-	define('GEO_MAPS_VERSION', '1.0.5');
+	define('GEO_MAPS_VERSION', '1.0.6');
 }
 
 // Define GEO_MAPS_PLUGIN_URI.
