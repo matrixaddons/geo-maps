@@ -15,7 +15,7 @@
 				_that.renderPreviewMap();
 			});
 
-			$('body').on('change', '#geo_maps_osm_map_provider', function () {
+			$('body').on('change', '#geo_maps_osm_map_provider[name="geo_maps_osm_map_provider"]', function () {
 				_that.settings.osm_provider = $(this).val();
 				if (_that.getMapType() === "open_street_map") {
 					_that.renderPreviewMap();
@@ -171,7 +171,7 @@
 			var map_type = $('#geo_maps_map_type option:selected').val();
 
 			if (map_type == '' || map_type == null) {
-				
+
 				$('#geo-maps-map-osm-provider.postbox').removeClass('matrixaddons-hide');
 
 				return 'google_map';
