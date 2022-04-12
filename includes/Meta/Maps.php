@@ -181,9 +181,20 @@ class Maps
 		geo_maps_render_map($map_settings);
 	}
 
+	public function hide_screen_option($show_screen)
+	{
+		if (get_current_screen()->post_type === 'geo-maps') {
+
+			return false;
+		}
+		return $show_screen;
+
+	}
+
 	public static function init()
 	{
 		$self = new self();
+		add_filter('screen_options_show_screen', array($self, 'hide_screen_option'));
 		add_action('add_meta_boxes', array($self, 'metabox'));
 		add_action('save_post', array($self, 'save'));
 		add_action('admin_enqueue_scripts', array($self, 'scripts'), 10);
