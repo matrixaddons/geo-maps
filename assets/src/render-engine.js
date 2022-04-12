@@ -3,13 +3,13 @@ window.Geo_Maps_Rendered = {};
 (function ($) {
 	Geo_Maps_Render = (ID, Settings) => {
 
-		var provider_form_settings = typeof Settings.osm_provider !== "undefined" ? Settings.osm_provider : '';
+		var provider_from_setting = typeof Settings.osm_provider !== "undefined" ? Settings.osm_provider : '';
 		var map_provider = {};
 
 		if (Settings.map_type === "open_street_map") {
 			map_provider = geoMapsRenderEngine.osm_providers.default;
-			if (provider_form_settings !== '' && typeof geoMapsRenderEngine.osm_providers[provider_form_settings] !== "undefined") {
-				map_provider = geoMapsRenderEngine.osm_providers[provider_form_settings];
+			if (provider_from_setting !== '' && typeof geoMapsRenderEngine.osm_providers[provider_from_setting] !== "undefined") {
+				map_provider = geoMapsRenderEngine.osm_providers[provider_from_setting];
 			}
 		} else {
 			map_provider = geoMapsRenderEngine.google_map_providers.default;

@@ -59,3 +59,4 @@ Please find Geo Maps Block on your gutenberg WordPress editor.
 
 = 1.0.7 - 2022-04-000 =
 - Removed - Stadia Alidade Smooth Dark provider
+- Fixed - Typo fixed on render engine.js
