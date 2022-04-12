@@ -14,7 +14,7 @@ WordPress Google Map Plugin, WordPress OpenStreet Map plugin
 
 **Map Plugin for WordPress**
 
-Geo Maps is Easy to use WordPress Map Plugin with unlimited marker and marker tooltip feature. You can easily create interactive map with multiple markers and place anywhere of your WordPress website using gutenberg block or shortcodes. For now geo maps WordPress interactive map plugin support OpenStreet Maps and Google Maps.
+Geo Maps is Easy to use WordPress Map Plugin with unlimited marker and marker tooltip feature. You can easily create interactive map with multiple markers and place anywhere of your WordPress website using gutenberg block or shortcodes. For now geo maps WordPress interactive map plugin support OpenStreet Maps and Google Maps. You can choose OpenStreet map providers on this WordPress Map Plugin.
 
 = WordPress Map Plugin Features =
 * Unlimited Map Markers

@@ -171,11 +171,6 @@ if (!function_exists('geo_maps_get_osm_providers')) {
 						'attribution' => '',
 						'title' => __('Default', 'geo-maps')
 				),
-				'open_street_map_mapnik' => array(
-						'url' => 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-						'attribution' => '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-						'title' => __('Open StreetMap Mapnik', 'geo-maps')
-				),
 				'opnv_karte' => array(
 						'url' => 'https://tileserver.memomaps.de/tilegen/{z}/{x}/{y}.png',
 						'attribution' => 'Map <a href="https://memomaps.de/">memomaps.de</a> <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
