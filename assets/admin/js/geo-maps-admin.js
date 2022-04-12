@@ -1,7 +1,6 @@
 // @var geoMapsAdminParams
 (function ($) {
 	var GeoMapsAdmin = {
-
 		init: function () {
 			this.settings = (geoMapsAdminParams.options.settings);
 			this.bindEvents();
@@ -14,7 +13,14 @@
 			$('body').on('change', '#geo_maps_map_type', function () {
 				_that.settings.map_type = _that.getMapType();
 				_that.renderPreviewMap();
-			})
+			});
+
+			$('body').on('change', '#geo_maps_osm_map_provider', function () {
+				_that.settings.osm_provider = $(this).val();
+				if (_that.getMapType() === "open_street_map") {
+					_that.renderPreviewMap();
+				}
+			});
 			$('body').on('click', '.matrixaddons-tab-nav-item', function (e) {
 				e.preventDefault();
 				var id = $(this).attr('id');
@@ -165,7 +171,17 @@
 			var map_type = $('#geo_maps_map_type option:selected').val();
 
 			if (map_type == '' || map_type == null) {
+				
+				$('#geo-maps-map-osm-provider.postbox').removeClass('matrixaddons-hide');
+
 				return 'google_map';
+			}
+			if (map_type === "open_street_map") {
+
+				$('#geo-maps-map-osm-provider.postbox').removeClass('matrixaddons-hide');
+
+			} else {
+				$('#geo-maps-map-osm-provider.postbox').addClass('matrixaddons-hide');
 			}
 			return map_type;
 
@@ -325,6 +341,19 @@
 					mapMarkers[markerIndex] = _that.getItemMarkerImage(markerIndex, custom_marker);
 
 				});
+			} else {
+				var default_marker = geoMapsAdminParams.default_marker;
+				var main_marker_image = $('#geo_maps_marker_image').find('.geo-maps-marker-image-id');
+				if (main_marker_image.length > 0) {
+					if (parseInt(main_marker_image.val()) > 0) {
+						var image_url = $('#geo_maps_marker_image').find('.image-wrapper').attr('data-url');
+						if (image_url !== '') {
+							default_marker.customIconUrl = image_url;
+							default_marker.iconType = 'custom';
+						}
+					}
+				}
+				mapMarkers[0] = default_marker;
 			}
 			_that.settings.map_marker = mapMarkers;
 

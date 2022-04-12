@@ -13,6 +13,7 @@ class Assets
 	public function register_assets()
 	{
 
+		wp_register_script('geo-maps-leaflet-providers', GEO_MAPS_ASSETS_URI . 'vendor/leaflet-providers/leaflet-providers.js', array('jquery'), null, true);
 		wp_register_script('geo-maps-leaflet', GEO_MAPS_ASSETS_URI . 'vendor/leaflet/leaflet.js', array('jquery'), null, true);
 		wp_register_script('geo-maps-leaflet-fullscreen', GEO_MAPS_ASSETS_URI . 'js/fullscreen.js', array('jquery'), null, true);
 
@@ -23,6 +24,7 @@ class Assets
 		$js_dependencies[] = 'jquery';
 		$js_dependencies[] = 'geo-maps-leaflet';
 		$js_dependencies[] = 'geo-maps-leaflet-fullscreen';
+		$js_dependencies[] = 'geo-maps-leaflet-providers';
 		wp_register_style(
 			'geo-maps-render-engine-style',
 			GEO_MAPS_ASSETS_URI . 'css/geo-maps.css',
@@ -71,6 +73,15 @@ class Assets
 			[
 				'all_maps' => geo_maps_get_all_map_lists(),
 				'map_select_notice' => __('Please select at least one map from block setting.', 'geo-maps')
+			]
+		);
+
+		wp_localize_script(
+			'geo-maps-render-engine-script',
+			'geoMapsRenderEngine', // Array containing dynamic data for a JS Global.
+			[
+				'osm_providers' => geo_maps_get_osm_providers(),
+				'google_map_providers' => geo_maps_get_google_map_providers()
 			]
 		);
 	}

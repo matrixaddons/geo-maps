@@ -57,4 +57,19 @@ class MapRepository
 		}
 		return $position;
 	}
+
+	public function get_osm_provider()
+	{
+		$provider = sanitize_text_field(get_post_meta($this->map_id, 'geo_maps_osm_map_provider', true));
+
+		if ('' == $provider) {
+			return 'default';
+		}
+		$all_providers = geo_maps_get_osm_providers();
+
+		if (isset($all_providers[$provider])) {
+			return $provider;
+		}
+		return 'default';
+	}
 }

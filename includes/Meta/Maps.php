@@ -5,6 +5,7 @@ namespace MatrixAddons\GeoMaps\Meta;
 use MatrixAddons\GeoMaps\Admin\Fields\GeneralSettings;
 use MatrixAddons\GeoMaps\Admin\Fields\MapTypeFields;
 use MatrixAddons\GeoMaps\Admin\Fields\MarkerFields;
+use MatrixAddons\GeoMaps\Admin\Fields\OSMProviderFields;
 
 class Maps
 {
@@ -29,6 +30,9 @@ class Maps
 		add_meta_box('geo-maps-map-type',
 			__('Map Type', 'geo-maps'), array($this, 'map_type_template'), 'geo-maps', 'side', 'high');
 
+		add_meta_box('geo-maps-map-osm-provider',
+			__('Providers / Map Theme', 'geo-maps'), array($this, 'osm_map_providers'), 'geo-maps', 'side', 'high');
+
 	}
 
 
@@ -51,6 +55,11 @@ class Maps
 
 		//Save MapTypeFields
 		$mapTypeFields = new MapTypeFields();
+		$mapTypeFields->save($_POST, $post_id);
+
+
+		//Save OMSProviderFields
+		$mapTypeFields = new OSMProviderFields();
 		$mapTypeFields->save($_POST, $post_id);
 
 		update_post_meta($post_id, 'geo_maps_meta_active_tab', $active_tab);
@@ -87,6 +96,16 @@ class Maps
 			return;
 		}
 		$mapTypeFields = new MapTypeFields();
+
+		$mapTypeFields->render();
+	}
+
+	public function osm_map_providers($post)
+	{
+		if ($post->post_type !== 'geo-maps') {
+			return;
+		}
+		$mapTypeFields = new OSMProviderFields();
 
 		$mapTypeFields->render();
 	}
@@ -146,7 +165,7 @@ class Maps
 		wp_enqueue_script('geo-maps-admin-script', GEO_MAPS_PLUGIN_URI . '/assets/admin/js/geo-maps-admin.js', array('geo-maps-render-engine-script'), GEO_MAPS_VERSION, true);
 		wp_localize_script('geo-maps-admin-script', 'geoMapsAdminParams', array(
 			'options' => geo_maps_get_map_settings(),
-			'default_marker' => geo_maps_get_default_marker_item()
+			'default_marker' => geo_maps_get_default_marker_item(),
 		));
 
 

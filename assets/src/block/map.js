@@ -4,7 +4,6 @@ import {Panel, PanelBody, RangeControl, ToggleControl, SelectControl} from '@wor
 import {__} from '@wordpress/i18n';
 import Icon from "../components/Icon";
 import EditEditor from "./edit";
-
 const Edit = (props) => {
 	const {attributes, setAttributes} = props;
 	const blockProps = useBlockProps();

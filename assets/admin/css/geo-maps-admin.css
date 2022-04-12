@@ -154,7 +154,8 @@
 
 .matrixaddons-field-text input,
 .matrixaddons-field-select select,
-#geo_maps_map_type .matrixaddons-fieldset {
+#geo_maps_map_type .matrixaddons-fieldset,
+#geo_maps_osm_map_provider .matrixaddons-fieldset {
 	width: 100%;
 	max-width: 100%;
 	margin: 0;
@@ -264,8 +265,9 @@ textarea.geo-maps-shortcode-copy {
 	cursor: pointer;
 }
 
-select.geo-maps-map-type {
-	width: 100%;
+select.geo-maps-map-type,
+select.geo-maps-osm-map-provider {
+	width: 100% !important;
 }
 
 .matrixaddons-image-field-wrap {

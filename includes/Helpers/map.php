@@ -84,7 +84,8 @@ if (!function_exists('geo_maps_get_map_settings')) {
 				'center_index' => $center_index,
 				'popup_show_on' => $popup_show_on,
 				'control_position' => $control_position,
-				'show_control' => $control_position !== 'hide'
+				'show_control' => $control_position !== 'hide',
+				'osm_provider' => $map_repository->get_osm_provider()
 
 		];
 
@@ -153,7 +154,42 @@ if (!function_exists('geo_maps_get_default_marker_item')) {
 				'lat' => '27.7172',
 				'lng' => '85.3240',
 				'title' => __('Tooltip Title', 'geo-maps'),
-				'content' => __('Tooltip Content', 'geo-maps')
+				'content' => __('Tooltip Content', 'geo-maps'),
+				'customIconWidth' => 25,
+				'customIconHeight' => 41,
+				'iconType' => '',
+				'customIconUrl' => '',
 		);
 	}
 }
+if (!function_exists('geo_maps_get_osm_providers')) {
+	function geo_maps_get_osm_providers()
+	{
+		return array(
+				'default' => array(
+						'url' => 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+						'attribution' => '',
+						'title' => __('Default', 'geo-maps')
+				),
+				'stadia_alidade_smooth_dark' => array(
+						'url' => 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+						'attribution' => '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
+						'title' => __(' Stadia Alidade Smooth Dark', 'geo-maps')
+				)
+		);
+	}
+}
+
+
+if (!function_exists('geo_maps_get_google_map_providers')) {
+	function geo_maps_get_google_map_providers()
+	{
+		return array(
+				'default' => array(
+						'url' => 'https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i349018013!3m9!2sen-US!3sUS!5e18!12m1!1e47!12m3!1e37!2m1!1ssmartmaps!4e0',
+						'attribution' => ''
+				)
+		);
+	}
+}
+
