@@ -1,4 +1,4 @@
-=== Geo Maps - WordPress Map Plugin for OpenStreet and Google Map with Marker Tooltip and Title  ===
+=== Geo Maps - WordPress OpenStreet Map, Google Map Plugin for WordPress with Marker Tooltip and Title  ===
 Contributors: matrixaddons
 Tags: maps, world map, openstreet map, google maps, map block
 Requires at least: 5.4
@@ -8,7 +8,7 @@ Stable tag: 1.0.5
 License: GPLv3
 License URI: https://opensource.org/licenses/GPL-3.0
 
-WordPress Map Plugin for OpenStreet and Google Map with Marker Tooltip and Title
+WordPress Google Map Plugin, WordPress OpenStreet Map plugin
 
 == Description ==
 
@@ -30,6 +30,7 @@ Geo Maps is Easy to use WordPress Map Plugin with unlimited marker and marker to
 * Easy to use Map Plugin for WordPress
 * Updated with WordPress
 * Show/hide or change position of map navigation
+* Provider Template for OpenStreet Maps
 
 = Thank you =
 Thank you for awesome library creators and maintainer of following. Without those libraries it is not possible to create this interactive WordPress Map Plugin
