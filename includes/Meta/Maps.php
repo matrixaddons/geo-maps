@@ -108,6 +108,8 @@ class Maps
 		$mapTypeFields = new OSMProviderFields();
 
 		$mapTypeFields->render();
+
+		echo '<p>Need more provider templates? Please send us email at <strong>wpmatrixaddons@gmail.com</strong> with the provider link.</p>';
 	}
 
 
