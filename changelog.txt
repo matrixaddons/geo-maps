@@ -1,0 +1,17 @@
+= 1.0.5 - 2022-04-06 =
+- Added - Change map navigation position or show/hide
+- Removed - Unnecessary file from svn
+- Fixed - Minor bug fixes
+
+= 1.0.4 - 2022-03-28 =
+- Added - Show marker on hover or click
+- Removed - Unnecessary file from svn
+
+= 1.0.2 - 2022-03-28 =
+- Fixed - Minor issue fixed
+- Added - Shortcode on map listing admin page
+- Added - Map Zoom option
+- Added - Custom Map Marker Image with height & width
+
+= 1.0.1 - 2022-03-26 =
+- initial release

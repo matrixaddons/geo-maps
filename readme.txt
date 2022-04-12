@@ -4,7 +4,7 @@ Tags: maps, world map, openstreet map, google maps, map block
 Requires at least: 5.4
 Tested up to: 5.9
 Requires PHP: 5.6
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv3
 License URI: https://opensource.org/licenses/GPL-3.0
 
@@ -57,20 +57,6 @@ Please find Geo Maps Block on your gutenberg WordPress editor.
 
 == Changelog ==
 
-= 1.0.5 - 2022-04-06 =
-- Added - Change map navigation position or show/hide
-- Removed - Unnecessary file from svn
+= 1.0.6 - 2022-04-12 =
+- Added - OpenStreet Map Provider
 - Fixed - Minor bug fixes
-
-= 1.0.4 - 2022-03-28 =
-- Added - Show marker on hover or click
-- Removed - Unnecessary file from svn
-
-= 1.0.2 - 2022-03-28 =
-- Fixed - Minor issue fixed
-- Added - Shortcode on map listing admin page
-- Added - Map Zoom option
-- Added - Custom Map Marker Image with height & width
-
-= 1.0.1 - 2022-03-26 =
-- initial release
