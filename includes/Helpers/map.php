@@ -176,27 +176,27 @@ if (!function_exists('geo_maps_get_osm_providers')) {
 						'attribution' => '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 						'title' => __('Open StreetMap Mapnik', 'geo-maps')
 				),
-				'OPNVKarte' => array(
+				'opnv_karte' => array(
 						'url' => 'https://tileserver.memomaps.de/tilegen/{z}/{x}/{y}.png',
 						'attribution' => 'Map <a href="https://memomaps.de/">memomaps.de</a> <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 						'title' => __('OPNVKarte', 'geo-maps')
 				),
-				'OpenTopoMap' => array(
+				'open_topo_map' => array(
 						'url' => 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
 						'attribution' => 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
 						'title' => __('OpenTopoMap', 'geo-maps')
 				),
-				'Stamen_TonerBackground' => array(
+				'stamen_toner_background' => array(
 						'url' => 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-background/{z}/{x}/{y}{r}.png',
 						'attribution' => 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 						'title' => __('Stamen_TonerBackground', 'geo-maps')
 				),
-				'Stamen_Watercolor' => array(
+				'stamen_watercolor' => array(
 						'url' => 'https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png',
 						'attribution' => 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 						'title' => __('Stamen_Watercolor', 'geo-maps')
 				),
-				'Esri_WorldImagery' => array(
+				'esri_world_imagery' => array(
 						'url' => 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
 						'attribution' => 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
 						'title' => __('Esri_WorldImagery', 'geo-maps')
