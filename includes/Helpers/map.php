@@ -112,21 +112,33 @@ if (!function_exists('geo_maps_call_map')) {
 	function geo_maps_call_map($attributes = array())
 	{
 
+
 		$map_id = isset($attributes['map_id']) ? absint($attributes['map_id']) : 0;
 
 		ob_start();
 
 		if (absint($map_id) < 1) {
 
-
 			echo '<h2>Please select at least one map from setting.</h2>';
-
 
 		} else {
 
-			$settings = geo_maps_get_map_settings($map_id);
+			$height = isset($attributes['height']) ? geo_maps_parse_css_value($attributes['height']) : '';
 
-			geo_maps_render_map($settings);
+			$width = isset($attributes['width']) ? geo_maps_parse_css_value($attributes['width']) : '';
+
+			$map_settings = geo_maps_get_map_settings($map_id);
+
+			$map_height = $height != '' ? $height : $map_settings['style']['height'];
+
+			$map_width = $width != '' ? $width : $map_settings['style']['width'];
+
+			$map_settings['style'] = array(
+					'height' => $map_height,
+					'width' => $map_width
+			);
+
+			geo_maps_render_map($map_settings);
 
 
 		}
@@ -215,6 +227,37 @@ if (!function_exists('geo_maps_get_google_map_providers')) {
 						'attribution' => ''
 				)
 		);
+	}
+}
+
+if (!function_exists('geo_maps_parse_css_value')) {
+
+	function geo_maps_parse_css_value($css_value)
+	{
+		if ($css_value === '') {
+			return '';
+		}
+		$unit = 'px';
+
+		$css_value = strtolower($css_value);
+
+		if (strpos($css_value, "%") !== false) {
+			$unit = '%';
+			$css_value = str_replace('%', '', $css_value);
+		} else if (strpos($css_value, "px") !== false) {
+			$unit = 'px';
+			$css_value = str_replace('px', '', $css_value);
+		}
+
+		$css_value = absint($css_value);
+
+		if ($css_value < 1) {
+
+			return '';
+		}
+
+		return $css_value . $unit;
+
 	}
 }
 

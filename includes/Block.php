@@ -45,6 +45,14 @@ class Block
 				'type' => 'string',
 				'default' => "0",
 			),
+			'width' => array(
+				'type' => 'string',
+				'default' => "100%",
+			),
+			'height' => array(
+				'type' => 'string',
+				'default' => "500px",
+			),
 		);
 
 	}

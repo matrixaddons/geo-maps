@@ -1,9 +1,10 @@
 import {registerBlockType} from "@wordpress/blocks";
 import {InspectorControls, useBlockProps} from "@wordpress/block-editor";
-import {Panel, PanelBody, RangeControl, ToggleControl, SelectControl} from '@wordpress/components';
+import {Panel, PanelBody, RangeControl, TextControl, SelectControl} from '@wordpress/components';
 import {__} from '@wordpress/i18n';
 import Icon from "../components/Icon";
 import EditEditor from "./edit";
+
 const Edit = (props) => {
 	const {attributes, setAttributes} = props;
 	const blockProps = useBlockProps();
@@ -11,6 +12,15 @@ const Edit = (props) => {
 		setAttributes({map_id: map_id});
 
 	}
+	const afterWidthChange = (width_string) => {
+		setAttributes({width: width_string});
+
+	}
+	const afterHeightChange = (height_string) => {
+		setAttributes({height: height_string});
+
+	}
+	console.log("Map ID " + attributes.map_id);
 	return (
 		<div {...blockProps}>
 			<EditEditor attributes={attributes}/>
@@ -24,6 +34,16 @@ const Edit = (props) => {
 								value={attributes.map_id}
 								options={geoMapsBlock.all_maps}
 								onChange={(map_id) => afterMapChange(map_id)}
+							/>
+							<TextControl
+								label={__('Map Height[px or %]', 'geo-maps')}
+								value={attributes.height}
+								onChange={(map_height) => afterHeightChange(map_height)}
+							/>
+							<TextControl
+								label={__('Map Width[px or %]', 'geo-maps')}
+								value={attributes.width}
+								onChange={(map_width) => afterWidthChange(map_width)}
 							/>
 						</PanelBody>
 					</Panel>

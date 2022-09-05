@@ -25,7 +25,7 @@ class Api
 	public function register_routes()
 	{
 		register_rest_route(self::MAIN_ROUTE, self::REST_ROUTE, array(
-			'methods' => \WP_REST_Server::READABLE,
+			'methods' => \WP_REST_Server::CREATABLE,
 			'callback' => array($this, 'handle_request'),
 			'permission_callback' => array($this, 'validate_request')
 		));
@@ -35,6 +35,10 @@ class Api
 	{
 
 		$map_id = absint($request['id']);
+
+		$height = geo_maps_parse_css_value($request->get_param('height'));
+
+		$width = geo_maps_parse_css_value($request->get_param('width'));
 
 		if ($map_id < 1) {
 			return rest_ensure_response(array('message' => __('Please select at least one map from block setting.', 'geo-maps')));
@@ -49,6 +53,15 @@ class Api
 		}
 
 		$map_settings = geo_maps_get_map_settings($map_id);
+
+		$map_height = $height != '' ? $height : $map_settings['style']['height'];
+
+		$map_width = $width != '' ? $width : $map_settings['style']['width'];
+
+		$map_settings['style'] = array(
+			'height' => $map_height,
+			'width' => $map_width
+		);
 
 		ob_start();
 

@@ -40,11 +40,15 @@ class MapShortcode
 			return;
 		}
 
+		$height = isset($atts['height']) ? geo_maps_parse_css_value($atts['height']) : '';
+
+		$width = isset($atts['width']) ? geo_maps_parse_css_value($atts['width']) : '';
+
 		$settings = geo_maps_get_map_settings($map_id);
 
-		$map_height = $atts['height'] ?? $settings['style']['height'];
+		$map_height = $height != '' ? $height : $settings['style']['height'];
 
-		$map_width = $atts['width'] ?? $settings['style']['width'];
+		$map_width = $width != '' ? $width : $settings['style']['width'];
 
 		$settings['style'] = array(
 			'height' => $map_height,

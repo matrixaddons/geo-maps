@@ -8,13 +8,17 @@ const BlockEdit = ({attributes}) => {
 	const [template, setTemplate] = useState('');
 
 	const {
-		map_id
+		map_id,
+		width,
+		height
 	} = attributes;
-	const runApiFetch = (map_id) => {
+	const runApiFetch = (map_id, width, height) => {
 		setIsLoading(true);
 		setMessage('');
 		wp.apiFetch({
 			path: 'geo-maps/v1/maps/' + map_id,
+			method: 'POST',
+			data: {width: width, height: height},
 		}).then(data => {
 
 			if (typeof data.template !== "undefined") {
@@ -34,8 +38,8 @@ const BlockEdit = ({attributes}) => {
 		});
 	}
 	useEffect(() => {
-		runApiFetch(map_id);
-	}, [map_id]);
+		runApiFetch(map_id, width, height);
+	}, [map_id, width, height]);
 
 	useEffect(() => {
 
