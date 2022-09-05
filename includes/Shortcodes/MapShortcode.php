@@ -42,6 +42,15 @@ class MapShortcode
 
 		$settings = geo_maps_get_map_settings($map_id);
 
+		$map_height = $atts['height'] ?? $settings['style']['height'];
+
+		$map_width = $atts['width'] ?? $settings['style']['width'];
+
+		$settings['style'] = array(
+			'height' => $map_height,
+			'width' => $map_width
+		);
+
 		geo_maps_render_map($settings);
 	}
 }
