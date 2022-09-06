@@ -2,9 +2,9 @@
 Contributors: matrixaddons
 Tags: maps, world map, openstreet map, google maps, map block
 Requires at least: 5.4
-Tested up to: 5.9
+Tested up to: 6.0.2
 Requires PHP: 5.6
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv3
 License URI: https://opensource.org/licenses/GPL-3.0
 
@@ -49,7 +49,7 @@ Shortcode for Map. To create new map you can find Maps menu on admin menu of you
 
 <pre>[geo_maps id="YOUR_MAP_ID_GOES_HERE" height="100%"]</pre>
 
-== Blocks ==
+== Block ==
 
 Please find Geo Maps Block on your gutenberg WordPress editor.
 
@@ -61,6 +61,8 @@ Please find Geo Maps Block on your gutenberg WordPress editor.
 
 == Changelog ==
 
-= 1.0.7 - 2022-04-000 =
+= 1.0.7 - 2022-09-06 =
 - Removed - Stadia Alidade Smooth Dark provider
 - Fixed - Typo fixed on render engine.js
+- Added - Map Height & Width on Shortcode and block
+- Fixed - Minor design issue fixed & WP compatibility check

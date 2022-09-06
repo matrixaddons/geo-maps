@@ -2,9 +2,9 @@
 # This file is distributed under the GPL2+.
 msgid ""
 msgstr ""
-"Project-Id-Version: Geo Maps 1.0.6\n"
+"Project-Id-Version: Geo Maps 1.0.7\n"
 "Report-Msgid-Bugs-To: matrixaddons@gmail.com\n"
-"POT-Creation-Date: 2022-04-12 15:48:39+00:00\n"
+"POT-Creation-Date: 2022-09-06 06:09:21+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -128,7 +128,7 @@ msgstr ""
 msgid "Longitude"
 msgstr ""
 
-#: includes/Admin/Fields/MarkerFields.php:58 includes/Helpers/map.php:157
+#: includes/Admin/Fields/MarkerFields.php:58 includes/Helpers/map.php:169
 msgid "Tooltip Content"
 msgstr ""
 
@@ -156,55 +156,51 @@ msgstr ""
 msgid "Map Settings"
 msgstr ""
 
-#: includes/Api.php:40 includes/Assets.php:75
+#: includes/Api.php:44 includes/Assets.php:75
 msgid "Please select at least one map from block setting."
 msgstr ""
 
-#: includes/Api.php:44
+#: includes/Api.php:48
 msgid "Permission denied."
 msgstr ""
 
-#: includes/Api.php:48
+#: includes/Api.php:52
 msgid "The map doesnt exists."
 msgstr ""
 
-#: includes/Helpers/map.php:141
+#: includes/Helpers/map.php:153
 msgid "Select Map"
 msgstr ""
 
-#: includes/Helpers/map.php:156
+#: includes/Helpers/map.php:168
 msgid "Tooltip Title"
 msgstr ""
 
-#: includes/Helpers/map.php:172
+#: includes/Helpers/map.php:184
 msgid "Default"
 msgstr ""
 
-#: includes/Helpers/map.php:177
+#: includes/Helpers/map.php:189
 msgid "OPNVKarte"
 msgstr ""
 
-#: includes/Helpers/map.php:182
+#: includes/Helpers/map.php:194
 msgid "OpenTopoMap"
 msgstr ""
 
-#: includes/Helpers/map.php:187
+#: includes/Helpers/map.php:199
 msgid "Stamen_TonerBackground"
 msgstr ""
 
-#: includes/Helpers/map.php:192
+#: includes/Helpers/map.php:204
 msgid "Stamen_Watercolor"
 msgstr ""
 
-#: includes/Helpers/map.php:197
+#: includes/Helpers/map.php:209
 msgid "Esri_WorldImagery"
 msgstr ""
 
-#: includes/Helpers/map.php:202
-msgid " Stadia Alidade Smooth Dark"
-msgstr ""
-
-#: includes/Helpers/map.php:207
+#: includes/Helpers/map.php:214
 msgid "Cycl OSM"
 msgstr ""
 
@@ -303,7 +299,7 @@ msgid "https://wordpress.org/plugins/geo-maps"
 msgstr ""
 
 #. Description of the plugin/theme
-msgid "Google Map, OpenStreet Map plugin for WordPress"
+msgid "Google Map and OpenStreet Map plugin for WordPress"
 msgstr ""
 
 #. Author of the plugin/theme
