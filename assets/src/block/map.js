@@ -12,15 +12,20 @@ const Edit = (props) => {
 		setAttributes({map_id: map_id});
 
 	}
+	const sanitizeCSSValue = (css_value) => {
+		if (css_value === '' || css_value == null) {
+			return '';
+		}
+		return css_value;
+	}
 	const afterWidthChange = (width_string) => {
-		setAttributes({width: width_string});
+		setAttributes({width: sanitizeCSSValue(width_string)});
 
 	}
 	const afterHeightChange = (height_string) => {
-		setAttributes({height: height_string});
+		setAttributes({height: sanitizeCSSValue(height_string)});
 
 	}
-	console.log("Map ID " + attributes.map_id);
 	return (
 		<div {...blockProps}>
 			<EditEditor attributes={attributes}/>

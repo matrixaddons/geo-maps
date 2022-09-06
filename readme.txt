@@ -45,6 +45,10 @@ Shortcode for Map. To create new map you can find Maps menu on admin menu of you
 
 <pre>[geo_maps id="YOUR_MAP_ID_GOES_HERE"]</pre>
 
+<pre>[geo_maps id="YOUR_MAP_ID_GOES_HERE" height="500px"]</pre>
+
+<pre>[geo_maps id="YOUR_MAP_ID_GOES_HERE" height="100%"]</pre>
+
 == Blocks ==
 
 Please find Geo Maps Block on your gutenberg WordPress editor.
