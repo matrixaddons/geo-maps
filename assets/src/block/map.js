@@ -19,11 +19,11 @@ const Edit = (props) => {
 		return css_value;
 	}
 	const afterWidthChange = (width_string) => {
-		setAttributes({width: sanitizeCSSValue(width_string)});
+		setAttributes({width: (width_string)});
 
 	}
 	const afterHeightChange = (height_string) => {
-		setAttributes({height: sanitizeCSSValue(height_string)});
+		setAttributes({height: (height_string)});
 
 	}
 	return (
