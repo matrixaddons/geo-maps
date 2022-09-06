@@ -47,7 +47,7 @@ Shortcode for Map. To create new map you can find Maps menu on admin menu of you
 
 <pre>[geo_maps id="YOUR_MAP_ID_GOES_HERE" height="500px"]</pre>
 
-<pre>[geo_maps id="YOUR_MAP_ID_GOES_HERE" height="100%"]</pre>
+<pre>[geo_maps id="YOUR_MAP_ID_GOES_HERE" height="500px" width="100%"]</pre>
 
 == Block ==
 
