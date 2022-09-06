@@ -31,6 +31,7 @@ Geo Maps is Easy to use WordPress Map Plugin with unlimited marker and marker to
 * Updated with WordPress
 * Show/hide or change position of map navigation
 * Provider Template for OpenStreet Maps
+* Custom Height/Width of the map
 
 = Thank you =
 Thank you for awesome library creators and maintainer of following. Without those libraries it is not possible to create this interactive WordPress Map Plugin
