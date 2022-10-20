@@ -1,3 +1,9 @@
+= 1.0.7 - 2022-09-06 =
+- Removed - Stadia Alidade Smooth Dark provider
+- Fixed - Typo fixed on render engine.js
+- Added - Map Height & Width on Shortcode and block
+- Fixed - Minor design issue fixed & WP compatibility check
+
 = 1.0.6 - 2022-04-12 =
 - Added - OpenStreet Map Provider
 - Fixed - Minor bug fixes

@@ -1,10 +1,10 @@
-=== WordPress OpenStreet Map, Google Map Plugin for WordPress with Marker Tooltip and Title - Geo Maps ===
+=== Geo Maps - WordPress OpenStreet Map, Google Map Plugin for WordPress with Marker Tooltip and Title ===
 Contributors: matrixaddons
 Tags: maps, world map, openstreet map, google maps, map block
 Requires at least: 5.4
-Tested up to: 6.0.2
+Tested up to: 6.0.3
 Requires PHP: 5.6
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv3
 License URI: https://opensource.org/licenses/GPL-3.0
 
@@ -14,7 +14,7 @@ WordPress Google Map Plugin, WordPress OpenStreet Map plugin
 
 **Map Plugin for WordPress**
 
-Geo Maps is Easy to use WordPress Map Plugin with unlimited marker and marker tooltip feature. You can easily create interactive map with multiple markers and place anywhere of your WordPress website using gutenberg block or shortcodes. For now geo maps WordPress interactive map plugin support OpenStreet Maps and Google Maps. You can choose OpenStreet map providers on this WordPress Map Plugin.
+[Geo Maps] (https://matrixaddons.com/downloads/geo-maps-wordpress-map-plugin/)  is Easy to use WordPress Map Plugin with unlimited marker and marker tooltip feature. You can easily create interactive map with multiple markers and place anywhere of your WordPress website using gutenberg block or shortcodes. For now geo maps WordPress interactive map plugin support OpenStreet Maps and Google Maps. You can choose OpenStreet map providers on this WordPress Map Plugin.
 
 = WordPress Map Plugin Features =
 * Unlimited Map Markers
@@ -62,8 +62,5 @@ Please find Geo Maps Block on your gutenberg WordPress editor.
 
 == Changelog ==
 
-= 1.0.7 - 2022-09-06 =
-- Removed - Stadia Alidade Smooth Dark provider
-- Fixed - Typo fixed on render engine.js
-- Added - Map Height & Width on Shortcode and block
-- Fixed - Minor design issue fixed & WP compatibility check
+= 1.0.8 - 2022-10-20 =
+- Fixed - Minor issue fixed
