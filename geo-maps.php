@@ -5,7 +5,7 @@
  * Description: Google Map and OpenStreet Map plugin for WordPress
  * Author: matrixaddons
  * Author URI: https://profiles.wordpress.org/matrixaddons
- * Version: 1.0.8
+ * Version: 1.0.9
  * License: GPL2+
  * License URI: https://www.gnu.org/licenses/gpl-2.0.txt
  *
@@ -27,7 +27,7 @@ if (!defined('GEO_MAPS_FILE')) {
 
 // Define GEO_MAPS_VERSION.
 if (!defined('GEO_MAPS_VERSION')) {
-	define('GEO_MAPS_VERSION', '1.0.8');
+	define('GEO_MAPS_VERSION', '1.0.9');
 }
 
 // Define GEO_MAPS_PLUGIN_URI.

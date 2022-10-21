@@ -17,7 +17,11 @@ class Checkbox
 		<div class="matrixaddons-fieldset">
 			<input <?php checked($value, 1); ?> type="checkbox" name="<?php echo esc_attr($field_name); ?>" value="1"
 												class="<?php echo esc_attr($class); ?>"/>
-			<?php echo $after; ?>
+			<?php echo wp_kses($after, array(
+					'a' => array('href' => array(), 'class' => array(), 'target' => array()),
+					'h2' => array('class' => array()),
+					'div' => array('class' => array())
+			)); ?>
 		</div>
 
 		<?php

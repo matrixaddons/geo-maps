@@ -34,9 +34,9 @@ class Shortcodes
 		ob_start();
 
 		// @codingStandardsIgnoreStart
-		echo empty($wrapper['before']) ? '<div class="' . esc_attr($wrapper['class']) . '">' : $wrapper['before'];
+		echo empty($wrapper['before']) ? '<div class="' . esc_attr($wrapper['class']) . '">' : esc_html($wrapper['before']);
 		call_user_func($function, $atts);
-		echo empty($wrapper['after']) ? '</div>' : $wrapper['after'];
+		echo empty($wrapper['after']) ? '</div>' : esc_html($wrapper['after']);
 		// @codingStandardsIgnoreEnd
 
 		return ob_get_clean();

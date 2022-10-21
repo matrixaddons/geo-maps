@@ -16,7 +16,11 @@ class Text
 		echo '
 					<div class="matrixaddons-fieldset">
 					<input type="text" name="' . esc_attr($field_name) . '" value="' . esc_attr($value) . '" class="' . esc_attr($class) . '" />
-					' . $after . '
+					' . wp_kses($after, array(
+				'a' => array('href' => array(), 'class' => array(), 'target' => array()),
+				'h2' => array('class' => array()),
+				'div' => array('class' => array())
+			)) . '
 					</div>
 
 				';
