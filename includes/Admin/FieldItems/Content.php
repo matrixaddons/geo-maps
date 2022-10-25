@@ -19,4 +19,10 @@ class Content
 		echo '</div>';
 		echo '</div>';
 	}
+
+	public static function sanitize($field, $raw_value, $field_id)
+	{
+
+		return '';
+	}
 }
