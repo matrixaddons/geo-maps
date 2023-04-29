@@ -1,4 +1,4 @@
-=== Geo Maps - OpenStreet Map, Google Map Support with Marker Tooltip and Title ===
+=== Geo Maps - Map Block & Shortcode that support custom marker, tooltip & tooltip title ===
 Contributors: matrixaddons
 Tags: maps, world map, openstreet map, google maps, map block
 Requires at least: 5.4
