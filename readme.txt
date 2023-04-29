@@ -1,5 +1,5 @@
 === Geo Maps - Map Block & Shortcode that support custom marker, tooltip & tooltip title ===
-Contributors: matrixaddons
+Contributors: MatrixAddons
 Tags: maps, world map, openstreet map, google maps, map block
 Requires at least: 5.4
 Tested up to: 6.2
