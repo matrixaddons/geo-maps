@@ -1,3 +1,5 @@
+= 1.0.10 - 2022-10-21 =
+- Fixed - Minor issue fixed
 = 1.0.7 - 2022-09-06 =
 - Removed - Stadia Alidade Smooth Dark provider
 - Fixed - Typo fixed on render engine.js

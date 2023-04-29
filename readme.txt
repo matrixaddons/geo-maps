@@ -2,9 +2,9 @@
 Contributors: matrixaddons
 Tags: maps, world map, openstreet map, google maps, map block
 Requires at least: 5.4
-Tested up to: 6.0.3
+Tested up to: 6.2
 Requires PHP: 5.6
-Stable tag: 1.0.10
+Stable tag: 1.0.11
 License: GPLv3
 License URI: https://opensource.org/licenses/GPL-3.0
 
@@ -64,5 +64,6 @@ Please find Geo Maps Block on your gutenberg WordPress editor.
 
 == Changelog ==
 
-= 1.0.10 - 2022-10-21 =
+= 1.0.11 - 2023-04-29 =
 - Fixed - Minor issue fixed
+- Fixed - 6.2 compatibility
