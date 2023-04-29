@@ -3,7 +3,7 @@
  * Plugin Name: Geo Maps
  * Plugin URI: https://matrixaddons.com/downloads/geo-maps-wordpress-map-plugin/
  * Description: Google Map and OpenStreet Map plugin for WordPress
- * Author: matrixaddons
+ * Author: MatrixAddons
  * Author URI: https://profiles.wordpress.org/matrixaddons
  * Version: 1.0.11
  * License: GPL2+
