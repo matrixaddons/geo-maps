@@ -33,6 +33,10 @@ class Maps
 		add_meta_box('geo-maps-map-osm-provider',
 			__('Providers / Map Theme', 'geo-maps'), array($this, 'osm_map_providers'), 'geo-maps', 'side', 'high');
 
+		remove_meta_box('postcustom', 'geo-maps', 'normal'); // remove custom fields metabox on geo maps screen
+
+		// Remove Astra Theme Setting Metabox for geo maps Screen
+		remove_meta_box('astra_settings_meta_box', 'geo-maps', 'side');
 	}
 
 
@@ -197,7 +201,7 @@ class Maps
 	{
 		$self = new self();
 		add_filter('screen_options_show_screen', array($self, 'hide_screen_option'));
-		add_action('add_meta_boxes', array($self, 'metabox'));
+		add_action('add_meta_boxes', array($self, 'metabox'), 11);
 		add_action('save_post', array($self, 'save'));
 		add_action('admin_enqueue_scripts', array($self, 'scripts'), 10);
 		add_action('geo_maps_metabox_postbox_item', array($self, 'render_map'), 10);
