@@ -1,4 +1,4 @@
-= 1.0.11 - 2023-04-29 =
+= 1.0.12 - 2023-04-29 =
 - Fixed - Minor issue fixed
 - Fixed - 6.2 compatibility
 
