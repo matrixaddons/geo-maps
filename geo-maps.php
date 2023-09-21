@@ -27,7 +27,7 @@ if (!defined('GEO_MAPS_FILE')) {
 
 // Define GEO_MAPS_VERSION.
 if (!defined('GEO_MAPS_VERSION')) {
-	define('GEO_MAPS_VERSION', '1.0.11');
+	define('GEO_MAPS_VERSION', '1.0.12');
 }
 
 // Define GEO_MAPS_PLUGIN_URI.
