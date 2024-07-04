@@ -80,6 +80,7 @@ if (!function_exists('geo_maps_get_map_settings')) {
 				'map_marker' => $map_markers,
 				'map_zoom' => 8,
 				'scroll_wheel_zoom' => $map_repository->is_scroll_wheel_zoom(),
+				'draw_line'=>$map_repository->is_draw_line(),
 				'map_type' => $map_type,
 				'center_index' => $center_index,
 				'popup_show_on' => $popup_show_on,

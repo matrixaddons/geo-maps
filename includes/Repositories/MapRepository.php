@@ -43,6 +43,10 @@ class MapRepository
 	{
 		return absint(get_post_meta($this->map_id, 'geo_maps_map_scroll_wheel_zoom', true)) === 1;
 	}
+	public function is_draw_line()
+	{
+		return absint(get_post_meta($this->map_id, 'geo_maps_map_draw_marker_line', true)) === 1;
+	}
 
 	public function get_popup_show_on()
 	{

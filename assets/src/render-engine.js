@@ -30,6 +30,9 @@ window.Geo_Maps_Rendered = {};
 				return map[m];
 			});
 		};
+		var latlngs = Array();
+		var draw_line = Settings.draw_line;
+
 		Settings.map_marker.forEach(function (item, index) {
 			var popupHTML = "";
 			if (item.title !== "") {
@@ -76,6 +79,8 @@ window.Geo_Maps_Rendered = {};
 					//this.closePopup();
 				});
 			}
+			latlngs.push(item_marker.getLatLng());
+
 
 		});
 
@@ -83,6 +88,7 @@ window.Geo_Maps_Rendered = {};
 			id: "mapbox/light-v9",
 			attribution: map_provider.attribution
 		});
+		//Settings.map_zoom =100;
 		let config = {
 			zoom: Settings.map_zoom,
 			layers: [grayscale, cities],
@@ -105,6 +111,13 @@ window.Geo_Maps_Rendered = {};
 		}
 
 		window.Geo_Maps_Rendered[ID] = L.map(ID, config);
+
+		if(draw_line!==undefined && draw_line!=="undefined" && draw_line){
+		
+			var polyline = L.polyline(latlngs, {color: 'black'}).addTo(window.Geo_Maps_Rendered[ID]);
+			// zoom the map to the polyline
+			window.Geo_Maps_Rendered[ID].fitBounds(polyline.getBounds());
+		}
 
 		window.Geo_Maps_Rendered[ID].invalidateSize();
 

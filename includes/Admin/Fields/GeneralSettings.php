@@ -57,6 +57,12 @@ class GeneralSettings extends Base
 				'class' => 'geo-maps-marker-scroll-wheel-zoom',
 				'desc' => __("Enable this to zoom on mouse scroll wheel.", 'geo-maps')
 			],
+			'geo_maps_map_draw_marker_line' => [
+				'type' => 'checkbox',
+				'title' => __('Draw line on marker', 'geo-maps'),
+				'class' => 'geo-maps-map-draw-marker-line',
+				'desc' => __("Draw line on marker.", 'geo-maps')
+			],
 			'geo_maps_map_control_position' => [
 				'title' => __('Map Control Position', 'geo-maps'),
 				'desc' => __("Show or hide maps control or change the position of the control.", 'geo-maps'),
