@@ -3,6 +3,7 @@
 namespace MatrixAddons\GeoMaps;
 
 use MatrixAddons\GeoMaps\Hooks\ListTable;
+use MatrixAddons\GeoMaps\Admin\UI\CustomAdmin;
 
 final class Main
 {
@@ -50,7 +51,7 @@ final class Main
 		Api::init();
 
 		if (is_admin()) {
-			new ListTable();
+			CustomAdmin::init();
 		}
 	}
 

@@ -34,6 +34,8 @@ class Maps
 			'publicly_queryable' => false,
 			'exclude_from_search' => true,
 			'show_in_admin_bar' => false,
+			'show_ui' => false,
+			'show_in_menu' => false,
 		);
 		register_post_type($this->slug, $args);
 
