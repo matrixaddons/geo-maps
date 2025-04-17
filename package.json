@@ -21,14 +21,13 @@
     "start": "wp-scripts start",
     "test:e2e": "wp-scripts test-e2e",
     "test:unit": "wp-scripts test-unit-js",
-    "watch": "npm-run-all --parallel watch:*",
-    "watch:frontend": "npm-run-all --parallel watch:scss-frontend watch:webpack-frontend",
-    "watch:admin": "npm-run-all --parallel watch:scss-admin watch:webpack-admin",
-    "watch:scss-frontend": "sass --watch assets/scss/geo-maps.scss:assets/build/css/geo-maps.css --style=compressed --source-map",
-    "watch:scss-admin": "sass --watch assets/scss/admin:assets/build/admin/css --style=compressed --source-map",
-    "watch:webpack": "cross-env BUILD_TARGET=all webpack --watch --config webpack.config.js",
-    "watch:webpack-frontend": "cross-env BUILD_TARGET=frontend webpack --watch --config webpack.config.js",
-    "watch:webpack-admin": "cross-env BUILD_TARGET=admin webpack --watch --config webpack.config.js"
+    "watch": "npm run watch:all",
+    "watch:all": "cross-env BUILD_TARGET=all webpack --watch --config webpack.config.js & npm run watch:scss",
+    "watch:frontend": "cross-env BUILD_TARGET=frontend webpack --watch --config webpack.config.js & npm run watch:scss:frontend",
+    "watch:admin": "cross-env BUILD_TARGET=admin webpack --watch --config webpack.config.js & npm run watch:scss:admin",
+    "watch:scss": "npm run watch:scss:frontend & npm run watch:scss:admin",
+    "watch:scss:frontend": "sass --watch assets/scss/geo-maps.scss:assets/build/css/geo-maps.css --style=compressed --source-map",
+    "watch:scss:admin": "sass --watch assets/scss/admin:assets/build/admin/css --style=compressed --source-map"
   },
   "dependencies": {
     "@wordpress/compose": "^3.20.0",

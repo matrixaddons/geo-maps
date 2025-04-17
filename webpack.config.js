@@ -54,7 +54,16 @@ const frontendConfig = {
 		publicPath: '',
 	},
 	plugins: [
-		...defaultConfig.plugins,
+		// Filtering out LiveReloadPlugin and adding it back with custom port
+		...defaultConfig.plugins.filter(plugin => 
+			!(plugin.constructor && plugin.constructor.name === 'LiveReloadPlugin')
+		),
+		// Add LiveReloadPlugin with custom port
+		...(process.argv.includes('--watch') ? [
+			new (require('webpack-livereload-plugin'))({
+				port: 35729,
+			})
+		] : []),
 		new CleanWebpackPlugin({
 			cleanOnceBeforeBuildPatterns: [
 				"js/*.js",
@@ -89,7 +98,17 @@ const adminConfig = {
 		publicPath: '',
 	},
 	plugins: [
-		...defaultConfig.plugins.filter(plugin => !(plugin instanceof CleanWebpackPlugin)),
+		// Filtering out LiveReloadPlugin and adding it back with custom port
+		...defaultConfig.plugins.filter(plugin => 
+			!(plugin instanceof CleanWebpackPlugin) &&
+			!(plugin.constructor && plugin.constructor.name === 'LiveReloadPlugin')
+		),
+		// Add LiveReloadPlugin with custom port
+		...(process.argv.includes('--watch') ? [
+			new (require('webpack-livereload-plugin'))({
+				port: 35730,
+			})
+		] : []),
 		new CleanWebpackPlugin({
 			cleanOnceBeforeBuildPatterns: [
 				"admin/js/*.js",
