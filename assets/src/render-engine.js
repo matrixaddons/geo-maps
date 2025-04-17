@@ -1,127 +1,228 @@
-window.Geo_Maps_Render = null;
-window.Geo_Maps_Rendered = {};
-(function ($) {
-	Geo_Maps_Render = (ID, Settings) => {
+/**
+ * Main render engine for Geo Maps
+ */
 
-		var provider_from_setting = typeof Settings.osm_provider !== "undefined" ? Settings.osm_provider : '';
-		var map_provider = {};
+// Only define the variables if they don't already exist
+(function (window) {
+	// Define default custom marker icon
+	const defaultMarkerIcon = L.icon({
+		iconUrl: '../wp-content/plugins/geo-maps/assets/images/marker-icon.png',
+		iconRetinaUrl: '../wp-content/plugins/geo-maps/assets/images/marker-icon-2x.png',
+		shadowUrl: '../wp-content/plugins/geo-maps/assets/images/marker-shadow.png',
+		iconSize: [25, 41],     // size of the icon
+		iconAnchor: [12, 41],   // point of the icon which will correspond to marker's location
+		shadowSize: [41, 41],   // size of the shadow
+		shadowAnchor: [12, 41], // anchor point of the shadow
+		popupAnchor: [1, -34]   // point from which the popup should open relative to the iconAnchor
+	});
 
-		if (Settings.map_type === "open_street_map") {
-			map_provider = geoMapsRenderEngine.osm_providers.default;
-			if (provider_from_setting !== '' && typeof geoMapsRenderEngine.osm_providers[provider_from_setting] !== "undefined") {
-				map_provider = geoMapsRenderEngine.osm_providers[provider_from_setting];
-			}
-		} else {
-			map_provider = geoMapsRenderEngine.google_map_providers.default;
-		}
-		var cities = L.layerGroup();
-		const decodeHtml = (str) => {
-			if (str == '') {
-				return str;
-			}
-			var map = {
-				"&amp;": "&",
-				"&lt;": "<",
-				"&gt;": ">",
-				"&quot;": '"',
-				"&#039;": "'",
-			};
-			return str.replace(/&amp;|&lt;|&gt;|&quot;|&#039;/g, function (m) {
-				return map[m];
-			});
-		};
-		var latlngs = Array();
-		var draw_line = Settings.draw_line;
-
-		Settings.map_marker.forEach(function (item, index) {
-			var popupHTML = "";
-			if (item.title !== "") {
-				popupHTML += "<h6>" + item.title + "</h6>";
-			}
-			if (item.content !== "") {
-				popupHTML += "<p>" + decodeHtml(item.content) + "</p>";
-			}
-			var is_draggable = typeof item.draggable !== undefined ? item.draggable : 'false';
-			var item_marker = null;
-			if (item.iconType === "custom") {
-				var LeafIcon = L.Icon.extend({
-					options: {
-						iconSize: [item.customIconWidth, item.customIconHeight],
-						popupAnchor: [0, -15],
-					},
-				});
-				var icon = new LeafIcon({iconUrl: item.customIconUrl});
-				if (item.title !== "" || item.content !== "") {
-					item_marker = L.marker([item.lat, item.lng], {icon: icon, draggable: is_draggable})
-						.bindPopup(popupHTML)
-						.addTo(cities);
-				} else {
-					item_marker = L.marker([item.lat, item.lng], {icon: icon, draggable: is_draggable}).addTo(cities);
+	// Check if geoMapsRenderEngine already exists
+	if (typeof window.geoMapsRenderEngine === 'undefined') {
+		// Create the render engine if it doesn't exist
+		window.geoMapsRenderEngine = {
+			map: null,
+			options: {},
+			
+			// OSM provider options
+			osm_providers: {
+				default: {
+					url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+					maxZoom: 19
 				}
-			} else {
-				if (item.title !== "" || item.content !== "") {
-					item_marker = L.marker([item.lat, item.lng], {draggable: is_draggable}).bindPopup(popupHTML).addTo(cities);
-				} else {
-					item_marker = L.marker([item.lat, item.lng], {draggable: is_draggable}).addTo(cities);
-				}
-
-			}
-			if (typeof item.dragendCallback !== undefined) {
-				item_marker.on('dragend', item.dragendCallback);
-			}
-			var show_on = typeof Settings.popup_show_on !== undefined ? Settings.popup_show_on : 'click';
-
-			if (show_on === "mouseover") {
-				item_marker.on('mouseover', function (e) {
-					this.openPopup();
-				});
-				item_marker.on('mouseout', function (e) {
-					//this.closePopup();
-				});
-			}
-			latlngs.push(item_marker.getLatLng());
-
-
-		});
-
-		var grayscale = L.tileLayer(map_provider.url, {
-			id: "mapbox/light-v9",
-			attribution: map_provider.attribution
-		});
-		//Settings.map_zoom =100;
-		let config = {
-			zoom: Settings.map_zoom,
-			layers: [grayscale, cities],
-			fullscreenControl: Settings.show_control,
-			scrollWheelZoom: Settings.scroll_wheel_zoom,
-			fullscreenControlOptions: {
-				position: Settings.control_position,
+				// Add other providers as needed
 			},
-			zoomControl: Settings.show_control
+			
+			// Google map providers
+			google_map_providers: {
+				default: {
+					url: 'https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+					attribution: '&copy; Google Maps',
+					maxZoom: 20,
+					subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+				}
+			}
 		};
-		if (Settings.map_marker.length) {
-			config.center = [
-				Settings.map_marker[Settings.center_index].lat,
-				Settings.map_marker[Settings.center_index].lng,
-			];
+	}
+
+	// Initialize Geo_Maps_Render if not already defined
+	window.Geo_Maps_Rendered = window.Geo_Maps_Rendered || {};
+	
+	// Define the render function
+	window.Geo_Maps_Render = function(container_id, map_settings) {
+		// Ensure jQuery is available and properly assigned
+		if (typeof jQuery !== 'undefined') {
+			(function($) {
+				// Make sure we have valid settings
+				if (!map_settings || typeof map_settings !== 'object') {
+					console.error('Invalid map settings provided');
+					map_settings = {
+						map_type: 'open_street_map',
+						settings: {
+							osm_provider: 'default',
+							scroll_wheel_zoom: true,
+							control_position: 'topright',
+							popup_show_on: 'click',
+							markers: {
+								default_icon: '',
+								width: '25',
+								height: '40',
+								clustering: false
+							}
+						},
+						map_marker: [],
+						center_index: 0,
+						map_zoom: 5
+					};
+				}
+
+				// Check for required settings, set defaults if missing
+				if (!map_settings.settings) {
+					map_settings.settings = {};
+				}
+				
+				// Continue with the rest of your render engine code
+				// ...
+
+				// For example, rendering the map:
+				const mapContainer = document.getElementById(container_id);
+				if (!mapContainer) {
+					console.error('Map container not found:', container_id);
+					return;
+				}
+
+				// Default center coordinates (New York City)
+				let centerLat = 40.7128;
+				let centerLng = -74.0060;
+				let zoom = map_settings.map_zoom || 5;
+
+				// If we have markers, use the first one for centering
+				if (map_settings.map_marker && map_settings.map_marker.length > 0) {
+					const centerIndex = map_settings.center_index || 0;
+					if (map_settings.map_marker[centerIndex]) {
+						centerLat = parseFloat(map_settings.map_marker[centerIndex].lat);
+						centerLng = parseFloat(map_settings.map_marker[centerIndex].lng);
+					}
+				}
+
+				// Create the map
+				const map = L.map(container_id, {
+					center: [centerLat, centerLng],
+					zoom: zoom,
+					scrollWheelZoom: map_settings.settings.scroll_wheel_zoom !== false
+				});
+
+				// Add the tile layer based on provider
+				let tileLayer;
+				const osmProvider = map_settings.settings.osm_provider || 'default';
+				
+				// Default OSM tile layer
+				tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+				});
+				
+				// Add the tile layer to the map
+				tileLayer.addTo(map);
+
+				// Add markers
+				if (map_settings.map_marker && map_settings.map_marker.length > 0) {
+					let markers = [];
+					map_settings.map_marker.forEach(function(markerData) {
+						try {
+							const lat = parseFloat(markerData.lat);
+							const lng = parseFloat(markerData.lng);
+							
+							if (isNaN(lat) || isNaN(lng)) {
+								console.warn('Invalid marker coordinates:', markerData);
+								return;
+							}
+							
+							// Create marker
+							let marker;
+							
+							// Check if custom icon is specified
+							if (markerData.icon || map_settings.settings.markers.default_icon) {
+								const iconUrl = markerData.icon || map_settings.settings.markers.default_icon;
+								const iconWidth = parseInt(map_settings.settings.markers.width) || 25;
+								const iconHeight = parseInt(map_settings.settings.markers.height) || 40;
+								
+								const icon = L.icon({
+									iconUrl: iconUrl,
+									iconSize: [iconWidth, iconHeight],
+									iconAnchor: [iconWidth/2, iconHeight],
+									popupAnchor: [0, -iconHeight]
+								});
+								
+								marker = L.marker([lat, lng], { icon: icon });
+							} else {
+								marker = L.marker([lat, lng]);
+							}
+							
+							// Add popup if title or content exists
+							if (markerData.title || markerData.content) {
+								const popupContent = `
+									${markerData.title ? '<h4>' + markerData.title + '</h4>' : ''}
+									${markerData.content ? '<div>' + markerData.content + '</div>' : ''}
+								`;
+								marker.bindPopup(popupContent);
+								
+								// Set popup behavior based on settings
+								if (map_settings.settings.popup_show_on === 'mouseover') {
+									marker.on('mouseover', function() {
+										this.openPopup();
+									});
+									marker.on('mouseout', function() {
+										this.closePopup();
+									});
+								}
+							}
+							
+							marker.addTo(map);
+							markers.push(marker);
+						} catch (e) {
+							console.error('Error creating marker:', e);
+						}
+					});
+					
+					// Handle marker clustering if enabled
+					if (map_settings.settings.markers.clustering && markers.length > 1) {
+						// Check if MarkerClusterGroup is available
+						if (typeof L.MarkerClusterGroup === 'function') {
+							const markerCluster = L.markerClusterGroup();
+							markers.forEach(marker => {
+								markerCluster.addLayer(marker);
+							});
+							map.removeLayer(markers);
+							map.addLayer(markerCluster);
+						} else {
+							console.warn('MarkerClusterGroup not available. Clustering disabled.');
+						}
+					}
+				}
+
+				// Add line between markers if enabled
+				if (map_settings.settings.draw_marker_line && map_settings.map_marker && map_settings.map_marker.length > 1) {
+					const points = map_settings.map_marker.map(marker => [parseFloat(marker.lat), parseFloat(marker.lng)]);
+					L.polyline(points, {color: 'red'}).addTo(map);
+				}
+
+				// Add controls based on position setting
+				if (map_settings.settings.control_position && map_settings.settings.control_position !== 'hide') {
+					L.control.zoom({
+						position: map_settings.settings.control_position
+					}).addTo(map);
+				}
+
+				// Store the map reference for later use
+				window.Geo_Maps_Rendered[container_id] = map;
+				
+				// Fire an event when the map is ready
+				$(document).trigger('geo_maps_ready', [container_id, map]);
+				
+				return map;
+			})(jQuery);
+		} else {
+			console.error('jQuery is not defined. Make sure jQuery is loaded before the render engine.');
 		}
-		if (typeof window.Geo_Maps_Rendered[ID] != "undefined") {
-			window.Geo_Maps_Rendered[ID].off();
-			window.Geo_Maps_Rendered[ID].remove();
-		}
-
-		window.Geo_Maps_Rendered[ID] = L.map(ID, config);
-
-		if(draw_line!==undefined && draw_line!=="undefined" && draw_line){
-		
-			var polyline = L.polyline(latlngs, {color: 'black'}).addTo(window.Geo_Maps_Rendered[ID]);
-			// zoom the map to the polyline
-			window.Geo_Maps_Rendered[ID].fitBounds(polyline.getBounds());
-		}
-
-		window.Geo_Maps_Rendered[ID].invalidateSize();
-
 	};
-
-
-}(jQuery));
+})(window);

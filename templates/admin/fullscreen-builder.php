@@ -459,92 +459,160 @@ if (!defined('ABSPATH')) exit;
     <!-- Notifications container -->
     <div class="geo-maps-notifications-container"></div>
     
+    <?php
+    // Generate the script path with cache-busting
+    $script_path = plugins_url('assets/src/render-engine.js', dirname(dirname(__FILE__))) . '?ver=' . time();
+    ?>
+    <!-- Include render engine script -->
+    <script type="text/javascript" src="<?php echo esc_url($script_path); ?>"></script>
+    
     <!-- Script to initialize the map -->
     <script type="text/javascript">
-        jQuery(document).ready(function($) {
-            // Ensure error message is hidden initially
-            $('#geo-maps-map-error').hide();
-            
-            // Function to initialize map with given settings
-            function initializeMap(mapSettings) {
-                try {
-                    // Only initialize if leaflet is loaded
-                    if (typeof L !== 'undefined' && $('#geo-maps-builder-map').length) {
-                        Geo_Maps_Render('geo-maps-builder-map', mapSettings);
-                        console.log('Map initialized with settings:', mapSettings);
-                    } else {
-                        console.error('Leaflet library not loaded or map container not found');
-                    }
-                } catch (e) {
-                    console.error('Error initializing map:', e);
-                }
+    /**
+     * Initialize the map with the provided settings
+     */
+    function initializeMap() {
+        try {
+            // Check if the render engine is available
+            if (typeof Geo_Maps_Render === 'undefined') {
+                console.error('Geo Maps render engine not loaded yet. Waiting...');
+                // Retry after a short delay
+                setTimeout(initializeMap, 500);
+                return;
             }
             
-            // Default map settings (will be used if geolocation fails)
-            const defaultMapSettings = {
-                map_type: "<?php echo isset($map_settings['map_type']) ? esc_js($map_settings['map_type']) : 'open_street_map'; ?>",
-                map_zoom: 5,
-                osm_provider: "<?php echo isset($map_settings['settings']['osm_provider']) ? esc_js($map_settings['settings']['osm_provider']) : 'default'; ?>",
-                center_index: 0,
-                scroll_wheel_zoom: true,
-                show_control: true,
-                control_position: 'topright',
-                popup_show_on: 'click',
-                draw_line: false,
-                map_marker: [
-                    {
-                        lat: 40.7128,
-                        lng: -74.0060,
-                        title: "New York",
-                        content: "A sample marker",
-                        iconType: "default"
-                    }
-                ]
-            };
+            // Get map settings with fallback to default settings if null
+            let mapSettings = <?php echo isset($map_settings) ? json_encode($map_settings) : 'null'; ?>;
             
-            // Wait for page to fully load
-            setTimeout(function() {
-                // Check if any existing map is rendered
-                if ($('#geo-maps-builder-map .leaflet-container, #geo-maps-builder-map .gm-style').length === 0) {
-                    // Try to get user's current location
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(
-                            // Success callback
-                            function(position) {
-                                // Create map settings with user's location
-                                const userLocationSettings = {...defaultMapSettings};
-                                userLocationSettings.map_marker = [{
-                                    lat: position.coords.latitude,
-                                    lng: position.coords.longitude,
-                                    title: "Your Location",
-                                    content: "Your current location",
-                                    iconType: "default"
-                                }];
+            // Create default settings if mapSettings is null
+            if (!mapSettings) {
+                console.log('Using default map settings');
+                mapSettings = {
+                    map_type: 'open_street_map',
+                    settings: {
+                        osm_provider: 'default',
+                        scroll_wheel_zoom: true,
+                        show_control: true,
+                        control_position: 'topright',
+                        popup_show_on: 'click',
+                        draw_line: false,
+                        markers: {
+                            default_icon: '',
+                            width: '25',
+                            height: '40',
+                            clustering: false
+                        }
+                    },
+                    map_marker: [
+                        {
+                            lat: 40.7128,
+                            lng: -74.0060,
+                            title: 'New York',
+                            content: 'A sample marker',
+                            iconType: 'default'
+                        }
+                    ],
+                    center_index: 0,
+                    map_zoom: 5
+                };
+            }
+            
+            // Initialize the map
+            console.log('Initializing map with settings:', mapSettings);
+            Geo_Maps_Render('geo-maps-builder-map', mapSettings);
+            
+            // Store reference to the map for later use
+            window.geoMapsCurrentMap = window.Geo_Maps_Rendered['geo-maps-builder-map'];
+            
+            console.log('Map initialized successfully');
+        } catch (e) {
+            console.error('Error initializing map:', e);
+            jQuery('#geo-maps-map-error').fadeIn(300);
+        }
+    }
+    
+    /**
+     * Try to get user's current location and update the map
+     */
+    function getUserLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                // Success callback
+                function(position) {
+                    try {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        console.log('Got user location:', lat, lng);
+                        
+                        // First initialize the map
+                        initializeMap();
+                        
+                        // Wait for map to be ready, then center it
+                        setTimeout(function() {
+                            if (typeof window.geoMapsCurrentMap !== 'undefined' && window.geoMapsCurrentMap) {
+                                // Center the map on user's location
+                                window.geoMapsCurrentMap.setView([lat, lng], 13);
                                 
-                                // Initialize map with user location
-                                initializeMap(userLocationSettings);
-                            },
-                            // Error callback
-                            function(error) {
-                                console.warn('Geolocation error:', error.message);
-                                // Fall back to default settings
-                                initializeMap(defaultMapSettings);
-                            },
-                            // Options
-                            {
-                                maximumAge: 60000,        // Accept cached position up to 1 minute old
-                                timeout: 5000,            // Wait 5 seconds for location
-                                enableHighAccuracy: false // Don't need high accuracy for map centering
+                                // Update the center coordinates in settings
+                                jQuery('#geo_maps_center_lat').val(lat.toFixed(6));
+                                jQuery('#geo_maps_center_lng').val(lng.toFixed(6));
+                                console.log('Map centered on user location');
+                            } else {
+                                console.warn('Map not available to center on user location');
                             }
-                        );
-                    } else {
-                        // Geolocation not supported, use default settings
-                        console.warn('Geolocation not supported by this browser');
-                        initializeMap(defaultMapSettings);
+                        }, 1000);
+                    } catch (e) {
+                        console.error('Error setting user location:', e);
+                        // Fall back to normal initialization
+                        initializeMap();
                     }
+                },
+                // Error callback
+                function(error) {
+                    console.warn('Geolocation error:', error);
+                    // Just initialize with default settings
+                    initializeMap();
+                },
+                // Options
+                {
+                    maximumAge: 60000,
+                    timeout: 5000,
+                    enableHighAccuracy: true
                 }
-            }, 1000);
-        });
+            );
+        } else {
+            console.warn('Geolocation not supported by this browser');
+            // Just initialize with default settings
+            initializeMap();
+        }
+    }
+    
+    // Initialize the map when the page is ready
+    jQuery(document).ready(function($) {
+        // Ensure error message is hidden initially
+        $('#geo-maps-map-error').hide();
+        
+        console.log('Document ready, initializing map...');
+        
+        // Check if geolocation should be attempted
+        const useGeolocation = <?php echo (isset($use_geolocation) && $use_geolocation) ? 'true' : 'false'; ?>;
+        
+        console.log('Use geolocation:', useGeolocation);
+        
+        // Make sure Leaflet is loaded before proceeding
+        if (typeof L === 'undefined') {
+            console.error('Leaflet library not loaded!');
+            $('#geo-maps-map-error').fadeIn(300);
+            return;
+        }
+        
+        if (useGeolocation) {
+            getUserLocation();
+        } else {
+            initializeMap();
+        }
+    });
     </script>
     
     <?php wp_footer(); ?>

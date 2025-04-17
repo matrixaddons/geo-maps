@@ -4,6 +4,22 @@
  */
 jQuery(document).ready(function($) {
     
+    // Global variables
+    let currentMarker = null;
+    let currentMarkerIndex = null;
+
+    // Define custom marker icon
+    const geoMapsCustomIcon = L.icon({
+        iconUrl: '../wp-content/plugins/geo-maps/assets/images/marker-icon.png',
+        iconRetinaUrl: '../wp-content/plugins/geo-maps/assets/images/marker-icon-2x.png',
+        shadowUrl: '../wp-content/plugins/geo-maps/assets/images/marker-shadow.png',
+        iconSize: [25, 41],     // size of the icon
+        iconAnchor: [12, 41],   // point of the icon which will correspond to marker's location
+        shadowSize: [41, 41],   // size of the shadow
+        shadowAnchor: [12, 41], // anchor point of the shadow
+        popupAnchor: [1, -34]   // point from which the popup should open relative to the iconAnchor
+    });
+    
     // Status message functionality
     const statusManager = {
         /**
@@ -284,12 +300,12 @@ jQuery(document).ready(function($) {
                         Marker Information
                     </h3>
                     <div class="geo-maps-builder-field">
-                        <label for="geo_maps_marker_title" class="geo-maps-label">Marker Title <span class="required">*</span></label>
-                        <input type="text" id="geo_maps_marker_title" name="geo_maps_marker_title" class="geo-maps-input" placeholder="Enter a descriptive title">
+                        <label for="marker_title" class="geo-maps-label">Marker Title <span class="required">*</span></label>
+                        <input type="text" id="marker_title" name="marker_title" class="geo-maps-input" placeholder="Enter a descriptive title">
                     </div>
                     <div class="geo-maps-builder-field">
-                        <label for="geo_maps_marker_description" class="geo-maps-label">Description</label>
-                        <textarea id="geo_maps_marker_description" name="geo_maps_marker_description" class="geo-maps-input" placeholder="Enter optional description" rows="3"></textarea>
+                        <label for="marker_description" class="geo-maps-label">Description</label>
+                        <textarea id="marker_description" name="marker_description" class="geo-maps-input" placeholder="Enter optional description" rows="3"></textarea>
                     </div>
                 </div>
             `);
@@ -312,12 +328,12 @@ jQuery(document).ready(function($) {
                     
                     <div class="geo-maps-builder-field-row">
                         <div class="geo-maps-builder-subfield">
-                            <label for="geo_maps_marker_lat" class="geo-maps-label">Latitude <span class="required">*</span></label>
-                            <input type="text" id="geo_maps_marker_lat" name="geo_maps_marker_lat" class="geo-maps-input">
+                            <label for="marker_lat" class="geo-maps-label">Latitude <span class="required">*</span></label>
+                            <input type="text" id="marker_lat" name="marker_lat" class="geo-maps-input">
                         </div>
                         <div class="geo-maps-builder-subfield">
-                            <label for="geo_maps_marker_lng" class="geo-maps-label">Longitude <span class="required">*</span></label>
-                            <input type="text" id="geo_maps_marker_lng" name="geo_maps_marker_lng" class="geo-maps-input">
+                            <label for="marker_lng" class="geo-maps-label">Longitude <span class="required">*</span></label>
+                            <input type="text" id="marker_lng" name="marker_lng" class="geo-maps-input">
                         </div>
                     </div>
                     
@@ -363,13 +379,8 @@ jQuery(document).ready(function($) {
                 </div>
             `);
             
-            // Initialize mini map if Google Maps API is available
-            if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
-                initializeMiniMap();
-            } else {
-                // If Google Maps API not loaded yet, show a placeholder
-                $('#geo-maps-marker-mini-map').html('<div class="geo-maps-mini-map-placeholder">Loading map...</div>');
-            }
+            // Initialize mini map with Leaflet
+            initializeMiniMap();
         }
         
         // After drawer is opened, update the mini map with current data
@@ -380,116 +391,109 @@ jQuery(document).ready(function($) {
      * Initialize the mini map for location selection
      */
     function initializeMiniMap() {
-        // Default center (can be updated based on current map center)
-        const defaultCenter = { lat: 40.7128, lng: -74.0060 }; // NYC
+        // Target the correct container
+        const $mapContainer = $('#geo-maps-marker-mini-map');
         
-        // Create mini map
-        const miniMap = new google.maps.Map(document.getElementById('geo-maps-marker-mini-map'), {
-            center: defaultCenter,
-            zoom: 12,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: false,
-            zoomControlOptions: {
-                position: google.maps.ControlPosition.RIGHT_TOP
-            }
-        });
+        if (!$mapContainer.length) {
+            console.error('Mini map container not found');
+            return;
+        }
         
-        // Create a marker for selection
-        const marker = new google.maps.Marker({
-            position: defaultCenter,
-            map: miniMap,
-            draggable: true
-        });
-        
-        // Update lat/lng fields when marker is dragged
-        google.maps.event.addListener(marker, 'dragend', function() {
-            updateLatLngFields(marker.getPosition());
-        });
-        
-        // Allow clicking on map to move marker
-        google.maps.event.addListener(miniMap, 'click', function(event) {
-            marker.setPosition(event.latLng);
-            updateLatLngFields(event.latLng);
-        });
-        
-        // Initialize search box
-        const input = document.getElementById('geo_maps_location_search');
-        const searchBox = new google.maps.places.SearchBox(input);
-        
-        // Bias the SearchBox results towards current map's viewport
-        miniMap.addListener('bounds_changed', function() {
-            searchBox.setBounds(miniMap.getBounds());
-        });
-        
-        // Listen for the event fired when the user selects a prediction
-        searchBox.addListener('places_changed', function() {
-            const places = searchBox.getPlaces();
+        // Initialize Leaflet map if it doesn't exist
+        if (!window.geoMapsMiniMap) {
+            console.log('Creating new mini map instance');
             
-            if (places.length === 0) {
-                return;
-            }
+            // Default center (will be updated later)
+            const defaultCenter = [40.7128, -74.0060]; // NYC
             
-            // For each place, get the location
-            const bounds = new google.maps.LatLngBounds();
-            places.forEach(function(place) {
-                if (!place.geometry || !place.geometry.location) {
-                    console.log("Returned place contains no geometry");
-                    return;
-                }
-                
-                // Set marker position to the searched location
-                marker.setPosition(place.geometry.location);
-                updateLatLngFields(place.geometry.location);
-                
-                if (place.geometry.viewport) {
-                    // Only geocodes have viewport
-                    bounds.union(place.geometry.viewport);
-                } else {
-                    bounds.extend(place.geometry.location);
-                }
+            // Create the map with appropriate options
+            const miniMap = L.map('geo-maps-marker-mini-map', {
+                center: defaultCenter,
+                zoom: 13,
+                scrollWheelZoom: true,
+                zoomControl: true
             });
             
-            miniMap.fitBounds(bounds);
-            miniMap.setZoom(14); // Zoom out slightly to show context
-        });
-        
-        // Manual lat/lng input handling
-        $('#geo_maps_marker_lat, #geo_maps_marker_lng').on('change', function() {
-            const lat = parseFloat($('#geo_maps_marker_lat').val());
-            const lng = parseFloat($('#geo_maps_marker_lng').val());
-            
-            if (!isNaN(lat) && !isNaN(lng)) {
-                const position = new google.maps.LatLng(lat, lng);
-                marker.setPosition(position);
-                miniMap.setCenter(position);
+            // Use the same tile provider as the main map if available
+            let tileLayer;
+            if (window.geoMapsCurrentMap && window.geoMapsCurrentMap._layers) {
+                // Try to use the same tile layer as the main map
+                let mainTileLayer = null;
+                
+                // Find the tile layer in the main map
+                Object.values(window.geoMapsCurrentMap._layers).forEach(layer => {
+                    if (layer instanceof L.TileLayer) {
+                        mainTileLayer = layer;
+                    }
+                });
+                
+                if (mainTileLayer) {
+                    // Clone the tile layer options
+                    const tileUrl = mainTileLayer._url;
+                    const tileOptions = {
+                        attribution: mainTileLayer.options.attribution,
+                        maxZoom: mainTileLayer.options.maxZoom,
+                        subdomains: mainTileLayer.options.subdomains
+                    };
+                    
+                    tileLayer = L.tileLayer(tileUrl, tileOptions);
+                } else {
+                    // Fallback to default OSM
+                    tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                        maxZoom: 19
+                    });
+                }
+            } else {
+                // Fallback to default OSM
+                tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 19
+                });
             }
-        });
-        
-        // Set the initial values for lat/lng fields
-        updateLatLngFields(marker.getPosition());
-        
-        // Store reference to map and marker for later use
-        window.geoMapsMiniMap = {
-            map: miniMap,
-            marker: marker
-        };
+            
+            // Add the tile layer to the map
+            tileLayer.addTo(miniMap);
+            
+            // Create a draggable marker
+            const marker = L.marker(defaultCenter, {
+                draggable: true
+            }).addTo(miniMap);
+            
+            // Add marker drag event
+            marker.on('dragend', function() {
+                const position = marker.getLatLng();
+                updateLatLngFields(position);
+            });
+            
+            // Store the map reference
+            window.geoMapsMiniMap = {
+                map: miniMap,
+                marker: marker
+            };
+            
+            // For backward compatibility with any code using geoMiniMap
+            window.geoMiniMap = miniMap;
+            
+            // Need to call invalidateSize to handle any size changes
+            miniMap.invalidateSize();
+        }
     }
     
     /**
      * Update latitude and longitude input fields
-     * @param {google.maps.LatLng} position - The position to update fields with
+     * @param {L.LatLng} position - The position to update fields with
      */
     function updateLatLngFields(position) {
-        $('#geo_maps_marker_lat').val(position.lat().toFixed(6));
-        $('#geo_maps_marker_lng').val(position.lng().toFixed(6));
+        $('#marker_lat').val(position.lat.toFixed(6));
+        $('#marker_lng').val(position.lng.toFixed(6));
     }
     
     /**
      * Close the marker drawer
      */
     function closeMarkerDrawer() {
-        $('#geo-maps-marker-drawer').removeClass('open');
+        $('#geo-maps-marker-drawer').hide();
         $('body').removeClass('drawer-open');
     }
     
@@ -522,74 +526,83 @@ jQuery(document).ready(function($) {
         const isChecked = $(this).is(':checked');
         if (isChecked && window.geoMapsMiniMap) {
             // Get the current position from the mini map
-            const position = window.geoMapsMiniMap.marker.getPosition();
+            const position = window.geoMapsMiniMap.marker.getLatLng();
             
             // If we have access to the main map, center it on this position
             if (window.geoMapsMainMap) {
-                window.geoMapsMainMap.setCenter(position);
+                window.geoMapsMainMap.setView(position, window.geoMapsMainMap.getZoom());
                 
                 // Optionally, update the center coordinates in the general settings
                 if ($('#geo_maps_center_lat').length && $('#geo_maps_center_lng').length) {
-                    $('#geo_maps_center_lat').val(position.lat().toFixed(6));
-                    $('#geo_maps_center_lng').val(position.lng().toFixed(6));
+                    $('#geo_maps_center_lat').val(position.lat.toFixed(6));
+                    $('#geo_maps_center_lng').val(position.lng.toFixed(6));
                 }
             }
         }
     });
 
     /**
-     * Update the mini map position based on marker data or map center
+     * Update mini map position and marker
      * @param {Object} markerData - Optional marker data for editing
      * @param {Object} mapCenter - Optional map center to use
      */
     function updateMiniMapPosition(markerData = null, mapCenter = null) {
-        // Wait for mini map to be initialized
-        setTimeout(() => {
-            if (window.geoMapsMiniMap) {
-                let position;
-                
-                if (markerData && markerData.lat && markerData.lng) {
-                    // If editing an existing marker, use its position
-                    position = new google.maps.LatLng(
-                        parseFloat(markerData.lat),
-                        parseFloat(markerData.lng)
-                    );
-                    
-                    // Update form fields
-                    $('#geo_maps_marker_title').val(markerData.title || '');
-                    $('#geo_maps_marker_description').val(markerData.description || '');
-                    
-                    // If marker has center position flag, check the box
-                    if (markerData.isCenter) {
-                        $('#geo_maps_marker_center_position').prop('checked', true);
-                    }
-                    
-                    // Set marker icon if available
-                    if (markerData.icon) {
-                        $('#geo_maps_marker_icon').val(markerData.icon);
-                        $('#geo-maps-marker-icon-preview').removeClass('empty').html(`<img src="${markerData.icon}" alt="Marker Icon">`);
-                        $('.geo-maps-droppable-media-field .geo-maps-media-clear').show();
-                    }
-                } else if (mapCenter && mapCenter.lat && mapCenter.lng) {
-                    // Use the current map center
-                    position = new google.maps.LatLng(
-                        parseFloat(mapCenter.lat),
-                        parseFloat(mapCenter.lng)
-                    );
-                } else if (window.geoMapsMainMap) {
-                    // Use the main map's center as fallback
-                    position = window.geoMapsMainMap.getCenter();
-                } else {
-                    // Keep default position
-                    return;
-                }
-                
-                // Update mini map
-                window.geoMapsMiniMap.marker.setPosition(position);
-                window.geoMapsMiniMap.map.setCenter(position);
-                updateLatLngFields(position);
+        // Make sure the mini map is initialized
+        if (window.geoMapsMiniMap && window.geoMapsMiniMap.map) {
+            const miniMap = window.geoMapsMiniMap.map;
+            let position;
+
+            // If we have marker data, use that lat/lng
+            if (markerData && markerData.latitude && markerData.longitude) {
+                position = L.latLng(parseFloat(markerData.latitude), parseFloat(markerData.longitude));
+            } 
+            // Otherwise, use the current map center if available
+            else if (mapCenter) {
+                position = L.latLng(mapCenter.lat, mapCenter.lng);
             }
-        }, 300); // Short delay to ensure map is loaded
+            // Otherwise use the center of the main map if available
+            else if (window.geoMapsCurrentMap) {
+                position = window.geoMapsCurrentMap.getCenter();
+            }
+            // Fallback to a default position
+            else {
+                position = L.latLng(40.7128, -74.0060); // NYC
+            }
+
+            // Update mini map center
+            miniMap.setView(position, 13);
+
+            // Validate if we have a marker instance
+            if (window.geoMapsMiniMap.marker) {
+                window.geoMapsMiniMap.marker.setLatLng(position);
+            } else {
+                // If for some reason the marker is missing, create a new one with custom icon
+                window.geoMapsMiniMap.marker = L.marker(position, {
+                    draggable: true,
+                    icon: geoMapsCustomIcon
+                }).addTo(miniMap);
+                
+                // Re-attach event handlers
+                window.geoMapsMiniMap.marker.on('dragend', function() {
+                    const pos = window.geoMapsMiniMap.marker.getLatLng();
+                    updateLatLngFields(pos);
+                });
+            }
+
+            // Update the lat/lng form fields
+            updateLatLngFields(position);
+
+            // If editing a marker, set the title and other fields
+            if (markerData) {
+                $('#marker_title').val(markerData.title || '');
+                $('#marker_description').val(markerData.description || '');
+                $('#marker_link').val(markerData.link || '');
+                // Set other fields as needed...
+            }
+
+            // Need to refresh map size in case the drawer was hidden
+            miniMap.invalidateSize();
+        }
     }
 
     // Media button handler
@@ -861,4 +874,216 @@ jQuery(document).ready(function($) {
             window.location.reload();
         });
     });
+
+    /**
+     * Add a marker to the map (called when user clicks "Add Marker" button)
+     */
+    function addMarker() {
+        // Get the center of the map
+        const center = window.geoMapsCurrentMap.getCenter();
+        
+        // Create a new marker at the center with custom icon
+        const marker = L.marker(center, { 
+            draggable: true,
+            icon: geoMapsCustomIcon
+        }).addTo(window.geoMapsCurrentMap);
+        
+        // Open the marker drawer to edit this marker
+        openMarkerDrawer('Add', null, center);
+        
+        // Store reference to the current marker being edited
+        currentMarker = marker;
+        currentMarkerIndex = null; // This is a new marker, not yet saved
+    }
+
+    // Function to update mini map marker position
+    function updateMiniMapMarkerPosition(lat, lng) {
+        // Use either the map object or the wrapper object
+        if (!window.geoMapsMiniMap || (!window.geoMapsMiniMap.map && !window.geoMiniMap)) {
+            console.error('Mini map not initialized, attempting to initialize it now');
+            initializeMiniMap();
+            
+            // If initialization failed, return
+            if (!window.geoMapsMiniMap && !window.geoMiniMap) {
+                return;
+            }
+        }
+        
+        // Get the mini map instance (prefer the wrapper object)
+        const miniMap = window.geoMapsMiniMap ? window.geoMapsMiniMap.map : window.geoMiniMap;
+        
+        console.log('Updating mini map marker position to:', lat, lng);
+        
+        // Remove existing markers if using direct map reference
+        if (window.geoMiniMap === miniMap) {
+            miniMap.eachLayer(function(layer) {
+                if (layer instanceof L.Marker) {
+                    miniMap.removeLayer(layer);
+                }
+            });
+            
+            // Add new marker at position
+            const marker = L.marker([lat, lng], {
+                draggable: true
+            }).addTo(miniMap);
+            
+            // Store the marker reference for compatibility
+            window.geoMapsMiniMap = {
+                map: miniMap,
+                marker: marker
+            };
+            
+            // Handle marker drag end
+            marker.on('dragend', function(e) {
+                const position = marker.getLatLng();
+                
+                // Update input fields
+                $('#marker_lat').val(position.lat.toFixed(6));
+                $('#marker_lng').val(position.lng.toFixed(6));
+            });
+        } else {
+            // Using the wrapper object
+            // Update existing marker position
+            window.geoMapsMiniMap.marker.setLatLng([lat, lng]);
+        }
+        
+        // Center map on marker
+        miniMap.setView([lat, lng], 13);
+        
+        // Make sure the map is properly sized
+        miniMap.invalidateSize();
+        
+        // Update input fields
+        $('#marker_lat').val(lat.toFixed(6));
+        $('#marker_lng').val(lng.toFixed(6));
+    }
+
+    function setupMiniMapLocationSearch($container) {
+        // Create the search container if it doesn't exist
+        let $searchContainer = $container.find('.geo-maps-location-search');
+        if ($searchContainer.length === 0) {
+            $searchContainer = $('<div class="geo-maps-location-search"></div>');
+            $container.prepend($searchContainer);
+        }
+
+        // Create search input and button if they don't exist
+        let $searchInput = $searchContainer.find('.geo-maps-location-input');
+        if ($searchInput.length === 0) {
+            $searchInput = $('<input type="text" class="geo-maps-location-input" placeholder="Search for a location">');
+            $searchContainer.append($searchInput);
+        }
+
+        let $searchButton = $searchContainer.find('.geo-maps-location-search-button');
+        if ($searchButton.length === 0) {
+            $searchButton = $('<button class="geo-maps-location-search-button">Search</button>');
+            $searchContainer.append($searchButton);
+        }
+
+        // Create the results container if it doesn't exist
+        let $resultsContainer = $('.geo-maps-autocomplete-results');
+        if ($resultsContainer.length === 0) {
+            $resultsContainer = $('<div class="geo-maps-autocomplete-results"></div>');
+            $('body').append($resultsContainer);
+        }
+
+        // Setup debounce mechanism
+        let searchTimeout;
+        const debounceTime = 500; // milliseconds
+
+        // Handle input changes for live search
+        $searchInput.on('input', function() {
+            const query = $(this).val().trim();
+            
+            clearTimeout(searchTimeout);
+            
+            // Clear results if query is too short
+            if (query.length < 3) {
+                $resultsContainer.empty().hide();
+                return;
+            }
+            
+            // Debounce the search to avoid too many requests
+            searchTimeout = setTimeout(function() {
+                // Show loading indicator
+                $resultsContainer.html('<div class="geo-maps-autocomplete-loading">Searching...</div>').show();
+                
+                // Make AJAX call to geocoding service
+                $.ajax({
+                    url: 'https://nominatim.openstreetmap.org/search',
+                    type: 'GET',
+                    data: {
+                        q: query,
+                        format: 'json',
+                        limit: 5
+                    },
+                    headers: {
+                        'Accept-Language': 'en-US,en;q=0.9'
+                    },
+                    success: function(data) {
+                        // Clear results
+                        $resultsContainer.empty();
+                        
+                        if (data && data.length > 0) {
+                            // Add each result to the container
+                            data.forEach(function(item) {
+                                const $item = $('<div class="geo-maps-autocomplete-item" data-lat="' + item.lat + '" data-lon="' + item.lon + '" data-name="' + item.display_name + '">' + item.display_name + '</div>');
+                                $resultsContainer.append($item);
+                            });
+                            
+                            // Show results container
+                            $resultsContainer.show();
+                        } else {
+                            // No results found
+                            $resultsContainer.html('<div class="geo-maps-autocomplete-no-results">No results found</div>');
+                        }
+                    },
+                    error: function() {
+                        $resultsContainer.html('<div class="geo-maps-autocomplete-error">Error searching for location</div>');
+                    }
+                });
+            }, debounceTime);
+        });
+
+        // Handle search button click
+        $searchButton.on('click', function() {
+            // Trigger the input event to perform the search
+            $searchInput.trigger('input');
+        });
+
+        // Using proper event delegation for autocomplete item clicks
+        $(document).off('click', '.geo-maps-autocomplete-item').on('click', '.geo-maps-autocomplete-item', function() {
+            const $this = $(this);
+            const lat = parseFloat($this.data('lat'));
+            const lon = parseFloat($this.data('lon'));
+            const name = $this.data('name');
+            
+            // Update mini map position
+            updateMiniMapMarkerPosition(lat, lon);
+            
+            // Update input fields
+            $('#marker_lat').val(lat.toFixed(6));
+            $('#marker_lng').val(lon.toFixed(6));
+            
+            // Set marker title if empty
+            if ($('#marker_title').val() === '') {
+                // Extract a simpler name if possible
+                const simpleName = name.split(',')[0];
+                $('#marker_title').val(simpleName);
+            }
+            
+            // Add selected class to the search input
+            $searchInput.addClass('geo-maps-location-selected');
+            
+            // Hide results container
+            $resultsContainer.hide();
+        });
+
+        // Close results when clicking outside
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.geo-maps-location-search').length && 
+                !$(e.target).closest('.geo-maps-autocomplete-results').length) {
+                $resultsContainer.hide();
+            }
+        });
+    }
 });

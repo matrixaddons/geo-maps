@@ -241,22 +241,22 @@ class CustomAdmin
                 GEO_MAPS_VERSION
             );
             
-            // Google Maps API (replace YOUR_API_KEY with your actual API key)
-            wp_enqueue_script(
-                'google-maps-api',
-                'https://maps.googleapis.com/maps/api/js?key=AIzaSyDummy-PlaceholderKey123456789&libraries=places',
-                [],
-                null,
-                true
-            );
+            // Google Maps API is no longer needed - we're using Leaflet for both maps
+            // wp_enqueue_script(
+            //     'google-maps-api',
+            //     'https://maps.googleapis.com/maps/api/js?key=AIzaSyDummy-PlaceholderKey123456789&libraries=places',
+            //     [],
+            //     null,
+            //     true
+            // );
             
-            // Add async attribute to Google Maps API
-            add_filter('script_loader_tag', function($tag, $handle) {
-                if ('google-maps-api' === $handle) {
-                    return str_replace(' src', ' async src', $tag);
-                }
-                return $tag;
-            }, 10, 2);
+            // No need for Google Maps async attribute anymore
+            // add_filter('script_loader_tag', function($tag, $handle) {
+            //     if ('google-maps-api' === $handle) {
+            //         return str_replace(' src', ' async src', $tag);
+            //     }
+            //     return $tag;
+            // }, 10, 2);
             
             // Builder - this script now includes tab functionality
             wp_enqueue_script(
