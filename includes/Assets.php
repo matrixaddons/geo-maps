@@ -75,6 +75,22 @@ class Assets {
 			return;
 		}
 
+		// Explicitly load WordPress media and required dependencies
+		wp_enqueue_media();
+		wp_enqueue_script('media-upload');
+		wp_enqueue_script('media-views');
+		wp_enqueue_script('media-editor');
+		wp_enqueue_script('media-models');
+		wp_enqueue_script('media-audiovideo');
+		wp_enqueue_script('wp-plupload');
+		wp_enqueue_script('thickbox');
+		
+		// Load styles
+		wp_enqueue_style('media-views');
+		wp_enqueue_style('imgareaselect');
+		wp_enqueue_style('thickbox');
+		wp_enqueue_style('dashicons');
+
 		wp_enqueue_style(
 			'geo-maps-builder-css',
 			GEO_MAPS_ASSETS_URI . 'admin/css/builder-fullscreen.css',
@@ -85,16 +101,16 @@ class Assets {
 		wp_enqueue_script(
 			'geo-maps-builder-ui',
 			GEO_MAPS_ASSETS_URI . 'admin/js/builder-fullscreen.js',
-			array('jquery'),
+			array('jquery', 'media-upload', 'media-views', 'wp-util'),
 			GEO_MAPS_VERSION,
 			true
 		);
 
 		$map_id = isset($_GET['map_id']) ? intval($_GET['map_id']) : 0;
 		$is_new = $map_id === 0;
- 
+
 		$map_settings = [];
- 
+
 		if (!$is_new) {
 			$map_settings = geo_maps_get_map_settings($map_id);
 			$markers = $map_settings['settings']['markers'] ?? [];
@@ -111,19 +127,19 @@ class Assets {
 				'confirm_exit' => __('You have unsaved changes. Are you sure you want to leave?', 'geo-maps')
 			]
 		]);
-		wp_enqueue_style('dashicons');
-
 	}
 
-	// ✅ Proper way to remove all core styles except dashicons
+	// Clean admin styles but allow essential styles for functionality
 	public function clean_admin_styles($styles) {
+		// Only clean styles on our admin page
 		if (!is_admin() || !isset($_GET['page']) || $_GET['page'] !== 'geo-maps-new') {
 			return;
 		}
-
-		$allowed = ['dashicons'];
+		
+		$allowed = ['forms'];
+		
 		foreach ($styles->registered as $handle => $style) {
-			if (!in_array($handle, $allowed, true)) {
+			if (in_array($handle, $allowed, true)) {
 				$styles->remove($handle);
 			}
 		}

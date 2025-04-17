@@ -4,6 +4,7 @@ namespace MatrixAddons\GeoMaps;
 
 use MatrixAddons\GeoMaps\Hooks\ListTable;
 use MatrixAddons\GeoMaps\Admin\UI\CustomAdmin;
+use MatrixAddons\GeoMaps\Rest\RestAPI;
 
 final class Main
 {
@@ -49,6 +50,7 @@ final class Main
 		PostTypes\Maps::init();
 		Meta\Maps::init();
 		Api::init();
+		RestAPI::init();
 
 		if (is_admin()) {
 			CustomAdmin::init();

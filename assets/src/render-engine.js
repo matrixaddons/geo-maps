@@ -80,11 +80,8 @@
 				if (!map_settings.settings) {
 					map_settings.settings = {};
 				}
-				
-				// Continue with the rest of your render engine code
-				// ...
 
-				// For example, rendering the map:
+				// Continue with the rest of your render engine code
 				const mapContainer = document.getElementById(container_id);
 				if (!mapContainer) {
 					console.error('Map container not found:', container_id);
@@ -105,124 +102,205 @@
 					}
 				}
 
-				// Create the map
-				const map = L.map(container_id, {
-					center: [centerLat, centerLng],
-					zoom: zoom,
-					scrollWheelZoom: map_settings.settings.scroll_wheel_zoom !== false
-				});
-
-				// Add the tile layer based on provider
-				let tileLayer;
-				const osmProvider = map_settings.settings.osm_provider || 'default';
+				let map;
 				
-				// Default OSM tile layer
-				tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-				});
-				
-				// Add the tile layer to the map
-				tileLayer.addTo(map);
-
-				// Add markers
-				if (map_settings.map_marker && map_settings.map_marker.length > 0) {
-					let markers = [];
-					map_settings.map_marker.forEach(function(markerData) {
-						try {
-							const lat = parseFloat(markerData.lat);
-							const lng = parseFloat(markerData.lng);
-							
-							if (isNaN(lat) || isNaN(lng)) {
-								console.warn('Invalid marker coordinates:', markerData);
-								return;
-							}
-							
-							// Create marker
-							let marker;
-							
-							// Check if custom icon is specified
-							if (markerData.icon || map_settings.settings.markers.default_icon) {
-								const iconUrl = markerData.icon || map_settings.settings.markers.default_icon;
-								const iconWidth = parseInt(map_settings.settings.markers.width) || 25;
-								const iconHeight = parseInt(map_settings.settings.markers.height) || 40;
-								
-								const icon = L.icon({
-									iconUrl: iconUrl,
-									iconSize: [iconWidth, iconHeight],
-									iconAnchor: [iconWidth/2, iconHeight],
-									popupAnchor: [0, -iconHeight]
-								});
-								
-								marker = L.marker([lat, lng], { icon: icon });
-							} else {
-								marker = L.marker([lat, lng]);
-							}
-							
-							// Add popup if title or content exists
-							if (markerData.title || markerData.content) {
-								const popupContent = `
-									${markerData.title ? '<h4>' + markerData.title + '</h4>' : ''}
-									${markerData.content ? '<div>' + markerData.content + '</div>' : ''}
-								`;
-								marker.bindPopup(popupContent);
-								
-								// Set popup behavior based on settings
-								if (map_settings.settings.popup_show_on === 'mouseover') {
-									marker.on('mouseover', function() {
-										this.openPopup();
-									});
-									marker.on('mouseout', function() {
-										this.closePopup();
-									});
-								}
-							}
-							
-							marker.addTo(map);
-							markers.push(marker);
-						} catch (e) {
-							console.error('Error creating marker:', e);
-						}
+				// Check map type
+				if (map_settings.map_type === 'google_map' && typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+					console.log('Creating Google Maps instance');
+					
+					// Create Google Map
+					map = new google.maps.Map(mapContainer, {
+						center: { lat: centerLat, lng: centerLng },
+						zoom: zoom,
+						scrollwheel: map_settings.settings.scroll_wheel_zoom !== false,
+						mapTypeControl: true,
+						streetViewControl: true,
+						fullscreenControl: true
 					});
 					
-					// Handle marker clustering if enabled
-					if (map_settings.settings.markers.clustering && markers.length > 1) {
-						// Check if MarkerClusterGroup is available
-						if (typeof L.MarkerClusterGroup === 'function') {
-							const markerCluster = L.markerClusterGroup();
-							markers.forEach(marker => {
-								markerCluster.addLayer(marker);
-							});
-							map.removeLayer(markers);
-							map.addLayer(markerCluster);
-						} else {
-							console.warn('MarkerClusterGroup not available. Clustering disabled.');
+					// Add markers
+					if (map_settings.map_marker && map_settings.map_marker.length > 0) {
+						let markers = [];
+						map_settings.map_marker.forEach(function(markerData) {
+							try {
+								const lat = parseFloat(markerData.lat);
+								const lng = parseFloat(markerData.lng);
+								
+								if (isNaN(lat) || isNaN(lng)) {
+									console.warn('Invalid marker coordinates:', markerData);
+									return;
+								}
+								
+								// Create marker options
+								const markerOptions = {
+									position: { lat: lat, lng: lng },
+									map: map,
+									title: markerData.title || ''
+								};
+								
+								// Check if custom icon is specified
+								if (markerData.icon || map_settings.settings.markers.default_icon) {
+									const iconUrl = markerData.icon || map_settings.settings.markers.default_icon;
+									const iconWidth = parseInt(map_settings.settings.markers.width) || 25;
+									const iconHeight = parseInt(map_settings.settings.markers.height) || 40;
+									
+									markerOptions.icon = {
+										url: iconUrl,
+										scaledSize: new google.maps.Size(iconWidth, iconHeight)
+									};
+								}
+								
+								// Create the marker
+								const marker = new google.maps.Marker(markerOptions);
+								
+								// Add popup if title or content exists
+								if (markerData.title || markerData.content) {
+									const popupContent = `
+										${markerData.title ? '<h4>' + markerData.title + '</h4>' : ''}
+										${markerData.content ? '<div>' + markerData.content + '</div>' : ''}
+									`;
+									
+									const infoWindow = new google.maps.InfoWindow({
+										content: popupContent
+									});
+									
+									// Set popup behavior based on settings
+									if (map_settings.settings.popup_show_on === 'mouseover') {
+										marker.addListener('mouseover', function() {
+											infoWindow.open(map, marker);
+										});
+										marker.addListener('mouseout', function() {
+											infoWindow.close();
+										});
+									} else {
+										marker.addListener('click', function() {
+											infoWindow.open(map, marker);
+										});
+									}
+								}
+								
+								markers.push(marker);
+							} catch (e) {
+								console.error('Error creating marker:', e);
+							}
+						});
+					}
+				} else {
+					console.log('Creating Leaflet map instance');
+					
+					// Create Leaflet Map
+					map = L.map(container_id, {
+						center: [centerLat, centerLng],
+						zoom: zoom,
+						scrollWheelZoom: map_settings.settings.scroll_wheel_zoom !== false
+					});
+
+					// Add the tile layer based on provider
+					let tileLayer;
+					const osmProvider = map_settings.settings.osm_provider || 'default';
+					
+					// Get provider configuration
+					let providerConfig = window.geoMapsRenderEngine.osm_providers.default;
+					if (window.geoMapsRenderEngine.osm_providers[osmProvider]) {
+						providerConfig = window.geoMapsRenderEngine.osm_providers[osmProvider];
+					}
+					
+					// Create tile layer
+					tileLayer = L.tileLayer(providerConfig.url, {
+						attribution: providerConfig.attribution,
+						maxZoom: providerConfig.maxZoom || 19
+					});
+					
+					// Add the tile layer to the map
+					tileLayer.addTo(map);
+
+					// Add markers
+					if (map_settings.map_marker && map_settings.map_marker.length > 0) {
+						let markers = [];
+						map_settings.map_marker.forEach(function(markerData) {
+							try {
+								const lat = parseFloat(markerData.lat);
+								const lng = parseFloat(markerData.lng);
+								
+								if (isNaN(lat) || isNaN(lng)) {
+									console.warn('Invalid marker coordinates:', markerData);
+									return;
+								}
+								
+								// Create marker
+								let marker;
+								
+								// Check if custom icon is specified
+								if (markerData.icon || map_settings.settings.markers.default_icon) {
+									const iconUrl = markerData.icon || map_settings.settings.markers.default_icon;
+									const iconWidth = parseInt(map_settings.settings.markers.width) || 25;
+									const iconHeight = parseInt(map_settings.settings.markers.height) || 40;
+									
+									const icon = L.icon({
+										iconUrl: iconUrl,
+										iconSize: [iconWidth, iconHeight],
+										iconAnchor: [iconWidth/2, iconHeight],
+										popupAnchor: [0, -iconHeight]
+									});
+									
+									marker = L.marker([lat, lng], { icon: icon });
+								} else {
+									marker = L.marker([lat, lng]);
+								}
+								
+								// Add popup if title or content exists
+								if (markerData.title || markerData.content) {
+									const popupContent = `
+										${markerData.title ? '<h4>' + markerData.title + '</h4>' : ''}
+										${markerData.content ? '<div>' + markerData.content + '</div>' : ''}
+									`;
+									marker.bindPopup(popupContent);
+									
+									// Set popup behavior based on settings
+									if (map_settings.settings.popup_show_on === 'mouseover') {
+										marker.on('mouseover', function() {
+											this.openPopup();
+										});
+										marker.on('mouseout', function() {
+											this.closePopup();
+										});
+									}
+								}
+								
+								marker.addTo(map);
+								markers.push(marker);
+							} catch (e) {
+								console.error('Error creating marker:', e);
+							}
+						});
+						
+						// Handle marker clustering if enabled
+						if (map_settings.settings.markers.clustering && markers.length > 1) {
+							// Check if MarkerClusterGroup is available
+							if (typeof L.MarkerClusterGroup === 'function') {
+								const markerCluster = L.MarkerClusterGroup();
+								markers.forEach(marker => {
+									markerCluster.addLayer(marker);
+								});
+								map.removeLayer(markers);
+								map.addLayer(markerCluster);
+							} else {
+								console.warn('MarkerClusterGroup not available. Clustering disabled.');
+							}
 						}
 					}
 				}
-
-				// Add line between markers if enabled
-				if (map_settings.settings.draw_marker_line && map_settings.map_marker && map_settings.map_marker.length > 1) {
-					const points = map_settings.map_marker.map(marker => [parseFloat(marker.lat), parseFloat(marker.lng)]);
-					L.polyline(points, {color: 'red'}).addTo(map);
-				}
-
-				// Add controls based on position setting
-				if (map_settings.settings.control_position && map_settings.settings.control_position !== 'hide') {
-					L.control.zoom({
-						position: map_settings.settings.control_position
-					}).addTo(map);
-				}
-
-				// Store the map reference for later use
+				
+				// Store the map reference for external access
 				window.Geo_Maps_Rendered[container_id] = map;
 				
-				// Fire an event when the map is ready
-				$(document).trigger('geo_maps_ready', [container_id, map]);
+				console.log('Map rendering complete:', container_id);
 				
+				// Return the map instance
 				return map;
 			})(jQuery);
 		} else {
-			console.error('jQuery is not defined. Make sure jQuery is loaded before the render engine.');
+			console.error('jQuery is required for Geo Maps Render');
 		}
 	};
 })(window);

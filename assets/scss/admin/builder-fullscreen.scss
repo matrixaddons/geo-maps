@@ -1472,31 +1472,36 @@ body.drawer-open::after {
     border-color: #3b82f6;
 }
 
+/* Location search results styling */
 .geo-maps-autocomplete-results {
-    display: none;
-    width: 100%;
     position: absolute;
-    left: 0;
-    top: 100%;
-    max-height: 200px;
+    max-height: 300px;
     overflow-y: auto;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-top: none;
-    border-radius: 0 0 4px 4px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    background-color: white !important;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 999999 !important;
+    margin-top: 5px;
+    width: auto;
+    min-width: 250px;
 }
 
 .geo-maps-autocomplete-item {
-    padding: 8px 12px;
-    display: flex;
-    cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
+    display: flex !important;
+    padding: 12px 16px;
+    cursor: pointer !important;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px;
+    line-height: 1.4;
+    transition: background-color 0.2s ease;
+    color: #333;
 }
 
 .geo-maps-autocomplete-item:hover {
-    background-color: #f8f9fa;
+    background-color: #edf2f7;
+    color: #000;
+    font-weight: 500;
 }
 
 .geo-maps-autocomplete-item:last-child {
@@ -1504,11 +1509,27 @@ body.drawer-open::after {
 }
 
 .geo-maps-autocomplete-loading,
-.geo-maps-autocomplete-no-results,
-.geo-maps-autocomplete-error {
+.geo-maps-autocomplete-error,
+.geo-maps-autocomplete-no-results {
     padding: 12px;
     text-align: center;
-    color: #666;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.geo-maps-autocomplete-error {
+    color: #e11d48;
+}
+
+.geo-maps-autocomplete-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+#geo_maps_location_search.selected {
+    border-color: #2563eb;
 }
 
 /* Container for search input to ensure proper positioning */
@@ -2428,20 +2449,6 @@ body.drawer-open .geo-maps-builder-sidebar-left {
     background-color: #135e96;
 }
 
-.geo-maps-autocomplete-results {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 1px solid #ddd;
-    border-top: none;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
-    display: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
 
 .geo-maps-autocomplete-item {
     padding: 8px 12px;
@@ -2495,4 +2502,142 @@ body.drawer-open .geo-maps-builder-sidebar-left {
 .geo-maps-location-selected {
     border-color: #2271b1 !important;
     background-color: #f0f7fc;
+}
+
+/* WordPress Media Modal Fix - z-index only */
+.media-modal {
+    z-index: 999999 !important;
+}
+
+.media-modal-backdrop {
+    z-index: 999998 !important;
+}
+
+/* Fix select2 z-index to be below the media modal */
+.select2-container {
+    z-index: 999997 !important;
+}
+
+/* Ensure dropdowns don't overlap the media modal */
+.geo-maps-dropdown {
+    z-index: 999996 !important;
+}
+
+/* Mini Map Autocomplete Results */
+.geo-maps-mini-autocomplete-results {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    max-height: 300px;
+    overflow-y: auto;
+    width: 100%;
+    margin-top: 2px;
+    border-radius: 4px;
+}
+
+.geo-maps-mini-autocomplete-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+}
+
+.geo-maps-mini-autocomplete-item:hover,
+.geo-maps-mini-autocomplete-item:focus {
+    background-color: #f8f9fa;
+}
+
+.geo-maps-mini-autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.geo-maps-mini-autocomplete-loading,
+.geo-maps-mini-autocomplete-error,
+.geo-maps-mini-autocomplete-no-results {
+    padding: 10px;
+    text-align: center;
+    color: #666;
+}
+
+.geo-maps-mini-autocomplete-error {
+    color: #d32f2f;
+}
+
+/* Add some space between the search input and the results */
+#geo_maps_mini_map_search {
+    margin-bottom: 5px;
+}
+
+/* Make sure the results are visible when shown */
+.geo-maps-mini-autocomplete-results.visible {
+    display: block !important;
+}
+
+/* When results are shown, add a higher z-index to ensure they appear above map controls */
+.geo-maps-mini-autocomplete-results:not(:empty) {
+    z-index: 10000 !important;
+}
+
+/* Mini Map Styles */
+.geo-maps-mini-map {
+    width: 100%;
+    height: 200px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 50;
+    border: 1px solid #ddd;
+    background-color: #f0f0f0;
+}
+
+.geo-maps-mini-map .leaflet-control-container .leaflet-control {
+    margin-top: 5px;
+    margin-right: 5px;
+}
+
+.geo-maps-mini-map .leaflet-control-zoom {
+    border: none;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+}
+
+.geo-maps-mini-map .leaflet-control-zoom a {
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    background-color: white;
+}
+
+/* Mini Map Search Input Styles */
+.geo-maps-mini-map-search-container {
+    margin-bottom: 10px;
+    width: 100%;
+    position: relative;
+}
+
+.geo-maps-mini-map-search {
+    width: 100%;
+    padding: 8px 12px 8px 32px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    background-size: 16px 16px;
+}
+
+.geo-maps-mini-map-search:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    outline: none;
+}
+
+.geo-maps-mini-map-search.selected {
+    background-color: #f0f7ff;
+    border-color: #3b82f6;
 }

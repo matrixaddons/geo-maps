@@ -21,6 +21,8 @@ if (!defined('ABSPATH')) exit;
     ?>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Load Google Maps API without API key -->
+    <script src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
     
     <?php
     // Enqueue builder scripts
@@ -392,17 +394,7 @@ if (!defined('ABSPATH')) exit;
                     </div>
                 </div>
                 <?php endif; ?>
-                <div class="geo-maps-builder-map-tools">
-                    <button type="button" class="geo-maps-map-tool" id="geo-maps-add-marker" title="<?php _e('Add Marker', 'geo-maps'); ?>">
-                        <span class="dashicons dashicons-location"></span>
-                    </button>
-                    <button type="button" class="geo-maps-map-tool" id="geo-maps-add-shape" title="<?php _e('Add Shape', 'geo-maps'); ?>">
-                        <span class="dashicons dashicons-admin-customizer"></span>
-                    </button>
-                    <button type="button" class="geo-maps-map-tool" id="geo-maps-add-route" title="<?php _e('Add Route', 'geo-maps'); ?>">
-                        <span class="dashicons dashicons-admin-site-alt3"></span>
-                    </button>
-                </div>
+            
             </div>
             
             <!-- Left Marker Drawer (hidden by default) -->

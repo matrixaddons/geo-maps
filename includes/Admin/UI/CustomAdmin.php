@@ -242,26 +242,8 @@ class CustomAdmin
             // This is critical for the media uploader to work
             wp_enqueue_media();
             
-            // Add additional media scripts that might be needed
-            wp_enqueue_script('media-editor');
-            wp_enqueue_script('media-views');
-            wp_enqueue_script('media-audiovideo');
-            wp_enqueue_script('mce-view');
-            
-            // Force loading media templates early
-            add_action('admin_footer', function() {
-                wp_print_media_templates();
-                echo '<script type="text/javascript">
-                    jQuery(document).ready(function($) {
-                        console.log("WordPress Media Context:", {
-                            "wp object exists": typeof wp !== "undefined",
-                            "wp.media exists": typeof wp !== "undefined" && typeof wp.media !== "undefined",
-                            "wp.media.view exists": typeof wp !== "undefined" && typeof wp.media !== "undefined" && typeof wp.media.view !== "undefined",
-                            "wp.media.frames.browse exists": typeof wp !== "undefined" && typeof wp.media !== "undefined" && typeof wp.media.frames !== "undefined" && typeof wp.media.frames.browse !== "undefined"
-                        });
-                    });
-                </script>';
-            }, 5);
+        
+        
         }
 
         // Enqueue our custom CSS
@@ -293,24 +275,6 @@ class CustomAdmin
                 GEO_MAPS_VERSION,
                 true
             );
-            
-            // Add inline script to attempt manual media frame initialization
-            wp_add_inline_script('geo-maps-builder-fullscreen-js', '
-                jQuery(document).ready(function($) {
-                    // Force WordPress to initialize the media framework
-                    if (typeof wp !== "undefined" && typeof wp.media !== "undefined") {
-                        // Create a dummy frame to initialize the media library
-                        var dummyFrame = wp.media({
-                            title: "Media Library Test",
-                            multiple: false
-                        });
-                        console.log("Created dummy media frame for initialization:", dummyFrame);
-                        
-                        // Don\'t actually open it, just create it
-                        // This ensures the media library is properly initialized
-                    }
-                });
-            ');
         } else {
             // Standard admin JS for other pages
             wp_enqueue_script(
@@ -325,7 +289,8 @@ class CustomAdmin
         // Pass data to JS
         wp_localize_script(strpos($hook, 'geo-maps-new') !== false ? 'geo-maps-builder-fullscreen-js' : 'geo-maps-admin-ui', 'GeoMapsAdmin', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('geo_maps_nonce'),
+            'restUrl' => rest_url(),
+            'nonce' => wp_create_nonce('wp_rest'),
             'pluginUrl' => GEO_MAPS_PLUGIN_URI,
             'messages' => [
                 'confirm_delete' => __('Are you sure you want to delete this map? This action cannot be undone.', 'geo-maps'),
@@ -369,71 +334,93 @@ class CustomAdmin
                             </div>
                         </div>
                     </div>
-                 `);
-             });
-         </script>
-         <?php
-     }
- 
-     /**
-      * AJAX handler to save a map
-      */
-     public function ajax_save_map() 
-     {
-         check_ajax_referer('geo_maps_nonce', 'security');
-         
-         $map_id = isset($_POST['map_id']) ? intval($_POST['map_id']) : 0;
-         $map_data = isset($_POST['map_data']) ? json_decode(stripslashes($_POST['map_data']), true) : [];
-         
-         if (empty($map_data)) {
-             wp_send_json_error(['message' => __('Invalid map data.', 'geo-maps')]);
-             return;
-         }
-         
-         $title = isset($map_data['title']) ? sanitize_text_field($map_data['title']) : __('Untitled Map', 'geo-maps');
-         
-         // Create or update the post
-         $post_args = [
-             'post_title' => $title,
-             'post_type' => 'geo-maps',
-             'post_status' => 'publish',
-         ];
-         
-         if ($map_id > 0) {
-             $post_args['ID'] = $map_id;
-             $result = wp_update_post($post_args);
-         } else {
-             $result = wp_insert_post($post_args);
-         }
-         
-         if (is_wp_error($result)) {
-             wp_send_json_error(['message' => $result->get_error_message()]);
-             return;
-         }
-         
-         $map_id = $result;
-         
-         // Save map settings as post meta
-         update_post_meta($map_id, 'geo_maps_map_type', sanitize_text_field($map_data['map_type']));
-         update_post_meta($map_id, 'geo_maps_settings', $map_data['settings']);
-         update_post_meta($map_id, 'geo_maps_style', $map_data['style']);
-         
-         wp_send_json_success([
-             'message' => __('Map saved successfully.', 'geo-maps'),
-             'map_id' => $map_id
-         ]);
-     }
- 
-     /**
-      * Initialize the custom admin UI
-      */
-     public static function init()
-     {
-         $self = new self();
-         
-         // Register AJAX handlers
-         add_action('wp_ajax_geo_maps_save_map', [$self, 'ajax_save_map']);
-         
-         return $self;
-     }
- }
+                `);
+                
+                // Add a special style to ensure footer doesn't overlap with media modal
+                $('head').append(`
+                    <style id="geo-maps-footer-fix">
+                        /* Ensure footer doesn't interfere with media modal */
+                        body.wp-has-media-modal #wpfooter,
+                        body.modal-open #wpfooter {
+                            z-index: 9 !important;
+                        }
+                        
+                        /* Hide footer when media modal is open */
+                        body.wp-has-media-modal .geo-maps-footer,
+                        body.modal-open .geo-maps-footer {
+                            display: none !important;
+                        }
+                    </style>
+                `);
+                
+                // Remove the class when media modal is closed
+                $(document).on('click', '.media-modal-close, .media-modal-backdrop', function() {
+                    $('body').removeClass('modal-open');
+                });
+            });
+        </script>
+        <?php
+    }
+
+    /**
+     * AJAX handler to save a map
+     */
+    public function ajax_save_map() 
+    {
+        check_ajax_referer('geo_maps_nonce', 'security');
+        
+        $map_id = isset($_POST['map_id']) ? intval($_POST['map_id']) : 0;
+        $map_data = isset($_POST['map_data']) ? json_decode(stripslashes($_POST['map_data']), true) : [];
+        
+        if (empty($map_data)) {
+            wp_send_json_error(['message' => __('Invalid map data.', 'geo-maps')]);
+            return;
+        }
+        
+        $title = isset($map_data['title']) ? sanitize_text_field($map_data['title']) : __('Untitled Map', 'geo-maps');
+        
+        // Create or update the post
+        $post_args = [
+            'post_title' => $title,
+            'post_type' => 'geo-maps',
+            'post_status' => 'publish',
+        ];
+        
+        if ($map_id > 0) {
+            $post_args['ID'] = $map_id;
+            $result = wp_update_post($post_args);
+        } else {
+            $result = wp_insert_post($post_args);
+        }
+        
+        if (is_wp_error($result)) {
+            wp_send_json_error(['message' => $result->get_error_message()]);
+            return;
+        }
+        
+        $map_id = $result;
+        
+        // Save map settings as post meta
+        update_post_meta($map_id, 'geo_maps_map_type', sanitize_text_field($map_data['map_type']));
+        update_post_meta($map_id, 'geo_maps_settings', $map_data['settings']);
+        update_post_meta($map_id, 'geo_maps_style', $map_data['style']);
+        
+        wp_send_json_success([
+            'message' => __('Map saved successfully.', 'geo-maps'),
+            'map_id' => $map_id
+        ]);
+    }
+
+    /**
+     * Initialize the custom admin UI
+     */
+    public static function init()
+    {
+        $self = new self();
+        
+        // Register AJAX handlers
+        add_action('wp_ajax_geo_maps_save_map', [$self, 'ajax_save_map']);
+        
+        return $self;
+    }
+}
