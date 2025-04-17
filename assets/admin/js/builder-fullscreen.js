@@ -385,6 +385,9 @@ jQuery(document).ready(function($) {
         
         // After drawer is opened, update the mini map with current data
         updateMiniMapPosition(markerData, mapCenter);
+        
+        // Set up the location search functionality
+        setupLocationSearch();
     }
     
     /**
@@ -512,10 +515,12 @@ jQuery(document).ready(function($) {
         // Check if drawer is open
         if ($('body').hasClass('drawer-open')) {
             // Check if the click is outside the drawer
+            // Added check for autocomplete results to prevent closing when clicking search results
             if (!$(e.target).closest('#geo-maps-marker-drawer').length && 
                 !$(e.target).closest('#geo-maps-add-marker').length && 
                 !$(e.target).closest('#geo-maps-add-marker-btn').length &&
-                !$(e.target).closest('.edit-marker').length) {
+                !$(e.target).closest('.edit-marker').length && 
+                !$(e.target).closest('.geo-maps-autocomplete-results').length) {
                 closeMarkerDrawer();
             }
         }
@@ -605,66 +610,6 @@ jQuery(document).ready(function($) {
         }
     }
 
-    // Media button handler
-    $(document).on('click', '.geo-maps-media-button', function() {
-        // If WordPress media frame already exists, reopen it
-        if (window.geoMapsMediaFrame) {
-            window.geoMapsMediaFrame.open();
-            return;
-        }
-        
-        // Get the input and preview elements
-        const $button = $(this);
-        const $container = $button.closest('.geo-maps-media-field');
-        const $input = $container.find('input[type="hidden"]');
-        const $preview = $container.find('.geo-maps-media-preview');
-        
-        // Create the media frame
-        window.geoMapsMediaFrame = wp.media({
-            title: 'Select or Upload a Marker Icon',
-            button: {
-                text: 'Use this image'
-            },
-            multiple: false,
-            library: {
-                type: 'image'
-            }
-        });
-        
-        // When an image is selected, run a callback
-        window.geoMapsMediaFrame.on('select', function() {
-            // Get media attachment data
-            const attachment = window.geoMapsMediaFrame.state().get('selection').first().toJSON();
-            
-            // Set the value to the input
-            $input.val(attachment.url);
-            
-            // Update preview
-            $preview.removeClass('empty').html(`<img src="${attachment.url}" alt="Marker Icon" title="Ctrl+Click to remove">`);
-        });
-        
-        // Finally, open the modal
-        window.geoMapsMediaFrame.open();
-    });
-    
-    // Clear icon button
-    $(document).on('click', '.geo-maps-media-preview img', function(e) {
-        if (e.ctrlKey || e.metaKey) {
-            const $preview = $(this).closest('.geo-maps-media-preview');
-            const $container = $preview.closest('.geo-maps-media-field');
-            const $input = $container.find('input[type="hidden"]');
-            
-            // Clear the value
-            $input.val('');
-            
-            // Reset preview
-            $preview.addClass('empty').empty();
-            
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    });
-
     /**
      * Enhanced media field handling for droppable design
      */
@@ -672,6 +617,7 @@ jQuery(document).ready(function($) {
         // Media preview click handler (now the main way to select files)
         $(document).on('click', '.geo-maps-droppable-media-field .geo-maps-media-preview', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             
             // Get the closest container
             const $container = $(this).closest('.geo-maps-droppable-media-field');
@@ -679,30 +625,36 @@ jQuery(document).ready(function($) {
             const $preview = $container.find('.geo-maps-media-preview');
             const $removeButton = $container.find('.geo-maps-media-clear');
             
-            // If WordPress media frame already exists, reopen it
-            if (window.geoMapsMediaFrame) {
-                window.geoMapsMediaFrame.open();
+            // Debug display to check what's being clicked
+            console.log('Media preview clicked', this);
+            
+            // Check if wp.media is available with all required components
+            if (typeof wp === 'undefined' || 
+                typeof wp.media === 'undefined' || 
+                typeof wp.media.editor === 'undefined') {
+                console.error('WordPress Media Editor not available', {
+                    wp: typeof wp,
+                    'wp.media': typeof wp !== 'undefined' ? typeof wp.media : 'wp undefined',
+                    'wp.media.editor': typeof wp !== 'undefined' && typeof wp.media !== 'undefined' ? typeof wp.media.editor : 'wp.media undefined'
+                });
+                alert('Media upload functionality is not available. Please check the console for more information.');
                 return;
             }
             
-            // Create the media frame
-            window.geoMapsMediaFrame = wp.media({
-                title: 'Select or Upload a Marker Icon',
-                button: {
-                    text: 'Use this image'
-                },
-                multiple: false,
-                library: {
-                    type: 'image'
-                }
-            });
+            // Create a temporary input ID if necessary
+            let inputId = $input.attr('id');
+            if (!inputId) {
+                inputId = 'geo-maps-media-' + Math.floor(Math.random() * 100000);
+                $input.attr('id', inputId);
+            }
             
-            // When an image is selected, run a callback
-            window.geoMapsMediaFrame.on('select', function() {
-                // Get media attachment data
-                const attachment = window.geoMapsMediaFrame.state().get('selection').first().toJSON();
+            console.log('Using wp.media.editor.open with input ID:', inputId);
+            
+            // Use WordPress media editor API directly
+            wp.media.editor.send.attachment = function(props, attachment) {
+                console.log('Attachment selected:', attachment);
                 
-                // Set the value to the input
+                // Set the URL to the input field
                 $input.val(attachment.url);
                 
                 // Update preview
@@ -710,10 +662,19 @@ jQuery(document).ready(function($) {
                 
                 // Show the remove button
                 $removeButton.show();
-            });
+            };
             
-            // Finally, open the modal
-            window.geoMapsMediaFrame.open();
+            // Open the media uploader
+            try {
+                wp.media.editor.open(inputId);
+                console.log('Media editor opened successfully');
+            } catch (error) {
+                console.error('Error opening media editor:', error);
+                
+                // Fallback to our original method
+                console.log('Attempting fallback to media frame...');
+                fallbackMediaUploader($input, $preview, $removeButton);
+            }
         });
         
         // Remove icon button
@@ -843,157 +804,69 @@ jQuery(document).ready(function($) {
         }
     });
 
-    /**
-     * Map Type Change Handler - Show/Hide OSM Provider Field
-     */
-    $('#geo_maps_map_type').on('change', function() {
-        const mapType = $(this).val();
-        
-        // Show or hide the OpenStreetMap provider field based on selection
-        if (mapType === 'open_street_map') {
-            $('.geo-maps-osm-provider-field').slideDown(300);
-        } else {
-            $('.geo-maps-osm-provider-field').slideUp(300);
-        }
-    });
-
-    /**
-     * Map Error Detection
-     * Shows error message when map fails to load
-     */
-    $(document).ready(function() {
-        // Get reference to the map container
-        const $mapContainer = $('#geo-maps-builder-map');
-        const $mapError = $('#geo-maps-map-error');
-        
-        // Handle retry button click
-        $('#geo-maps-retry-map').on('click', function() {
-            $mapError.fadeOut(300);
-            
-            // Simply refresh the page to let the plugin reinitialize everything
-            window.location.reload();
-        });
-    });
-
-    /**
-     * Add a marker to the map (called when user clicks "Add Marker" button)
-     */
-    function addMarker() {
-        // Get the center of the map
-        const center = window.geoMapsCurrentMap.getCenter();
-        
-        // Create a new marker at the center with custom icon
-        const marker = L.marker(center, { 
-            draggable: true,
-            icon: geoMapsCustomIcon
-        }).addTo(window.geoMapsCurrentMap);
-        
-        // Open the marker drawer to edit this marker
-        openMarkerDrawer('Add', null, center);
-        
-        // Store reference to the current marker being edited
-        currentMarker = marker;
-        currentMarkerIndex = null; // This is a new marker, not yet saved
-    }
-
-    // Function to update mini map marker position
-    function updateMiniMapMarkerPosition(lat, lng) {
-        // Use either the map object or the wrapper object
-        if (!window.geoMapsMiniMap || (!window.geoMapsMiniMap.map && !window.geoMiniMap)) {
-            console.error('Mini map not initialized, attempting to initialize it now');
-            initializeMiniMap();
-            
-            // If initialization failed, return
-            if (!window.geoMapsMiniMap && !window.geoMiniMap) {
-                return;
-            }
-        }
-        
-        // Get the mini map instance (prefer the wrapper object)
-        const miniMap = window.geoMapsMiniMap ? window.geoMapsMiniMap.map : window.geoMiniMap;
-        
-        console.log('Updating mini map marker position to:', lat, lng);
-        
-        // Remove existing markers if using direct map reference
-        if (window.geoMiniMap === miniMap) {
-            miniMap.eachLayer(function(layer) {
-                if (layer instanceof L.Marker) {
-                    miniMap.removeLayer(layer);
+    // Fallback media uploader implementation
+    function fallbackMediaUploader($input, $preview, $removeButton) {
+        try {
+            const frame = wp.media({
+                title: 'Select or Upload a Marker Icon',
+                button: {
+                    text: 'Use this image'
+                },
+                multiple: false,
+                library: {
+                    type: 'image'
                 }
             });
             
-            // Add new marker at position
-            const marker = L.marker([lat, lng], {
-                draggable: true
-            }).addTo(miniMap);
-            
-            // Store the marker reference for compatibility
-            window.geoMapsMiniMap = {
-                map: miniMap,
-                marker: marker
-            };
-            
-            // Handle marker drag end
-            marker.on('dragend', function(e) {
-                const position = marker.getLatLng();
+            // When an image is selected, run a callback
+            frame.on('select', function() {
+                const attachment = frame.state().get('selection').first().toJSON();
+                console.log('Selected attachment:', attachment);
                 
-                // Update input fields
-                $('#marker_lat').val(position.lat.toFixed(6));
-                $('#marker_lng').val(position.lng.toFixed(6));
+                // Set the value to the input
+                $input.val(attachment.url);
+                
+                // Update preview
+                $preview.removeClass('empty').html(`<img src="${attachment.url}" alt="Marker Icon">`);
+                
+                // Show the remove button
+                $removeButton.show();
             });
-        } else {
-            // Using the wrapper object
-            // Update existing marker position
-            window.geoMapsMiniMap.marker.setLatLng([lat, lng]);
+            
+            frame.open();
+            console.log('Fallback media frame opened');
+        } catch (error) {
+            console.error('Error with fallback media uploader:', error);
+            alert('There was an error opening the media uploader. Please try again or contact support.');
         }
-        
-        // Center map on marker
-        miniMap.setView([lat, lng], 13);
-        
-        // Make sure the map is properly sized
-        miniMap.invalidateSize();
-        
-        // Update input fields
-        $('#marker_lat').val(lat.toFixed(6));
-        $('#marker_lng').val(lng.toFixed(6));
     }
 
-    function setupMiniMapLocationSearch($container) {
-        // Create the search container if it doesn't exist
-        let $searchContainer = $container.find('.geo-maps-location-search');
-        if ($searchContainer.length === 0) {
-            $searchContainer = $('<div class="geo-maps-location-search"></div>');
-            $container.prepend($searchContainer);
-        }
-
-        // Create search input and button if they don't exist
-        let $searchInput = $searchContainer.find('.geo-maps-location-input');
-        if ($searchInput.length === 0) {
-            $searchInput = $('<input type="text" class="geo-maps-location-input" placeholder="Search for a location">');
-            $searchContainer.append($searchInput);
-        }
-
-        let $searchButton = $searchContainer.find('.geo-maps-location-search-button');
-        if ($searchButton.length === 0) {
-            $searchButton = $('<button class="geo-maps-location-search-button">Search</button>');
-            $searchContainer.append($searchButton);
-        }
-
-        // Create the results container if it doesn't exist
-        let $resultsContainer = $('.geo-maps-autocomplete-results');
-        if ($resultsContainer.length === 0) {
-            $resultsContainer = $('<div class="geo-maps-autocomplete-results"></div>');
-            $('body').append($resultsContainer);
-        }
-
-        // Setup debounce mechanism
+    /**
+     * Set up the location search functionality for the marker drawer
+     */
+    function setupLocationSearch() {
+        // Get the search input
+        const $searchInput = $('#geo_maps_location_search');
+        
+        // Remove existing results container to avoid duplicates
+        $('.geo-maps-autocomplete-results').remove();
+        
+        // Create fresh results container
+        const $resultsContainer = $('<div class="geo-maps-autocomplete-results"></div>');
+        $('body').append($resultsContainer);
+        
+        // Clear any existing event handlers to prevent duplicates
+        $searchInput.off('input');
+        
+        // Setup debounce mechanism for search
         let searchTimeout;
         const debounceTime = 500; // milliseconds
-
+        
         // Handle input changes for live search
         $searchInput.on('input', function() {
             const query = $(this).val().trim();
             
+            // Clear any existing timeout
             clearTimeout(searchTimeout);
             
             // Clear results if query is too short
@@ -1002,7 +875,18 @@ jQuery(document).ready(function($) {
                 return;
             }
             
-            // Debounce the search to avoid too many requests
+            // Position the results container below the search input
+            const inputPosition = $searchInput.offset();
+            const inputWidth = $searchInput.outerWidth();
+            
+            $resultsContainer.css({
+                position: 'absolute',
+                top: (inputPosition.top + $searchInput.outerHeight() + 5) + 'px',
+                left: inputPosition.left + 'px',
+                width: inputWidth + 'px'
+            });
+            
+            // Debounce the search request
             searchTimeout = setTimeout(function() {
                 // Show loading indicator
                 $resultsContainer.html('<div class="geo-maps-autocomplete-loading">Searching...</div>').show();
@@ -1019,71 +903,179 @@ jQuery(document).ready(function($) {
                     headers: {
                         'Accept-Language': 'en-US,en;q=0.9'
                     },
-                    success: function(data) {
-                        // Clear results
+                    success: function(results) {
+                        // Clear previous results
                         $resultsContainer.empty();
                         
-                        if (data && data.length > 0) {
-                            // Add each result to the container
-                            data.forEach(function(item) {
-                                const $item = $('<div class="geo-maps-autocomplete-item" data-lat="' + item.lat + '" data-lon="' + item.lon + '" data-name="' + item.display_name + '">' + item.display_name + '</div>');
-                                $resultsContainer.append($item);
-                            });
-                            
-                            // Show results container
-                            $resultsContainer.show();
+                        if (results.length === 0) {
+                            $resultsContainer.append('<div class="geo-maps-autocomplete-no-results">No results found</div>');
                         } else {
-                            // No results found
-                            $resultsContainer.html('<div class="geo-maps-autocomplete-no-results">No results found</div>');
+                            // Process each result
+                            $.each(results, function(i, result) {
+                                $resultsContainer.append(
+                                    '<div class="geo-maps-autocomplete-item" ' +
+                                    'data-lat="' + result.lat + '" ' +
+                                    'data-lng="' + result.lon + '" ' +
+                                    'data-name="' + result.display_name + '">' +
+                                    result.display_name +
+                                    '</div>'
+                                );
+                            });
                         }
+                        
+                        // Show the results
+                        $resultsContainer.show();
                     },
                     error: function() {
-                        $resultsContainer.html('<div class="geo-maps-autocomplete-error">Error searching for location</div>');
+                        $resultsContainer.empty().append('<div class="geo-maps-autocomplete-error">Error performing search</div>');
+                        $resultsContainer.show();
                     }
                 });
             }, debounceTime);
         });
-
-        // Handle search button click
-        $searchButton.on('click', function() {
-            // Trigger the input event to perform the search
-            $searchInput.trigger('input');
-        });
-
-        // Using proper event delegation for autocomplete item clicks
-        $(document).off('click', '.geo-maps-autocomplete-item').on('click', '.geo-maps-autocomplete-item', function() {
-            const $this = $(this);
-            const lat = parseFloat($this.data('lat'));
-            const lon = parseFloat($this.data('lon'));
-            const name = $this.data('name');
+        
+        // Find the click handler for autocomplete items and clean it up
+        $(document).on('click', '.geo-maps-autocomplete-item', function() {
+            const $item = $(this);
+            const lat = $item.data('lat');
+            const lng = $item.data('lng');
+            const name = $item.data('name');
             
-            // Update mini map position
-            updateMiniMapMarkerPosition(lat, lon);
+            // Update the marker position
+            updateMiniMapMarkerPosition(lat, lng);
             
-            // Update input fields
-            $('#marker_lat').val(lat.toFixed(6));
-            $('#marker_lng').val(lon.toFixed(6));
+            // Update the form fields
+            $('#marker_lat').val(lat);
+            $('#marker_lng').val(lng);
             
-            // Set marker title if empty
+            // Set the marker title if it's empty
             if ($('#marker_title').val() === '') {
-                // Extract a simpler name if possible
+                // Extract a simpler name from the full address
                 const simpleName = name.split(',')[0];
                 $('#marker_title').val(simpleName);
             }
             
-            // Add selected class to the search input
-            $searchInput.addClass('geo-maps-location-selected');
+            // Add a selected class to the search input
+            $searchInput.addClass('selected');
             
-            // Hide results container
+            // Hide the results container
             $resultsContainer.hide();
         });
-
-        // Close results when clicking outside
-        $(document).on('click', function(e) {
-            if (!$(e.target).closest('.geo-maps-location-search').length && 
+        
+        // Hide results when clicking outside
+        $(document).off('click.outsideSearch').on('click.outsideSearch', function(e) {
+            if (!$(e.target).closest('#geo_maps_location_search').length && 
                 !$(e.target).closest('.geo-maps-autocomplete-results').length) {
                 $resultsContainer.hide();
             }
         });
     }
+
+    /**
+     * Function to update mini map marker position
+     * @param {number} lat - Latitude
+     * @param {number} lng - Longitude
+     */
+    function updateMiniMapMarkerPosition(lat, lng) {
+        // Make sure the mini map is initialized
+        if (!window.geoMapsMiniMap) {
+            console.error('Mini map not initialized');
+            return;
+        }
+        
+        // Get the miniMap and update the position
+        const miniMap = window.geoMapsMiniMap.map;
+        const position = L.latLng(lat, lng);
+        
+        // Update the marker position
+        if (window.geoMapsMiniMap.marker) {
+            window.geoMapsMiniMap.marker.setLatLng(position);
+        } else {
+            // If for some reason the marker doesn't exist, create a new one
+            window.geoMapsMiniMap.marker = L.marker(position, {
+                draggable: true,
+                icon: geoMapsCustomIcon
+            }).addTo(miniMap);
+            
+            // Add event handler for marker dragging
+            window.geoMapsMiniMap.marker.on('dragend', function() {
+                const pos = window.geoMapsMiniMap.marker.getLatLng();
+                updateLatLngFields(pos);
+            });
+        }
+        
+        // Center the map on the new position
+        miniMap.setView(position, 13);
+        
+        // Update the latitude and longitude input fields
+        $('#marker_lat').val(lat.toFixed(6));
+        $('#marker_lng').val(lng.toFixed(6));
+        
+        // Refresh the map size
+        miniMap.invalidateSize();
+    }
+
+    // Debug function to test media uploader
+    function testWPMediaUploader() {
+        console.log('Testing WordPress Media Uploader...');
+        console.log('WP Media Context:', {
+            'wp exists': typeof wp !== 'undefined',
+            'wp.media exists': typeof wp !== 'undefined' && typeof wp.media !== 'undefined',
+            'wp.media is function': typeof wp !== 'undefined' && typeof wp.media === 'function'
+        });
+        
+        if (typeof wp === 'undefined' || typeof wp.media !== 'function') {
+            console.error('WordPress Media API not available!');
+            return false;
+        }
+        
+        try {
+            // Create a basic media frame
+            var testFrame = wp.media({
+                title: 'Test Media Uploader',
+                button: {
+                    text: 'Select Test Image'
+                },
+                multiple: false
+            });
+            
+            console.log('Test frame created successfully:', testFrame);
+            
+            // Add event handlers
+            testFrame.on('open', function() {
+                console.log('Test frame opened successfully');
+            });
+            
+            testFrame.on('close', function() {
+                console.log('Test frame closed');
+            });
+            
+            testFrame.on('select', function() {
+                var attachment = testFrame.state().get('selection').first().toJSON();
+                console.log('Test selection made:', attachment);
+            });
+            
+            // Open the frame
+            console.log('Opening test frame...');
+            testFrame.open();
+            
+            return true;
+        } catch (error) {
+            console.error('Error testing media uploader:', error);
+            return false;
+        }
+    }
+    
+    // Add a test button to the page
+    $('body').append(
+        '<div id="geo-maps-test-media" style="position:fixed; bottom:20px; right:20px; z-index:99999; padding:10px; background:#fff; border:1px solid #ccc; border-radius:4px;">' +
+        '<button type="button" class="button">Test Media Uploader</button>' +
+        '</div>'
+    );
+    
+    // Add click handler for test button
+    $('#geo-maps-test-media button').on('click', function(e) {
+        e.preventDefault();
+        testWPMediaUploader();
+    });
 });

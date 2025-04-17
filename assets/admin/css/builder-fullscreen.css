@@ -1474,16 +1474,41 @@ body.drawer-open::after {
 
 .geo-maps-autocomplete-results {
     display: none;
-    top: calc(100% + 2px);
+    width: 100%;
+    position: absolute;
     left: 0;
-    right: 0;
-    max-height: 250px;
+    top: 100%;
+    max-height: 200px;
     overflow-y: auto;
-    background: white;
+    background: #fff;
     border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+}
+
+.geo-maps-autocomplete-item {
+    padding: 8px 12px;
+    display: flex;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.geo-maps-autocomplete-item:hover {
+    background-color: #f8f9fa;
+}
+
+.geo-maps-autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.geo-maps-autocomplete-loading,
+.geo-maps-autocomplete-no-results,
+.geo-maps-autocomplete-error {
+    padding: 12px;
+    text-align: center;
+    color: #666;
 }
 
 /* Container for search input to ensure proper positioning */
