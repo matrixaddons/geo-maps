@@ -167,8 +167,8 @@ class Maps
 			return;
 		}
 		wp_enqueue_media();
-		wp_enqueue_style('geo-maps-admin-style', GEO_MAPS_PLUGIN_URI . '/assets/admin/css/geo-maps-admin.css', array('geo-maps-render-engine-style'), GEO_MAPS_VERSION);
-		wp_enqueue_script('geo-maps-admin-script', GEO_MAPS_PLUGIN_URI . '/assets/admin/js/geo-maps-admin.js', array('geo-maps-render-engine-script'), GEO_MAPS_VERSION, true);
+		wp_enqueue_style('geo-maps-admin-style', GEO_MAPS_PLUGIN_URI . '/assets/build/admin/css/geo-maps-admin.css', array('geo-maps-render-engine-style'), GEO_MAPS_VERSION);
+		wp_enqueue_script('geo-maps-admin-script', GEO_MAPS_PLUGIN_URI . '/assets/build/admin/js/geo-maps-admin.js', array('geo-maps-render-engine-script'), GEO_MAPS_VERSION, true);
 		wp_localize_script('geo-maps-admin-script', 'geoMapsAdminParams', array(
 			'options' => geo_maps_get_map_settings(),
 			'default_marker' => geo_maps_get_default_marker_item(),

@@ -241,15 +241,12 @@ class CustomAdmin
             // Force WordPress to load all media scripts in the correct order
             // This is critical for the media uploader to work
             wp_enqueue_media();
-            
-        
-        
         }
 
         // Enqueue our custom CSS
         wp_enqueue_style(
             'geo-maps-admin-ui',
-            GEO_MAPS_PLUGIN_URI . 'assets/admin/css/tailwind-custom-admin.css',
+            GEO_MAPS_PLUGIN_URI . 'assets/build/admin/css/tailwind-custom-admin.css',
             [],
             GEO_MAPS_VERSION
         );
@@ -259,7 +256,7 @@ class CustomAdmin
             // Fullscreen builder styles
             wp_enqueue_style(
                 'geo-maps-builder-fullscreen-css',
-                GEO_MAPS_PLUGIN_URI . 'assets/admin/css/builder-fullscreen.css',
+                GEO_MAPS_PLUGIN_URI . 'assets/build/admin/css/builder-fullscreen.css',
                 ['geo-maps-admin-ui'],
                 GEO_MAPS_VERSION
             );
@@ -267,19 +264,22 @@ class CustomAdmin
             // Ensure media CSS is loaded
             wp_enqueue_style('media-views');
             
+            
             // Builder script with all required dependencies
             wp_enqueue_script(
                 'geo-maps-builder-fullscreen-js',
-                GEO_MAPS_PLUGIN_URI . 'assets/admin/js/builder-fullscreen.js',
+                GEO_MAPS_PLUGIN_URI . 'assets/build/admin/js/builder-fullscreen.js',
                 ['jquery', 'media-upload', 'media-editor', 'media-views', 'wp-util'],
-                GEO_MAPS_VERSION,
+                GEO_MAPS_VERSION . '.' . time(), // Add timestamp to ensure the latest version is used
                 true
             );
+            
+        
         } else {
             // Standard admin JS for other pages
             wp_enqueue_script(
                 'geo-maps-admin-ui',
-                GEO_MAPS_PLUGIN_URI . 'assets/admin/js/custom-admin.js',
+                GEO_MAPS_PLUGIN_URI . 'assets/build/admin/js/custom-admin.js',
                 ['jquery'],
                 GEO_MAPS_VERSION,
                 true

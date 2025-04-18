@@ -15,7 +15,7 @@ class Assets {
 		wp_register_script('geo-maps-leaflet', GEO_MAPS_ASSETS_URI . 'vendor/leaflet/leaflet.js', array('jquery'), null, true);
 		wp_register_script('geo-maps-leaflet-fullscreen', GEO_MAPS_ASSETS_URI . 'js/fullscreen.js', array('jquery'), null, true);
 
-		$map_render_engine_dependencies = include_once GEO_MAPS_ASSETS_DIR_PATH . 'build/render-engine.min.asset.php';
+		$map_render_engine_dependencies = include_once GEO_MAPS_ASSETS_DIR_PATH . 'build/js/render-engine.min.asset.php';
 		$js_dependencies = array_merge(
 			$map_render_engine_dependencies['dependencies'],
 			[
@@ -28,32 +28,32 @@ class Assets {
 
 		wp_register_style(
 			'geo-maps-render-engine-style',
-			GEO_MAPS_ASSETS_URI . 'css/geo-maps.css',
+			GEO_MAPS_ASSETS_URI . 'build/css/geo-maps.css',
 			is_admin() ? array('wp-editor') : null,
 			$map_render_engine_dependencies['version']
 		);
 
 		wp_register_script(
 			'geo-maps-render-engine-script',
-			GEO_MAPS_ASSETS_URI . 'build/render-engine.min.js',
+			GEO_MAPS_ASSETS_URI . 'build/js/render-engine.min.js',
 			$js_dependencies,
 			$map_render_engine_dependencies['version'],
 			true
 		);
 
-		$geo_main_dependencies = include_once GEO_MAPS_ASSETS_DIR_PATH . 'build/geo-maps.min.asset.php';
+		$geo_main_dependencies = include_once GEO_MAPS_ASSETS_DIR_PATH . 'build/js/geo-maps.min.asset.php';
 		wp_register_script(
 			'geo-maps-main-script',
-			GEO_MAPS_ASSETS_URI . 'build/geo-maps.min.js',
+			GEO_MAPS_ASSETS_URI . 'build/js/geo-maps.min.js',
 			array_merge($geo_main_dependencies['dependencies'], ['geo-maps-render-engine-script']),
 			$geo_main_dependencies['version'],
 			true
 		);
 
-		$block_dependencies = include_once GEO_MAPS_ASSETS_DIR_PATH . 'build/map-block.min.asset.php';
+		$block_dependencies = include_once GEO_MAPS_ASSETS_DIR_PATH . 'build/js/map-block.min.asset.php';
 		wp_register_script(
 			'geo-maps-block-script',
-			GEO_MAPS_ASSETS_URI . 'build/map-block.min.js',
+			GEO_MAPS_ASSETS_URI . 'build/js/map-block.min.js',
 			$block_dependencies['dependencies'],
 			$block_dependencies['version'],
 			true
@@ -90,18 +90,33 @@ class Assets {
 		wp_enqueue_style('imgareaselect');
 		wp_enqueue_style('thickbox');
 		wp_enqueue_style('dashicons');
+		// Enqueue builder scripts    
 
 		wp_enqueue_style(
 			'geo-maps-builder-css',
-			GEO_MAPS_ASSETS_URI . 'admin/css/builder-fullscreen.css',
+			GEO_MAPS_ASSETS_URI . 'build/admin/css/builder-fullscreen.css',
 			array(),
 			GEO_MAPS_VERSION
 		);
 
 		wp_enqueue_script(
 			'geo-maps-builder-ui',
-			GEO_MAPS_ASSETS_URI . 'admin/js/builder-fullscreen.js',
+			GEO_MAPS_ASSETS_URI . 'build/admin/js/builder-fullscreen.js',
 			array('jquery', 'media-upload', 'media-views', 'wp-util'),
+			GEO_MAPS_VERSION,
+			true
+		);
+		wp_enqueue_script(
+			'geo-maps-builder-fullscreen',
+			GEO_MAPS_ASSETS_URI . 'build/admin/js/builder-fullscreen.js',
+			array('jquery'),
+			GEO_MAPS_VERSION,
+			true
+		);
+		wp_enqueue_script(
+			'geo-maps-builder-render-engine',
+			GEO_MAPS_ASSETS_URI . 'build/js/render-engine.min.js',
+			array('jquery'),
 			GEO_MAPS_VERSION,
 			true
 		);

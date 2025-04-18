@@ -1,0 +1,64 @@
+/**
+ * Tab Fix CSS for Geo Maps Builder
+ * Critical styles to make tabs work
+ */
+
+/* Ensure tab content is properly shown/hidden */
+.geo-maps-builder-tab-content {
+    display: none !important;
+    animation: fadeIn 0.3s ease-in-out;
+    overflow: visible !important;
+    z-index: 1;
+}
+
+.geo-maps-builder-tab-content.active {
+    display: block !important;
+    z-index: 5;
+}
+
+/* Make tabs clickable */
+.geo-maps-builder-tab {
+    cursor: pointer;
+}
+
+/* Fix z-index issues */
+.geo-maps-builder-settings-tabs {
+    z-index: 10;
+    position: relative;
+}
+
+/* Ensure correct tab styling */
+.geo-maps-builder-tab.active {
+    color: var(--geo-maps-primary);
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,.07);
+    border-bottom: 2px solid var(--geo-maps-primary);
+}
+
+/* Fix content panels */
+#general-tab, #appearance-tab, #markers-tab {
+    z-index: auto !important;
+}
+
+/* Ensure overflow handling */
+.geo-maps-builder-sidebar-content {
+    overflow-x: visible !important;
+}
+
+/* Force visibility for active tabs */
+[data-tab="general"].active,
+[data-tab="appearance"].active,
+[data-tab="markers"].active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Debug outlines for troubleshooting - uncomment if needed 
+.geo-maps-builder-tab {
+    outline: 1px solid red;
+}
+.geo-maps-builder-tab-content {
+    outline: 1px solid blue;
+}
+*/ 

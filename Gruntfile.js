@@ -268,7 +268,7 @@ module.exports = function (grunt) {
 					'!*.jshintrc',
 					'!.git',
 					'!requirement.txt',
-					'!assets/admin/src/**',
+					'!assets/build/admin/src/**',
 					'!assets/src/**',
 					'!geo-maps.tar',
 					'!leaflet.pdf'

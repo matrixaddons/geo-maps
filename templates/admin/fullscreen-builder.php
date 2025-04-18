@@ -25,9 +25,6 @@ if (!defined('ABSPATH')) exit;
     <script src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
     
     <?php
-    // Enqueue builder scripts
-    wp_enqueue_script('geo-maps-builder-fullscreen-js', $geo_maps_url . 'assets/admin/js/builder-fullscreen.js', array('jquery'), $geo_maps_version, true);
-    wp_enqueue_script('geo-maps-render-engine-js', $geo_maps_url . 'assets/src/render-engine.js', array('jquery'), $geo_maps_version, true);
     
     // Localize the map data for JavaScript
     $map_settings_data = isset($map_settings) ? $map_settings : array(
@@ -65,6 +62,15 @@ if (!defined('ABSPATH')) exit;
         'map_settings' => $map_settings_data
     ));
     ?>
+    <!-- Include the main builder stylesheet -->
+    <?php 
+    // Fallback for GEO_MAPS_URL if not defined
+    if (!defined('GEO_MAPS_URL')) {
+        define('GEO_MAPS_URL', plugin_dir_url(dirname(dirname(__FILE__))) . '/');
+    }
+    ?>
+    <link rel="stylesheet" href="<?php echo esc_url(GEO_MAPS_URL . 'assets/build/admin/css/builder-fullscreen.css'); ?>">
+    <!-- Add the tab fix CSS -->
 </head>
 <body class="geo-maps-builder-body">
     <!-- Decorative pattern overlay -->
@@ -451,12 +457,7 @@ if (!defined('ABSPATH')) exit;
     <!-- Notifications container -->
     <div class="geo-maps-notifications-container"></div>
     
-    <?php
-    // Generate the script path with cache-busting
-    $script_path = plugins_url('assets/src/render-engine.js', dirname(dirname(__FILE__))) . '?ver=' . time();
-    ?>
     <!-- Include render engine script -->
-    <script type="text/javascript" src="<?php echo esc_url($script_path); ?>"></script>
     
     <!-- Script to initialize the map -->
     <script type="text/javascript">
