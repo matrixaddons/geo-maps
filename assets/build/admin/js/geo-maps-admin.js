@@ -5,14 +5,14 @@
 // @var geoMapsAdminParams
 (function ($) {
   var GeoMapsAdmin = {
-    init: function () {
+    init: function init() {
       this.settings = geoMapsAdminParams.options.settings;
       this.bindEvents();
       this.renderPreviewMap();
       this.image_upload_frame = '';
       this.initMediaUploader();
     },
-    bindEvents: function () {
+    bindEvents: function bindEvents() {
       var _that = this;
       $('body').on('change', '#geo_maps_map_type', function () {
         _that.settings.map_type = _that.getMapType();
@@ -150,13 +150,13 @@
         _that.renderPreviewMap();
       });
     },
-    validateLatLong: function (el) {
+    validateLatLong: function validateLatLong(el) {
       var validNumber = new RegExp(/^\d*\.?\d*$/);
       if (!validNumber.test($(el).val())) {
         $(el).val(0);
       }
     },
-    getMapType: function () {
+    getMapType: function getMapType() {
       var map_type = $('#geo_maps_map_type option:selected').val();
       if (map_type == '' || map_type == null) {
         $('#geo-maps-map-osm-provider.postbox').removeClass('matrixaddons-hide');
@@ -169,7 +169,7 @@
       }
       return map_type;
     },
-    reindexRepeaterItems: function (wrap) {
+    reindexRepeaterItems: function reindexRepeaterItems(wrap) {
       var _that = this;
       var items = $(wrap).find('.matrixaddons-repeater-item');
       var index_id = 0;
@@ -195,7 +195,7 @@
         index_id++;
       });
     },
-    mapLocationHtml: function (el) {
+    mapLocationHtml: function mapLocationHtml(el) {
       var fieldset = $(el).closest('.matrixaddons-fieldset');
       var value = fieldset.find(".geo-maps-marker-location").val();
       if (value === '') {
@@ -204,7 +204,7 @@
       }
       this.callLocationAPI(value, fieldset);
     },
-    callLocationAPI: function (value, fieldset) {
+    callLocationAPI: function callLocationAPI(value, fieldset) {
       var location_search_url = 'https://nominatim.openstreetmap.org/search?q=' + value + '&format=json';
       fetch(location_search_url).then(function (response) {
         return response.json();
@@ -224,19 +224,20 @@
         }
       });
     },
-    _replaceAll: function (str, toReplace, replaceWith) {
+    _replaceAll: function _replaceAll(str, toReplace, replaceWith) {
       return str ? str.split(toReplace).join(replaceWith) : '';
     },
-    renderPreviewMap: function () {
+    renderPreviewMap: function renderPreviewMap() {
       var _that = this;
       console.log(JSON.stringify(_that.settings));
       _that.settings.map_type = _that.getMapType();
-      $(".geo_maps_map_render_element").each((index, element) => {
-        const Element = jQuery(element);
-        window.Geo_Maps_Render(Element.attr("ID"), _that.settings);
+      $(".geo_maps_map_render_element").each(function (index, element) {
+        var Element = jQuery(element);
+        window.geoMapsRenderEngine.renderMap(Element.attr("ID"), _that.settings);
       });
     },
-    loadMapItem: function (marker_index, force_remap = false) {
+    loadMapItem: function loadMapItem(marker_index) {
+      var force_remap = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       var _that = this;
       var item = $('.matrixaddons-repeater-item[data-item-id="' + marker_index + '"]');
       if (item.length < 1) {
@@ -246,9 +247,9 @@
       if ($(element).hasClass('geo-map-added') && !force_remap) {
         return;
       }
-      const Element = jQuery(element).closest('.geo-maps-marker-content-wrap');
+      var Element = jQuery(element).closest('.geo-maps-marker-content-wrap');
       $(element).addClass('geo-map-added');
-      let mapSetting = Object.assign({}, _that.settings);
+      var mapSetting = Object.assign({}, _that.settings);
       var default_lat = geoMapsAdminParams.default_marker.lat;
       var default_lng = geoMapsAdminParams.default_marker.lng;
       if (item.find('.geo-maps-marker-latitude').val() !== "" && item.find('.geo-maps-marker-longitude').val() !== "") {
@@ -267,16 +268,16 @@
         draggable: 'true',
         lat: default_lat,
         lng: default_lng,
-        dragendCallback: function (event) {
+        dragendCallback: function dragendCallback(event) {
           _that.markerDragendCallback(event);
         }
       }];
       mapSetting.center_index = 0;
       mapSetting.map_type = _that.getMapType();
-      window.Geo_Maps_Render(Element.attr("ID"), mapSetting);
+      window.geoMapsRenderEngine.renderMap(Element.attr("ID"), mapSetting);
       _that.reCalculateMarkerContent();
     },
-    reCalculateMarkerContent: function () {
+    reCalculateMarkerContent: function reCalculateMarkerContent() {
       var _that = this;
       var items = $('#geo_maps_markers').find('.matrixaddons-repeater-wrapper').find('.matrixaddons-repeater-item');
       var mapMarkers = [];
@@ -313,14 +314,14 @@
       _that.settings.map_marker = mapMarkers;
       _that.renderPreviewMap();
     },
-    markerDragendCallback: function (event) {
+    markerDragendCallback: function markerDragendCallback(event) {
       var marker = event.target;
       var position = marker.getLatLng();
       var wrap = $(event.target.getElement()).closest('.matrixaddons-fieldset-content');
       wrap.find('.geo-maps-marker-latitude').val(position.lat).trigger('change');
       wrap.find('.geo-maps-marker-longitude').val(position.lng).trigger('change');
     },
-    initMediaUploader: function () {
+    initMediaUploader: function initMediaUploader() {
       var _this = this;
       $('body').on('click', '.matrixaddons-image-field-add', function (event) {
         event.preventDefault();
@@ -335,7 +336,7 @@
         imageField.find('.geo-maps-marker-image-id').val(0).trigger('change');
       });
     },
-    uploadWindow: function (uploadBtn, wrapper) {
+    uploadWindow: function uploadWindow(uploadBtn, wrapper) {
       var _this = this;
       if (this.image_upload_frame) this.image_upload_frame.close();
       this.image_upload_frame = wp.media.frames.file_frame = wp.media({
@@ -366,10 +367,10 @@
       });
       this.image_upload_frame.open();
     },
-    getImageElement: function (src) {
+    getImageElement: function getImageElement(src) {
       return '<div data-url="' + src + '" class="image-wrapper"><div class="image-content"><img src="' + src + '" alt=""><div class="image-overlay"><a class="matrixaddons-image-delete remove dashicons dashicons-trash"></a></div></div></div>';
     },
-    getItemMarkerImage: function (item_index, new_item) {
+    getItemMarkerImage: function getItemMarkerImage(item_index, new_item) {
       var wrap = $('.matrixaddons-repeater-wrapper').find('.matrixaddons-repeater-item[data-item-id="' + item_index + '"]').find('#geo_maps_marker_item_image');
       var _that = this;
       var height = parseInt(wrap.find('.geo-maps-marker-image-height').val());
@@ -385,7 +386,7 @@
       new_item.customIconHeight = height < 1 ? 40 : height;
       return new_item;
     },
-    getMainMarker: function (new_item) {
+    getMainMarker: function getMainMarker(new_item) {
       var wrap = $('#geo_maps_marker_image');
       var image_id = wrap.find('.geo-maps-marker-image-id').val();
       if (image_id === '' || parseInt(image_id) < 1) {

@@ -6,8 +6,8 @@
     "build": "npm run build:frontend && npm run build:admin",
     "build:frontend": "cross-env BUILD_TARGET=frontend webpack --config webpack.config.js && npm run build:scss:frontend",
     "build:admin": "cross-env BUILD_TARGET=admin webpack --config webpack.config.js && npm run build:scss:admin",
-    "build:scss:frontend": "mkdir -p assets/build/css && rm -f assets/build/css/geo-maps* && sass assets/scss/geo-maps.scss:assets/build/css/geo-maps.css --style=compressed --source-map",
-    "build:scss:admin": "mkdir -p assets/build/admin/css && rm -f assets/build/admin/css/*.css assets/build/admin/css/*.map && sass assets/scss/admin:assets/build/admin/css --style=compressed --source-map",
+    "build:scss:frontend": "mkdir -p assets/build/css && rm -f assets/build/css/geo-maps* && sass assets/scss/geo-maps.scss:assets/build/css/geo-maps.css --load-path=node_modules --style=compressed --source-map",
+    "build:scss:admin": "mkdir -p assets/build/admin/css && rm -f assets/build/admin/css/*.css assets/build/admin/css/*.map && sass assets/scss/admin:assets/build/admin/css --load-path=node_modules --style=compressed --source-map",
     "build:scss": "npm run build:scss:frontend && npm run build:scss:admin",
     "check-engines": "wp-scripts check-engines",
     "check-licenses": "wp-scripts check-licenses",
@@ -26,8 +26,8 @@
     "watch:frontend": "cross-env BUILD_TARGET=frontend webpack --watch --config webpack.config.js & npm run watch:scss:frontend",
     "watch:admin": "cross-env BUILD_TARGET=admin webpack --watch --config webpack.config.js & npm run watch:scss:admin",
     "watch:scss": "npm run watch:scss:frontend & npm run watch:scss:admin",
-    "watch:scss:frontend": "sass --watch assets/scss/geo-maps.scss:assets/build/css/geo-maps.css --style=compressed --source-map",
-    "watch:scss:admin": "sass --watch assets/scss/admin:assets/build/admin/css --style=compressed --source-map"
+    "watch:scss:frontend": "sass --watch assets/scss/geo-maps.scss:assets/build/css/geo-maps.css --load-path=node_modules --style=compressed --source-map",
+    "watch:scss:admin": "sass --watch assets/scss/admin:assets/build/admin/css --load-path=node_modules --style=compressed --source-map"
   },
   "dependencies": {
     "@wordpress/compose": "^3.20.0",
@@ -42,6 +42,7 @@
     "uglify": "^0.1.5"
   },
   "devDependencies": {
+    "@babel/preset-react": "^7.26.3",
     "@wordpress/block-editor": "^8.4.0",
     "@wordpress/blocks": "^11.4.0",
     "@wordpress/scripts": "^18.0.1",

@@ -467,7 +467,7 @@ if (!defined('ABSPATH')) exit;
     function initializeMap() {
         try {
             // Check if the render engine is available
-            if (typeof Geo_Maps_Render === 'undefined') {
+            if (typeof window.geoMapsRenderEngine === 'undefined') {
                 console.error('Geo Maps render engine not loaded yet. Waiting...');
                 // Retry after a short delay
                 setTimeout(initializeMap, 500);
@@ -510,9 +510,9 @@ if (!defined('ABSPATH')) exit;
                 };
             }
             
-            // Initialize the map
+            // Initialize the map using the modern API
             console.log('Initializing map with settings:', mapSettings);
-            Geo_Maps_Render('geo-maps-builder-map', mapSettings);
+            window.geoMapsRenderEngine.renderMap('geo-maps-builder-map', mapSettings);
             
             // Store reference to the map for later use
             window.geoMapsCurrentMap = window.Geo_Maps_Rendered['geo-maps-builder-map'];

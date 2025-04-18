@@ -263,7 +263,7 @@
 			_that.settings.map_type = _that.getMapType();
 			$(".geo_maps_map_render_element").each((index, element) => {
 				const Element = jQuery(element);
-				window.Geo_Maps_Render(
+				window.geoMapsRenderEngine.renderMap(
 					Element.attr("ID"),
 					_that.settings,
 				);
@@ -310,7 +310,7 @@
 			}];
 			mapSetting.center_index = 0;
 			mapSetting.map_type = _that.getMapType();
-			window.Geo_Maps_Render(
+			window.geoMapsRenderEngine.renderMap(
 				Element.attr("ID"),
 				mapSetting,
 			);

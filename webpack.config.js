@@ -27,19 +27,27 @@ function getEntryPoints(dir, outputPrefix = '', extension = '.js') {
 
 // Get frontend JS entry points with .min suffix
 function getFrontendJsEntries() {
-	const baseEntries = getEntryPoints(
+	const baseEntries = {
+		// Include the render-engine file
+		'js/render-engine.min': path.resolve(__dirname, 'assets/src/render-engine.js'),
+	};
+	
+	// Add other frontend entries
+	const srcEntries = getEntryPoints(
 		path.resolve(__dirname, 'assets/src'),
 		'js'
 	);
 	
+	// Skip render-engine.js since we're handling it separately
+	delete srcEntries['js/render-engine'];
+	
 	// Create a new object with .min suffix added to each key
-	const entries = {};
-	Object.keys(baseEntries).forEach(key => {
+	Object.keys(srcEntries).forEach(key => {
 		const newKey = `${key}.min`;
-		entries[newKey] = baseEntries[key];
+		baseEntries[newKey] = srcEntries[key];
 	});
 	
-	return entries;
+	return baseEntries;
 }
 
 // Frontend webpack configuration
@@ -78,6 +86,22 @@ const frontendConfig = {
 			leaflet: path.resolve(__dirname, 'node_modules/leaflet')
 		}
 	},
+	module: {
+		...defaultConfig.module,
+		rules: [
+			...defaultConfig.module.rules,
+			{
+				test: /\.js$/,
+				exclude: /node_modules/,
+				use: {
+					loader: 'babel-loader',
+					options: {
+						presets: ['@babel/preset-env', '@babel/preset-react']
+					}
+				}
+			}
+		]
+	}
 };
 
 // Dynamically get admin JS entry points
@@ -125,6 +149,22 @@ const adminConfig = {
 			leaflet: path.resolve(__dirname, 'node_modules/leaflet')
 		}
 	},
+	module: {
+		...defaultConfig.module,
+		rules: [
+			...defaultConfig.module.rules,
+			{
+				test: /\.js$/,
+				exclude: /node_modules/,
+				use: {
+					loader: 'babel-loader',
+					options: {
+						presets: ['@babel/preset-env', '@babel/preset-react']
+					}
+				}
+			}
+		]
+	}
 };
 
 // Export configurations based on build target

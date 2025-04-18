@@ -26,7 +26,7 @@ __webpack_require__.r(__webpack_exports__);
  * Drawer Manager
  * Manages drawer operations for markers and other UI elements
  */
-const drawerManager = {
+var drawerManager = {
   /** 
    * Current marker being edited, if any
    * @type {Object|null}
@@ -49,15 +49,19 @@ const drawerManager = {
    * @param {Object|null} marker - Marker data if editing, null if adding
    * @param {Object|null} position - Position to place marker if adding new
    */
-  openMarkerDrawer(mode = 'Add', marker = null, position = null) {
-    console.log(`Opening marker drawer in ${mode} mode`);
+  openMarkerDrawer: function openMarkerDrawer() {
+    var _this = this;
+    var mode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'Add';
+    var marker = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    var position = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    console.log("Opening marker drawer in ".concat(mode, " mode"));
 
     // Store the current marker being edited
     this.currentMarker = marker;
 
     // Get DOM elements
-    const drawerContainer = document.getElementById('geo-maps-drawer-container');
-    const drawerTitle = document.getElementById('geo-maps-drawer-title');
+    var drawerContainer = document.getElementById('geo-maps-drawer-container');
+    var drawerTitle = document.getElementById('geo-maps-drawer-title');
 
     // Initialize drawer content if it doesn't exist yet
     if (!document.getElementById('geo-maps-marker-form')) {
@@ -66,7 +70,7 @@ const drawerManager = {
 
     // Set drawer title based on mode
     if (drawerTitle) {
-      drawerTitle.textContent = `${mode} Marker`;
+      drawerTitle.textContent = "".concat(mode, " Marker");
     }
 
     // Show the drawer
@@ -76,14 +80,14 @@ const drawerManager = {
     }
 
     // Reset form
-    const form = document.getElementById('geo-maps-marker-form');
+    var form = document.getElementById('geo-maps-marker-form');
     if (form) {
       form.reset();
     }
 
     // Set marker ID if editing
     if (mode === 'Edit' && marker) {
-      const idField = document.getElementById('marker_id');
+      var idField = document.getElementById('marker_id');
       if (idField) {
         idField.value = marker.id || '';
       }
@@ -98,7 +102,7 @@ const drawerManager = {
       if (marker.iconUrl) {
         document.getElementById('geo_maps_marker_icon').value = marker.iconUrl;
         // Update icon preview if applicable
-        const iconPreview = document.getElementById('geo-maps-marker-icon-preview');
+        var iconPreview = document.getElementById('geo-maps-marker-icon-preview');
         if (iconPreview) {
           iconPreview.src = marker.iconUrl;
           iconPreview.style.display = 'block';
@@ -113,9 +117,9 @@ const drawerManager = {
     }
 
     // Initialize mini map with position
-    setTimeout(() => {
-      this.initializeMiniMap(position);
-      this.setupMiniMapLocationSearch();
+    setTimeout(function () {
+      _this.initializeMiniMap(position);
+      _this.setupMiniMapLocationSearch();
     }, 300);
 
     // Set up media selection for marker icon
@@ -124,11 +128,11 @@ const drawerManager = {
   /**
    * Close the marker drawer
    */
-  closeMarkerDrawer() {
+  closeMarkerDrawer: function closeMarkerDrawer() {
     console.log('Closing marker drawer');
 
     // Get DOM elements
-    const drawerContainer = document.getElementById('geo-maps-drawer-container');
+    var drawerContainer = document.getElementById('geo-maps-drawer-container');
 
     // Hide the drawer
     if (drawerContainer) {
@@ -146,7 +150,8 @@ const drawerManager = {
    * Clean up mini map properly
    * @private
    */
-  _cleanupMiniMap() {
+  _cleanupMiniMap: function _cleanupMiniMap() {
+    var _this2 = this;
     // Clean up mini map
     if (this.miniMap) {
       console.log('Cleaning up mini map');
@@ -179,8 +184,8 @@ const drawerManager = {
 
           // Remove all layers
           console.log('Removing mini map layers');
-          this.miniMap.eachLayer(layer => {
-            this.miniMap.removeLayer(layer);
+          this.miniMap.eachLayer(function (layer) {
+            _this2.miniMap.removeLayer(layer);
           });
 
           // Remove the map
@@ -190,7 +195,7 @@ const drawerManager = {
         this.miniMap = null;
 
         // Also ensure the container element is clean
-        const container = document.getElementById('geo-maps-mini-map-container');
+        var container = document.getElementById('geo-maps-mini-map-container');
         if (container) {
           console.log('Checking mini map container for leftover properties');
           if (container._leaflet_id) {
@@ -199,7 +204,7 @@ const drawerManager = {
           }
 
           // Additional cleanup - some Leaflet internals might be left
-          for (const prop in container) {
+          for (var prop in container) {
             if (prop.startsWith('_leaflet')) {
               console.log('Removing additional leaflet property:', prop);
               delete container[prop];
@@ -215,75 +220,20 @@ const drawerManager = {
    * Initialize drawer content with the necessary HTML structure
    * @private
    */
-  _initializeDrawerContent() {
-    const drawerContent = document.getElementById('geo-maps-drawer-content');
+  _initializeDrawerContent: function _initializeDrawerContent() {
+    var _this3 = this;
+    var drawerContent = document.getElementById('geo-maps-drawer-content');
     if (!drawerContent) return;
 
     // Create form structure
-    drawerContent.innerHTML = `
-            <form id="geo-maps-marker-form" class="geo-maps-form">
-                <input type="hidden" id="marker_id" name="marker_id" value="">
-                
-                <!-- Marker Information -->
-                <div class="geo-maps-form-section">
-                    <h3>Marker Information</h3>
-                    <div class="geo-maps-form-field">
-                        <label for="marker_title">Title</label>
-                        <input type="text" id="marker_title" name="marker_title" required>
-                    </div>
-                    <div class="geo-maps-form-field">
-                        <label for="marker_description">Description</label>
-                        <textarea id="marker_description" name="marker_description" rows="4"></textarea>
-                    </div>
-                </div>
-                
-                <!-- Marker Location -->
-                <div class="geo-maps-form-section">
-                    <h3>Location</h3>
-                    <div id="geo-maps-location-search-container" class="geo-maps-form-field">
-                        <label for="location_search">Search Location</label>
-                        <input type="text" id="location_search" name="location_search" placeholder="Enter address or place name">
-                    </div>
-                    <div id="geo-maps-mini-map-container" style="height: 200px; margin-bottom: 15px;"></div>
-                    <div class="geo-maps-form-field">
-                        <label for="marker_lat">Latitude</label>
-                        <input type="text" id="marker_lat" name="marker_lat" required>
-                    </div>
-                    <div class="geo-maps-form-field">
-                        <label for="marker_lng">Longitude</label>
-                        <input type="text" id="marker_lng" name="marker_lng" required>
-                    </div>
-                </div>
-                
-                <!-- Marker Appearance -->
-                <div class="geo-maps-form-section">
-                    <h3>Appearance</h3>
-                    <div class="geo-maps-form-field">
-                        <label for="geo_maps_marker_icon">Custom Icon</label>
-                        <div class="geo-maps-media-field">
-                            <input type="text" id="geo_maps_marker_icon" name="geo_maps_marker_icon">
-                            <button type="button" id="geo_maps_select_marker_icon" class="button">Select Icon</button>
-                            <div class="geo-maps-icon-preview">
-                                <img id="geo-maps-marker-icon-preview" src="" style="display: none; max-width: 40px; max-height: 40px;">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Form Actions -->
-                <div class="geo-maps-form-actions">
-                    <button type="button" id="geo-maps-marker-drawer-save" class="button button-primary">Save Marker</button>
-                    <button type="button" id="geo-maps-marker-drawer-close" class="button">Cancel</button>
-                </div>
-            </form>
-        `;
+    drawerContent.innerHTML = "\n            <form id=\"geo-maps-marker-form\" class=\"geo-maps-form\">\n                <input type=\"hidden\" id=\"marker_id\" name=\"marker_id\" value=\"\">\n                \n                <!-- Marker Information -->\n                <div class=\"geo-maps-form-section\">\n                    <h3>Marker Information</h3>\n                    <div class=\"geo-maps-form-field\">\n                        <label for=\"marker_title\">Title</label>\n                        <input type=\"text\" id=\"marker_title\" name=\"marker_title\" required>\n                    </div>\n                    <div class=\"geo-maps-form-field\">\n                        <label for=\"marker_description\">Description</label>\n                        <textarea id=\"marker_description\" name=\"marker_description\" rows=\"4\"></textarea>\n                    </div>\n                </div>\n                \n                <!-- Marker Location -->\n                <div class=\"geo-maps-form-section\">\n                    <h3>Location</h3>\n                    <div id=\"geo-maps-location-search-container\" class=\"geo-maps-form-field\">\n                        <label for=\"location_search\">Search Location</label>\n                        <input type=\"text\" id=\"location_search\" name=\"location_search\" placeholder=\"Enter address or place name\">\n                    </div>\n                    <div id=\"geo-maps-mini-map-container\" style=\"height: 200px; margin-bottom: 15px;\"></div>\n                    <div class=\"geo-maps-form-field\">\n                        <label for=\"marker_lat\">Latitude</label>\n                        <input type=\"text\" id=\"marker_lat\" name=\"marker_lat\" required>\n                    </div>\n                    <div class=\"geo-maps-form-field\">\n                        <label for=\"marker_lng\">Longitude</label>\n                        <input type=\"text\" id=\"marker_lng\" name=\"marker_lng\" required>\n                    </div>\n                </div>\n                \n                <!-- Marker Appearance -->\n                <div class=\"geo-maps-form-section\">\n                    <h3>Appearance</h3>\n                    <div class=\"geo-maps-form-field\">\n                        <label for=\"geo_maps_marker_icon\">Custom Icon</label>\n                        <div class=\"geo-maps-media-field\">\n                            <input type=\"text\" id=\"geo_maps_marker_icon\" name=\"geo_maps_marker_icon\">\n                            <button type=\"button\" id=\"geo_maps_select_marker_icon\" class=\"button\">Select Icon</button>\n                            <div class=\"geo-maps-icon-preview\">\n                                <img id=\"geo-maps-marker-icon-preview\" src=\"\" style=\"display: none; max-width: 40px; max-height: 40px;\">\n                            </div>\n                        </div>\n                    </div>\n                </div>\n                \n                <!-- Form Actions -->\n                <div class=\"geo-maps-form-actions\">\n                    <button type=\"button\" id=\"geo-maps-marker-drawer-save\" class=\"button button-primary\">Save Marker</button>\n                    <button type=\"button\" id=\"geo-maps-marker-drawer-close\" class=\"button\">Cancel</button>\n                </div>\n            </form>\n        ";
 
     // Add event listeners
-    const saveButton = document.getElementById('geo-maps-marker-drawer-save');
+    var saveButton = document.getElementById('geo-maps-marker-drawer-save');
     if (saveButton) {
-      saveButton.addEventListener('click', e => {
+      saveButton.addEventListener('click', function (e) {
         e.preventDefault();
-        this.handleMarkerFormSubmit();
+        _this3.handleMarkerFormSubmit();
       });
     }
   },
@@ -292,9 +242,11 @@ const drawerManager = {
    * 
    * @param {Object|null} position - Initial position for the marker
    */
-  initializeMiniMap(position = null) {
+  initializeMiniMap: function initializeMiniMap() {
+    var _this4 = this;
+    var position = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     console.log('Initializing mini map');
-    const miniMapContainer = document.getElementById('geo-maps-mini-map-container');
+    var miniMapContainer = document.getElementById('geo-maps-mini-map-container');
     if (!miniMapContainer) {
       console.error('Mini map container not found');
       return;
@@ -309,7 +261,7 @@ const drawerManager = {
     }
 
     // Get map type from settings
-    const mapType = window.GeoMapsBuilder.settingsManager.getMapType() || 'open_street_map';
+    var mapType = window.GeoMapsBuilder.settingsManager.getMapType() || 'open_street_map';
     console.log('Using map type:', mapType);
 
     // Clean up existing mini map
@@ -320,7 +272,7 @@ const drawerManager = {
         console.log('Using geoMapsRenderEngine to create mini map');
 
         // Create map settings for the render engine
-        const mapSettings = {
+        var mapSettings = {
           map_type: mapType,
           map_zoom: 10,
           center_index: 0,
@@ -358,7 +310,7 @@ const drawerManager = {
             this.miniMapMarker.setDraggable(true);
 
             // Add drag event listener
-            google.maps.event.addListener(this.miniMapMarker, 'dragend', event => {
+            google.maps.event.addListener(this.miniMapMarker, 'dragend', function (event) {
               document.getElementById('marker_lat').value = event.latLng.lat().toFixed(6);
               document.getElementById('marker_lng').value = event.latLng.lng().toFixed(6);
             });
@@ -370,8 +322,8 @@ const drawerManager = {
             }).addTo(this.miniMap);
 
             // Add drag event listener
-            this.miniMapMarker.on('dragend', event => {
-              const position = event.target.getLatLng();
+            this.miniMapMarker.on('dragend', function (event) {
+              var position = event.target.getLatLng();
               document.getElementById('marker_lat').value = position.lat.toFixed(6);
               document.getElementById('marker_lng').value = position.lng.toFixed(6);
             });
@@ -386,7 +338,7 @@ const drawerManager = {
             });
 
             // Add drag event listener
-            google.maps.event.addListener(this.miniMapMarker, 'dragend', event => {
+            google.maps.event.addListener(this.miniMapMarker, 'dragend', function (event) {
               document.getElementById('marker_lat').value = event.latLng.lat().toFixed(6);
               document.getElementById('marker_lng').value = event.latLng.lng().toFixed(6);
             });
@@ -396,8 +348,8 @@ const drawerManager = {
             }).addTo(this.miniMap);
 
             // Add drag event listener
-            this.miniMapMarker.on('dragend', event => {
-              const position = event.target.getLatLng();
+            this.miniMapMarker.on('dragend', function (event) {
+              var position = event.target.getLatLng();
               document.getElementById('marker_lat').value = position.lat.toFixed(6);
               document.getElementById('marker_lng').value = position.lng.toFixed(6);
             });
@@ -424,7 +376,7 @@ const drawerManager = {
             });
 
             // Add drag event listener
-            google.maps.event.addListener(this.miniMapMarker, 'dragend', event => {
+            google.maps.event.addListener(this.miniMapMarker, 'dragend', function (event) {
               document.getElementById('marker_lat').value = event.latLng.lat().toFixed(6);
               document.getElementById('marker_lng').value = event.latLng.lng().toFixed(6);
             });
@@ -435,8 +387,8 @@ const drawerManager = {
             }).addTo(this.miniMap);
 
             // Add drag event listener
-            this.miniMapMarker.on('dragend', event => {
-              const position = event.target.getLatLng();
+            this.miniMapMarker.on('dragend', function (event) {
+              var position = event.target.getLatLng();
               document.getElementById('marker_lat').value = position.lat.toFixed(6);
               document.getElementById('marker_lng').value = position.lng.toFixed(6);
             });
@@ -463,7 +415,7 @@ const drawerManager = {
             });
 
             // Add drag event listener
-            google.maps.event.addListener(this.miniMapMarker, 'dragend', event => {
+            google.maps.event.addListener(this.miniMapMarker, 'dragend', function (event) {
               document.getElementById('marker_lat').value = event.latLng.lat().toFixed(6);
               document.getElementById('marker_lng').value = event.latLng.lng().toFixed(6);
             });
@@ -488,8 +440,8 @@ const drawerManager = {
             }).addTo(this.miniMap);
 
             // Add drag event listener
-            this.miniMapMarker.on('dragend', event => {
-              const position = event.target.getLatLng();
+            this.miniMapMarker.on('dragend', function (event) {
+              var position = event.target.getLatLng();
               document.getElementById('marker_lat').value = position.lat.toFixed(6);
               document.getElementById('marker_lng').value = position.lng.toFixed(6);
             });
@@ -502,13 +454,13 @@ const drawerManager = {
       document.getElementById('marker_lng').value = position.lng.toFixed(6);
 
       // Refresh map size after drawer animation completes
-      setTimeout(() => {
-        if (this.miniMap) {
+      setTimeout(function () {
+        if (_this4.miniMap) {
           console.log('Refreshing mini map size');
           if (mapType === 'google_map') {
-            google.maps.event.trigger(this.miniMap, 'resize');
+            google.maps.event.trigger(_this4.miniMap, 'resize');
           } else {
-            this.miniMap.invalidateSize();
+            _this4.miniMap.invalidateSize();
           }
         }
       }, 500);
@@ -519,71 +471,74 @@ const drawerManager = {
   /**
    * Set up location search for mini map
    */
-  setupMiniMapLocationSearch() {
-    const searchInput = document.getElementById('location_search');
+  setupMiniMapLocationSearch: function setupMiniMapLocationSearch() {
+    var _this5 = this;
+    var searchInput = document.getElementById('location_search');
     if (!searchInput) return;
-    searchInput.addEventListener('keydown', e => {
+    searchInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         e.preventDefault();
-        const query = searchInput.value.trim();
+        var query = searchInput.value.trim();
         if (!query) return;
 
         // Use Nominatim for geocoding (for simplicity)
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`).then(response => response.json()).then(data => {
+        fetch("https://nominatim.openstreetmap.org/search?format=json&q=".concat(encodeURIComponent(query))).then(function (response) {
+          return response.json();
+        }).then(function (data) {
           if (data && data.length > 0) {
-            const location = data[0];
-            const lat = parseFloat(location.lat);
-            const lng = parseFloat(location.lon);
+            var location = data[0];
+            var lat = parseFloat(location.lat);
+            var lng = parseFloat(location.lon);
 
             // Update fields
             document.getElementById('marker_lat').value = lat.toFixed(6);
             document.getElementById('marker_lng').value = lng.toFixed(6);
 
             // Update mini map
-            const mapType = window.GeoMapsBuilder.settingsManager.getMapType() || 'open_street_map';
+            var mapType = window.GeoMapsBuilder.settingsManager.getMapType() || 'open_street_map';
 
             // Check if we have a mini map
-            if (!this.miniMap) return;
+            if (!_this5.miniMap) return;
 
             // Use render engine to update map position if available
             if (window.geoMapsRenderEngine) {
               // Move the map view to the new location
-              if (this.miniMap instanceof L.Map) {
-                this.miniMap.setView([lat, lng], this.miniMap.getZoom());
-              } else if (window.google && this.miniMap instanceof google.maps.Map) {
-                this.miniMap.setCenter({
-                  lat,
-                  lng
+              if (_this5.miniMap instanceof L.Map) {
+                _this5.miniMap.setView([lat, lng], _this5.miniMap.getZoom());
+              } else if (window.google && _this5.miniMap instanceof google.maps.Map) {
+                _this5.miniMap.setCenter({
+                  lat: lat,
+                  lng: lng
                 });
               }
 
               // Update marker position
-              if (this.miniMapMarker) {
-                if (this.miniMap instanceof L.Map) {
-                  this.miniMapMarker.setLatLng([lat, lng]);
-                } else if (window.google && this.miniMap instanceof google.maps.Map) {
-                  this.miniMapMarker.setPosition({
-                    lat,
-                    lng
+              if (_this5.miniMapMarker) {
+                if (_this5.miniMap instanceof L.Map) {
+                  _this5.miniMapMarker.setLatLng([lat, lng]);
+                } else if (window.google && _this5.miniMap instanceof google.maps.Map) {
+                  _this5.miniMapMarker.setPosition({
+                    lat: lat,
+                    lng: lng
                   });
                 }
               }
             } else {
               // Fallback to direct update
-              if (this.miniMap instanceof L.Map) {
-                this.miniMap.setView([lat, lng], this.miniMap.getZoom());
-                if (this.miniMapMarker) {
-                  this.miniMapMarker.setLatLng([lat, lng]);
+              if (_this5.miniMap instanceof L.Map) {
+                _this5.miniMap.setView([lat, lng], _this5.miniMap.getZoom());
+                if (_this5.miniMapMarker) {
+                  _this5.miniMapMarker.setLatLng([lat, lng]);
                 }
-              } else if (window.google && this.miniMap instanceof google.maps.Map) {
-                this.miniMap.setCenter({
-                  lat,
-                  lng
+              } else if (window.google && _this5.miniMap instanceof google.maps.Map) {
+                _this5.miniMap.setCenter({
+                  lat: lat,
+                  lng: lng
                 });
-                if (this.miniMapMarker) {
-                  this.miniMapMarker.setPosition({
-                    lat,
-                    lng
+                if (_this5.miniMapMarker) {
+                  _this5.miniMapMarker.setPosition({
+                    lat: lat,
+                    lng: lng
                   });
                 }
               }
@@ -591,7 +546,7 @@ const drawerManager = {
           } else {
             console.warn('No locations found for query:', query);
           }
-        }).catch(error => {
+        })["catch"](function (error) {
           console.error('Error searching for location:', error);
         });
       }
@@ -600,10 +555,10 @@ const drawerManager = {
   /**
    * Set up media selection for marker icon
    */
-  setupMediaSelection() {
-    const selectButton = document.getElementById('geo_maps_select_marker_icon');
+  setupMediaSelection: function setupMediaSelection() {
+    var selectButton = document.getElementById('geo_maps_select_marker_icon');
     if (!selectButton) return;
-    selectButton.addEventListener('click', e => {
+    selectButton.addEventListener('click', function (e) {
       e.preventDefault();
 
       // Check if WordPress media library is available
@@ -613,7 +568,7 @@ const drawerManager = {
       }
 
       // Create media frame
-      const mediaFrame = wp.media({
+      var mediaFrame = wp.media({
         title: 'Select Marker Icon',
         button: {
           text: 'Use this icon'
@@ -625,12 +580,12 @@ const drawerManager = {
       });
 
       // Handle selection
-      mediaFrame.on('select', () => {
-        const attachment = mediaFrame.state().get('selection').first().toJSON();
+      mediaFrame.on('select', function () {
+        var attachment = mediaFrame.state().get('selection').first().toJSON();
         document.getElementById('geo_maps_marker_icon').value = attachment.url;
 
         // Update preview
-        const preview = document.getElementById('geo-maps-marker-icon-preview');
+        var preview = document.getElementById('geo-maps-marker-icon-preview');
         if (preview) {
           preview.src = attachment.url;
           preview.style.display = 'block';
@@ -644,14 +599,14 @@ const drawerManager = {
   /**
    * Handle marker form submission
    */
-  handleMarkerFormSubmit() {
+  handleMarkerFormSubmit: function handleMarkerFormSubmit() {
     // Get form data
-    const markerId = document.getElementById('marker_id').value;
-    const title = document.getElementById('marker_title').value;
-    const description = document.getElementById('marker_description').value;
-    const lat = document.getElementById('marker_lat').value;
-    const lng = document.getElementById('marker_lng').value;
-    const iconUrl = document.getElementById('geo_maps_marker_icon').value;
+    var markerId = document.getElementById('marker_id').value;
+    var title = document.getElementById('marker_title').value;
+    var description = document.getElementById('marker_description').value;
+    var lat = document.getElementById('marker_lat').value;
+    var lng = document.getElementById('marker_lng').value;
+    var iconUrl = document.getElementById('geo_maps_marker_icon').value;
 
     // Validate form
     if (!title || !lat || !lng) {
@@ -660,26 +615,26 @@ const drawerManager = {
     }
 
     // Check if we have access to required managers
-    const markerManager = window.GeoMapsBuilder.markerManager;
-    const statusManager = window.GeoMapsBuilder.statusManager;
+    var markerManager = window.GeoMapsBuilder.markerManager;
+    var statusManager = window.GeoMapsBuilder.statusManager;
     if (!markerManager) {
       alert('Marker manager not found. Unable to save marker.');
       return;
     }
 
     // Prepare marker data
-    const markerData = {
-      title,
-      description,
+    var markerData = {
+      title: title,
+      description: description,
       latitude: parseFloat(lat),
       longitude: parseFloat(lng),
-      iconUrl
+      iconUrl: iconUrl
     };
 
     // Edit existing or add new marker
     if (markerId) {
       markerData.id = markerId;
-      const success = markerManager.updateMarker(markerData);
+      var success = markerManager.updateMarker(markerData);
       if (success) {
         if (statusManager) {
           statusManager.success('Marker updated successfully');
@@ -697,8 +652,8 @@ const drawerManager = {
     } else {
       // Generate unique ID for new marker
       markerData.id = 'marker_' + Date.now();
-      const success = markerManager.addMarker(markerData);
-      if (success) {
+      var _success = markerManager.addMarker(markerData);
+      if (_success) {
         if (statusManager) {
           statusManager.success('Marker added successfully');
         } else {
@@ -723,15 +678,16 @@ const drawerManager = {
   /**
    * Initialize drawer manager
    */
-  init() {
+  init: function init() {
+    var _this6 = this;
     console.log('Drawer Manager initialized');
 
     // Set up event handler for settings changes that affect the mini map
-    jQuery(document).on('geoMapsSettingsChanged', (e, key, value) => {
-      console.log(`Settings changed (drawer manager): ${key} = ${value}`);
+    jQuery(document).on('geoMapsSettingsChanged', function (e, key, value) {
+      console.log("Settings changed (drawer manager): ".concat(key, " = ").concat(value));
 
       // Settings that should be synced with mini map if it's open
-      const miniMapSettings = ['mapType',
+      var miniMapSettings = ['mapType',
       // Map provider
       'osmProvider',
       // OSM tile provider
@@ -739,18 +695,18 @@ const drawerManager = {
       ];
 
       // Check if this setting affects the mini map and if mini map is open
-      if (miniMapSettings.includes(key) && this.miniMap) {
-        console.log(`Setting "${key}" changed - Updating mini map...`);
+      if (miniMapSettings.includes(key) && _this6.miniMap) {
+        console.log("Setting \"".concat(key, "\" changed - Updating mini map..."));
 
         // Get current marker position from form
-        const lat = parseFloat(document.getElementById('marker_lat').value);
-        const lng = parseFloat(document.getElementById('marker_lng').value);
+        var lat = parseFloat(document.getElementById('marker_lat').value);
+        var lng = parseFloat(document.getElementById('marker_lng').value);
         if (!isNaN(lat) && !isNaN(lng)) {
           // Reinitialize mini map with current position
-          setTimeout(() => {
-            this.initializeMiniMap({
-              lat,
-              lng
+          setTimeout(function () {
+            _this6.initializeMiniMap({
+              lat: lat,
+              lng: lng
             });
           }, 100);
         }
@@ -784,14 +740,14 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * Form Manager for handling map configuration forms
  */
-const formManager = {
+var formManager = {
   // Store form elements and data
   forms: {},
   initialFormData: {},
   /**
    * Initialize the form manager
    */
-  init: function () {
+  init: function init() {
     console.log('Form manager initializing');
     this.cacheFormElements();
     this.setupEventListeners();
@@ -800,7 +756,7 @@ const formManager = {
   /**
    * Cache frequently used form elements
    */
-  cacheFormElements: function () {
+  cacheFormElements: function cacheFormElements() {
     this.forms = {
       main: jQuery('#geo-maps-builder-form'),
       settings: jQuery('#geo-maps-settings'),
@@ -815,8 +771,8 @@ const formManager = {
   /**
    * Setup event listeners for form interactions
    */
-  setupEventListeners: function () {
-    const self = this;
+  setupEventListeners: function setupEventListeners() {
+    var self = this;
 
     // Handle form submission
     if (this.forms.main && this.forms.main.length) {
@@ -832,7 +788,7 @@ const formManager = {
     }
 
     // Setup save button if it exists
-    const $saveButton = jQuery('#geo-maps-builder-save-button');
+    var $saveButton = jQuery('#geo-maps-builder-save-button');
     if ($saveButton.length) {
       $saveButton.on('click', function (e) {
         e.preventDefault();
@@ -855,7 +811,7 @@ const formManager = {
   /**
    * Save initial form data for change detection
    */
-  saveInitialFormData: function () {
+  saveInitialFormData: function saveInitialFormData() {
     if (this.forms.main && this.forms.main.length) {
       this.initialFormData = this.serializeForm();
       console.log('Initial form data saved');
@@ -865,12 +821,12 @@ const formManager = {
    * Serialize form data into a comparable object
    * @returns {Object} The serialized form data
    */
-  serializeForm: function () {
+  serializeForm: function serializeForm() {
     if (!this.forms.main || !this.forms.main.length) {
       return {};
     }
-    const serializedArray = this.forms.main.serializeArray();
-    const data = {};
+    var serializedArray = this.forms.main.serializeArray();
+    var data = {};
     jQuery.each(serializedArray, function (i, field) {
       data[field.name] = field.value;
     });
@@ -880,15 +836,15 @@ const formManager = {
    * Check if the form has unsaved changes
    * @returns {boolean} True if there are unsaved changes
    */
-  hasUnsavedChanges: function () {
+  hasUnsavedChanges: function hasUnsavedChanges() {
     if (!this.forms.main || !this.forms.main.length) {
       return false;
     }
-    const currentData = this.serializeForm();
-    let hasChanges = false;
+    var currentData = this.serializeForm();
+    var hasChanges = false;
 
     // Compare each field
-    for (const key in currentData) {
+    for (var key in currentData) {
       if (currentData[key] !== this.initialFormData[key]) {
         hasChanges = true;
         break;
@@ -899,8 +855,8 @@ const formManager = {
   /**
    * Handle form field changes
    */
-  handleFormChange: function () {
-    const $saveButton = jQuery('#geo-maps-builder-save-button');
+  handleFormChange: function handleFormChange() {
+    var $saveButton = jQuery('#geo-maps-builder-save-button');
     if (this.hasUnsavedChanges()) {
       $saveButton.addClass('has-changes');
     } else {
@@ -910,21 +866,21 @@ const formManager = {
   /**
    * Submit the form to save map data
    */
-  submitForm: function () {
+  submitForm: function submitForm() {
     if (!this.forms.main || !this.forms.main.length) {
       _status_manager__WEBPACK_IMPORTED_MODULE_0__["default"].error('Form not found');
       return;
     }
-    const self = this;
-    const formData = this.forms.main.serialize();
+    var self = this;
+    var formData = this.forms.main.serialize();
 
     // Show loading state
-    const $saveButton = jQuery('#geo-maps-builder-save-button');
+    var $saveButton = jQuery('#geo-maps-builder-save-button');
     $saveButton.addClass('is-loading');
     _status_manager__WEBPACK_IMPORTED_MODULE_0__["default"].success('Saving map data...', 0);
 
     // Get the AJAX URL from the form's data attribute or global variable
-    const ajaxUrl = this.forms.main.data('ajax-url') || window.GeoMapsBuilder && window.GeoMapsBuilder.ajaxUrl || ajaxurl;
+    var ajaxUrl = this.forms.main.data('ajax-url') || window.GeoMapsBuilder && window.GeoMapsBuilder.ajaxUrl || ajaxurl;
 
     // Send AJAX request
     jQuery.ajax({
@@ -932,7 +888,7 @@ const formManager = {
       type: 'POST',
       data: formData,
       dataType: 'json',
-      success: function (response) {
+      success: function success(response) {
         // Handle success
         $saveButton.removeClass('is-loading');
         if (response.success) {
@@ -942,10 +898,10 @@ const formManager = {
           _status_manager__WEBPACK_IMPORTED_MODULE_0__["default"].error(response.data.message || 'Error saving map');
         }
       },
-      error: function (xhr, status, error) {
+      error: function error(xhr, status, _error) {
         // Handle error
         $saveButton.removeClass('is-loading');
-        console.error('AJAX error:', status, error);
+        console.error('AJAX error:', status, _error);
         _status_manager__WEBPACK_IMPORTED_MODULE_0__["default"].error('Server error occurred while saving map');
       }
     });
@@ -955,11 +911,11 @@ const formManager = {
    * @param {string} fieldName - The name of the field
    * @returns {string} The field value
    */
-  getFieldValue: function (fieldName) {
+  getFieldValue: function getFieldValue(fieldName) {
     if (!this.forms.main || !this.forms.main.length) {
       return '';
     }
-    const field = this.forms.main.find(`[name="${fieldName}"]`);
+    var field = this.forms.main.find("[name=\"".concat(fieldName, "\"]"));
     return field.length ? field.val() : '';
   },
   /**
@@ -967,11 +923,11 @@ const formManager = {
    * @param {string} fieldName - The name of the field
    * @param {string} value - The value to set
    */
-  setFieldValue: function (fieldName, value) {
+  setFieldValue: function setFieldValue(fieldName, value) {
     if (!this.forms.main || !this.forms.main.length) {
       return;
     }
-    const field = this.forms.main.find(`[name="${fieldName}"]`);
+    var field = this.forms.main.find("[name=\"".concat(fieldName, "\"]"));
     if (field.length) {
       field.val(value);
       field.trigger('change'); // Trigger change event to update UI
@@ -994,6 +950,58 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _status_manager__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./status-manager */ "./assets/src/admin/builder/status-manager.js");
 /* harmony import */ var _settings_manager__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./settings-manager */ "./assets/src/admin/builder/settings-manager.js");
+function _typeof(o) {
+  "@babel/helpers - typeof";
+
+  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) {
+    return typeof o;
+  } : function (o) {
+    return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+  }, _typeof(o);
+}
+function ownKeys(e, r) {
+  var t = Object.keys(e);
+  if (Object.getOwnPropertySymbols) {
+    var o = Object.getOwnPropertySymbols(e);
+    r && (o = o.filter(function (r) {
+      return Object.getOwnPropertyDescriptor(e, r).enumerable;
+    })), t.push.apply(t, o);
+  }
+  return t;
+}
+function _objectSpread(e) {
+  for (var r = 1; r < arguments.length; r++) {
+    var t = null != arguments[r] ? arguments[r] : {};
+    r % 2 ? ownKeys(Object(t), !0).forEach(function (r) {
+      _defineProperty(e, r, t[r]);
+    }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) {
+      Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
+    });
+  }
+  return e;
+}
+function _defineProperty(e, r, t) {
+  return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+    value: t,
+    enumerable: !0,
+    configurable: !0,
+    writable: !0
+  }) : e[r] = t, e;
+}
+function _toPropertyKey(t) {
+  var i = _toPrimitive(t, "string");
+  return "symbol" == _typeof(i) ? i : i + "";
+}
+function _toPrimitive(t, r) {
+  if ("object" != _typeof(t) || !t) return t;
+  var e = t[Symbol.toPrimitive];
+  if (void 0 !== e) {
+    var i = e.call(t, r || "default");
+    if ("object" != _typeof(i)) return i;
+    throw new TypeError("@@toPrimitive must return a primitive value.");
+  }
+  return ("string" === r ? String : Number)(t);
+}
 /**
  * Map manager module for Geo Maps Builder
  * Handles map initialization, rendering, and map-related operations
@@ -1004,7 +1012,7 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * Map Manager for handling map operations
  */
-const mapManager = {
+var mapManager = {
   // Main map instance
   map: null,
   // Map marker objects
@@ -1015,11 +1023,11 @@ const mapManager = {
    * Initializes the map manager
    * @param {Object} settings - Optional settings to override defaults
    */
-  init: function (settings) {
+  init: function init(settings) {
     console.log('Map manager initializing');
 
     // If there's a map container element, initialize the map
-    const mapContainer = document.getElementById('geo-maps-builder-map');
+    var mapContainer = document.getElementById('geo-maps-builder-map');
     if (mapContainer) {
       this.renderMap();
     } else {
@@ -1030,7 +1038,7 @@ const mapManager = {
    * Add a click event listener to the map
    * @param {Function} callback - Function to call when map is clicked
    */
-  onMapClick: function (callback) {
+  onMapClick: function onMapClick(callback) {
     if (typeof callback === 'function') {
       this.clickListeners.push(callback);
 
@@ -1045,7 +1053,7 @@ const mapManager = {
    * @private
    * @param {Function} callback - Function to call when map is clicked
    */
-  _addClickListenerToMap: function (callback) {
+  _addClickListenerToMap: function _addClickListenerToMap(callback) {
     if (!this.map) return;
 
     // For Leaflet map
@@ -1071,23 +1079,23 @@ const mapManager = {
    * Get the current map center
    * @returns {Object} - {lat, lng} object
    */
-  getMapCenter: function () {
+  getMapCenter: function getMapCenter() {
     if (!this.map) {
       return _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].center;
     }
 
     // Get center from the appropriate map type
     if (this.map instanceof L.Map) {
-      const center = this.map.getCenter();
+      var center = this.map.getCenter();
       return {
         lat: center.lat,
         lng: center.lng
       };
     } else if (window.google && this.map instanceof google.maps.Map) {
-      const center = this.map.getCenter();
+      var _center = this.map.getCenter();
       return {
-        lat: center.lat(),
-        lng: center.lng()
+        lat: _center.lat(),
+        lng: _center.lng()
       };
     }
     return _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].center;
@@ -1096,7 +1104,7 @@ const mapManager = {
    * Get map instance
    * @returns {Object|null} - The map instance or null if not initialized
    */
-  getMap: function () {
+  getMap: function getMap() {
     return this.map;
   },
   /**
@@ -1104,11 +1112,12 @@ const mapManager = {
    * @param {string} containerId - The ID of the container element
    * @returns {Object|null} - The map instance or null if initialization failed
    */
-  initializeMap: function (containerId) {
+  initializeMap: function initializeMap(containerId) {
+    var _this = this;
     if (!containerId) {
       containerId = 'geo-maps-builder-map';
     }
-    const container = document.getElementById(containerId);
+    var container = document.getElementById(containerId);
     if (!container) {
       console.error('Map container not found:', containerId);
       return null;
@@ -1128,7 +1137,7 @@ const mapManager = {
       }
 
       // Prepare map settings for the render engine
-      const mapSettings = {
+      var mapSettings = {
         map_type: _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].mapType,
         map_zoom: _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].zoom,
         center_index: 0,
@@ -1157,8 +1166,8 @@ const mapManager = {
       this._setupMapEvents();
 
       // Add all registered click listeners
-      this.clickListeners.forEach(callback => {
-        this._addClickListenerToMap(callback);
+      this.clickListeners.forEach(function (callback) {
+        _this._addClickListenerToMap(callback);
       });
       console.log('Map initialized successfully using render engine');
       return this.map;
@@ -1174,41 +1183,42 @@ const mapManager = {
    * Sets up map events for both Leaflet and Google Maps
    * @private
    */
-  _setupMapEvents: function () {
+  _setupMapEvents: function _setupMapEvents() {
+    var _this2 = this;
     if (!this.map) return;
 
     // Check map type and set appropriate event handlers
     if (this.map instanceof L.Map) {
       // Leaflet map events
-      this.map.on('moveend', () => {
-        const center = this.map.getCenter();
+      this.map.on('moveend', function () {
+        var center = _this2.map.getCenter();
         _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].updateSetting('center', {
           lat: center.lat,
           lng: center.lng
         });
       });
-      this.map.on('zoomend', () => {
-        const zoom = this.map.getZoom();
+      this.map.on('zoomend', function () {
+        var zoom = _this2.map.getZoom();
         _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].updateSetting('zoom', zoom);
       });
     } else if (window.google && this.map instanceof google.maps.Map) {
       // Google Maps events
-      this.map.addListener('center_changed', () => {
-        const center = this.map.getCenter();
+      this.map.addListener('center_changed', function () {
+        var center = _this2.map.getCenter();
         _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].updateSetting('center', {
           lat: center.lat(),
           lng: center.lng()
         });
       });
-      this.map.addListener('zoom_changed', () => {
-        const zoom = this.map.getZoom();
+      this.map.addListener('zoom_changed', function () {
+        var zoom = _this2.map.getZoom();
         _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].updateSetting('zoom', zoom);
       });
     }
 
     // Register for render engine events
     if (window.geoMapsRenderEngine.on) {
-      window.geoMapsRenderEngine.on('markerClick', data => {
+      window.geoMapsRenderEngine.on('markerClick', function (data) {
         console.log('Marker clicked:', data);
         // You can handle marker clicks here if needed
       });
@@ -1218,11 +1228,11 @@ const mapManager = {
    * Renders the map using the current settings and render engine
    * @returns {Object|null} The map instance or null if rendering failed
    */
-  renderMap: function () {
+  renderMap: function renderMap() {
     console.log('Rendering map with current settings');
 
     // Get the map container
-    const mapContainer = document.getElementById('geo-maps-builder-map');
+    var mapContainer = document.getElementById('geo-maps-builder-map');
     if (!mapContainer) {
       console.error('Map container not found');
       return null;
@@ -1272,9 +1282,11 @@ const mapManager = {
    * @param {string} mapType - 'open_street_map' or 'google_map'
    * @returns {Object|null} Map instance or null if failed
    */
-  createSecondaryMap: function (containerId, position, zoom = 10, mapType = 'open_street_map') {
+  createSecondaryMap: function createSecondaryMap(containerId, position) {
+    var zoom = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
+    var mapType = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'open_street_map';
     console.log('Creating secondary map in container:', containerId);
-    const container = document.getElementById(containerId);
+    var container = document.getElementById(containerId);
     if (!container) {
       console.error('Container not found:', containerId);
       return null;
@@ -1292,7 +1304,7 @@ const mapManager = {
       }
 
       // Create minimal map settings for the render engine
-      const mapSettings = {
+      var mapSettings = {
         map_type: mapType,
         map_zoom: zoom,
         center_index: 0,
@@ -1314,7 +1326,7 @@ const mapManager = {
       };
 
       // Use the render engine to create the map
-      const mapInstance = window.geoMapsRenderEngine.renderMap(containerId, mapSettings);
+      var mapInstance = window.geoMapsRenderEngine.renderMap(containerId, mapSettings);
       if (!mapInstance) {
         throw new Error('Failed to create secondary map with render engine');
       }
@@ -1330,7 +1342,7 @@ const mapManager = {
    * @param {Object} markerData - The marker data
    * @returns {Object|null} - The marker object or null if failed
    */
-  addMarkerToMap: function (markerData) {
+  addMarkerToMap: function addMarkerToMap(markerData) {
     if (!this.map) {
       console.error('Map not initialized');
       return null;
@@ -1341,7 +1353,7 @@ const mapManager = {
     }
     try {
       // Format marker data for the render engine
-      const formattedMarkerData = {
+      var formattedMarkerData = {
         lat: parseFloat(markerData.latitude),
         lng: parseFloat(markerData.longitude),
         title: markerData.title || '',
@@ -1352,7 +1364,7 @@ const mapManager = {
 
       // Use the render engine to add the marker
       if (window.geoMapsRenderEngine && window.geoMapsRenderEngine.addMarker) {
-        const marker = window.geoMapsRenderEngine.addMarker(this.map, formattedMarkerData, {
+        var marker = window.geoMapsRenderEngine.addMarker(this.map, formattedMarkerData, {
           defaultIcon: markerData.iconUrl || '',
           popupShowOn: 'click'
         });
@@ -1361,21 +1373,19 @@ const mapManager = {
           this.markers.push({
             id: markerData.id,
             marker: marker,
-            data: {
-              ...markerData
-            }
+            data: _objectSpread({}, markerData)
           });
           return marker;
         }
       } else {
         // Fallback to direct marker creation if render engine's addMarker isn't available
-        let marker;
+        var _marker;
 
         // Create appropriate marker type based on map type
         if (this.map instanceof L.Map) {
-          marker = this._createLeafletMarker(markerData);
+          _marker = this._createLeafletMarker(markerData);
         } else if (window.google && this.map instanceof google.maps.Map) {
-          marker = this._createGoogleMarker(markerData);
+          _marker = this._createGoogleMarker(markerData);
         } else {
           console.error('Unknown map type');
           return null;
@@ -1384,12 +1394,10 @@ const mapManager = {
         // Store marker reference for later manipulation
         this.markers.push({
           id: markerData.id,
-          marker: marker,
-          data: {
-            ...markerData
-          }
+          marker: _marker,
+          data: _objectSpread({}, markerData)
         });
-        return marker;
+        return _marker;
       }
     } catch (error) {
       console.error('Error adding marker:', error);
@@ -1403,8 +1411,8 @@ const mapManager = {
    * @param {Object} markerData - The marker data
    * @returns {Object} - The Leaflet marker object
    */
-  _createLeafletMarker: function (markerData) {
-    const options = {
+  _createLeafletMarker: function _createLeafletMarker(markerData) {
+    var options = {
       draggable: false,
       title: markerData.title || ''
     };
@@ -1420,16 +1428,16 @@ const mapManager = {
     }
 
     // Create marker and add to map
-    const marker = L.marker([markerData.latitude, markerData.longitude], options).addTo(this.map);
+    var marker = L.marker([markerData.latitude, markerData.longitude], options).addTo(this.map);
 
     // Add popup if title or description exists
     if (markerData.title || markerData.description) {
-      let content = '';
+      var content = '';
       if (markerData.title) {
-        content += `<h3>${markerData.title}</h3>`;
+        content += "<h3>".concat(markerData.title, "</h3>");
       }
       if (markerData.description) {
-        content += `<div>${markerData.description}</div>`;
+        content += "<div>".concat(markerData.description, "</div>");
       }
       marker.bindPopup(content);
     }
@@ -1441,8 +1449,9 @@ const mapManager = {
    * @param {Object} markerData - The marker data
    * @returns {Object} - The Google Maps marker object
    */
-  _createGoogleMarker: function (markerData) {
-    const options = {
+  _createGoogleMarker: function _createGoogleMarker(markerData) {
+    var _this3 = this;
+    var options = {
       position: {
         lat: parseFloat(markerData.latitude),
         lng: parseFloat(markerData.longitude)
@@ -1461,22 +1470,22 @@ const mapManager = {
     }
 
     // Create marker
-    const marker = new google.maps.Marker(options);
+    var marker = new google.maps.Marker(options);
 
     // Add info window if title or description exists
     if (markerData.title || markerData.description) {
-      let content = '';
+      var content = '';
       if (markerData.title) {
-        content += `<h3>${markerData.title}</h3>`;
+        content += "<h3>".concat(markerData.title, "</h3>");
       }
       if (markerData.description) {
-        content += `<div>${markerData.description}</div>`;
+        content += "<div>".concat(markerData.description, "</div>");
       }
-      const infoWindow = new google.maps.InfoWindow({
+      var infoWindow = new google.maps.InfoWindow({
         content: content
       });
-      marker.addListener('click', () => {
-        infoWindow.open(this.map, marker);
+      marker.addListener('click', function () {
+        infoWindow.open(_this3.map, marker);
       });
     }
     return marker;
@@ -1486,12 +1495,14 @@ const mapManager = {
    * @param {string} markerId - The ID of the marker to remove
    * @returns {boolean} - Success status
    */
-  removeMarkerFromMap: function (markerId) {
-    const markerIndex = this.markers.findIndex(item => item.id === markerId);
+  removeMarkerFromMap: function removeMarkerFromMap(markerId) {
+    var markerIndex = this.markers.findIndex(function (item) {
+      return item.id === markerId;
+    });
     if (markerIndex === -1) {
       return false;
     }
-    const markerObj = this.markers[markerIndex];
+    var markerObj = this.markers[markerIndex];
 
     // Try to use render engine to clean up marker
     if (window.geoMapsRenderEngine && window.geoMapsRenderEngine.clearMarkers && this.map && markerObj.marker) {
@@ -1520,16 +1531,17 @@ const mapManager = {
   /**
    * Clear all markers from the map
    */
-  clearMarkers: function () {
+  clearMarkers: function clearMarkers() {
+    var _this4 = this;
     // Try to use render engine to clear markers
     if (window.geoMapsRenderEngine && window.geoMapsRenderEngine.clearMarkers && this.map) {
       window.geoMapsRenderEngine.clearMarkers(this.map);
     } else {
       // Fallback to direct removal
-      this.markers.forEach(item => {
-        if (this.map instanceof L.Map) {
-          this.map.removeLayer(item.marker);
-        } else if (window.google && this.map instanceof google.maps.Map) {
+      this.markers.forEach(function (item) {
+        if (_this4.map instanceof L.Map) {
+          _this4.map.removeLayer(item.marker);
+        } else if (window.google && _this4.map instanceof google.maps.Map) {
           item.marker.setMap(null);
         }
       });
@@ -1541,16 +1553,17 @@ const mapManager = {
   /**
    * Render all markers from settings data
    */
-  renderMarkers: function () {
+  renderMarkers: function renderMarkers() {
+    var _this5 = this;
     // Get markers from settings
-    const markers = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].getMarkers();
+    var markers = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].getMarkers();
 
     // Clear existing markers
     this.clearMarkers();
 
     // Add each marker to the map
-    markers.forEach(markerData => {
-      this.addMarkerToMap(markerData);
+    markers.forEach(function (markerData) {
+      _this5.addMarkerToMap(markerData);
     });
   },
   /**
@@ -1558,13 +1571,13 @@ const mapManager = {
    * This allows changing some appearance options without reinitializing the entire map
    * @returns {boolean} - Success status
    */
-  updateMapAppearance: function () {
+  updateMapAppearance: function updateMapAppearance() {
     if (!this.map) {
       console.error('Map not initialized');
       return false;
     }
     try {
-      const appearance = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].appearance;
+      var appearance = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].appearance;
 
       // Update map settings for Leaflet maps
       if (this.map instanceof L.Map) {
@@ -1587,12 +1600,12 @@ const mapManager = {
         }
 
         // Update scale control visibility
-        const hasScaleControl = this.map.getContainer().querySelectorAll('.leaflet-control-scale').length > 0;
+        var hasScaleControl = this.map.getContainer().querySelectorAll('.leaflet-control-scale').length > 0;
         if (appearance.showScale && !hasScaleControl) {
           L.control.scale().addTo(this.map);
         } else if (!appearance.showScale && hasScaleControl) {
           // Find and remove scale control
-          this.map.getContainer().querySelectorAll('.leaflet-control-scale').forEach(el => {
+          this.map.getContainer().querySelectorAll('.leaflet-control-scale').forEach(function (el) {
             el.remove();
           });
         }
@@ -1641,12 +1654,13 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * Marker Manager for handling marker operations
  */
-const markerManager = {
+var markerManager = {
   /**
    * Initialize the marker manager
    * @param {Object} options - Optional initialization options
    */
-  init: function (options = {}) {
+  init: function init() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     console.log('Marker manager initializing');
 
     // Initialize marker list if the container exists
@@ -1659,8 +1673,8 @@ const markerManager = {
    * Set up event listeners
    * @private
    */
-  _setupEventListeners: function () {
-    const self = this;
+  _setupEventListeners: function _setupEventListeners() {
+    var self = this;
 
     // Listen for marker added/updated/removed events
     jQuery(document).on('geoMapsMarkerAdded', function (e, marker) {
@@ -1676,9 +1690,9 @@ const markerManager = {
     // Set up event delegation for marker list actions
     jQuery(document).on('click', '.geo-maps-marker-item .edit-marker', function (e) {
       e.preventDefault();
-      const markerId = jQuery(this).closest('.geo-maps-marker-item').data('marker-id');
+      var markerId = jQuery(this).closest('.geo-maps-marker-item').data('marker-id');
       if (markerId && window.GeoMapsBuilder.drawerManager) {
-        const marker = self.getMarkerById(markerId);
+        var marker = self.getMarkerById(markerId);
         if (marker) {
           window.GeoMapsBuilder.drawerManager.openMarkerDrawer('Edit', marker);
         }
@@ -1686,7 +1700,7 @@ const markerManager = {
     });
     jQuery(document).on('click', '.geo-maps-marker-item .delete-marker', function (e) {
       e.preventDefault();
-      const markerId = jQuery(this).closest('.geo-maps-marker-item').data('marker-id');
+      var markerId = jQuery(this).closest('.geo-maps-marker-item').data('marker-id');
       if (markerId && confirm('Are you sure you want to delete this marker?')) {
         self.removeMarkerFromMap(markerId);
       }
@@ -1697,24 +1711,26 @@ const markerManager = {
    * @param {string} markerId - The ID of the marker to get
    * @returns {Object|null} - The marker data or null if not found
    */
-  getMarkerById: function (markerId) {
+  getMarkerById: function getMarkerById(markerId) {
     if (!markerId) return null;
-    const markers = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].getMarkers();
-    return markers.find(m => m.id === markerId) || null;
+    var markers = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].getMarkers();
+    return markers.find(function (m) {
+      return m.id === markerId;
+    }) || null;
   },
   /**
    * Adds a new marker to the map and the global settings
    * @param {Object} markerData - The marker data
    * @returns {string|null} - The ID of the new marker or null if failed
    */
-  addMarkerToMap: function (markerData) {
+  addMarkerToMap: function addMarkerToMap(markerData) {
     if (!markerData.latitude || !markerData.longitude) {
       console.error('Marker position is required');
       return null;
     }
     try {
       // Create a proper marker object
-      const marker = {
+      var marker = {
         id: markerData.id || 'marker_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
         title: markerData.title || '',
         description: markerData.description || '',
@@ -1742,10 +1758,10 @@ const markerManager = {
    * @param {Object} markerData - The new marker data
    * @returns {boolean} - Success status
    */
-  updateMarkerOnMap: function (markerId, markerData) {
+  updateMarkerOnMap: function updateMarkerOnMap(markerId, markerData) {
     try {
       // Update marker in settings
-      const success = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].updateMarker(markerId, markerData);
+      var success = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].updateMarker(markerId, markerData);
       if (!success) {
         console.error('Marker not found:', markerId);
         return false;
@@ -1762,7 +1778,7 @@ const markerManager = {
   /**
    * Simple alias for updateMarkerOnMap to match builder-fullscreen.js expectations
    */
-  updateMarker: function (markerData) {
+  updateMarker: function updateMarker(markerData) {
     if (!markerData || !markerData.id) {
       console.error('Marker ID is required for updating');
       return false;
@@ -1772,7 +1788,7 @@ const markerManager = {
   /**
    * Simple alias for addMarkerToMap to match builder-fullscreen.js expectations
    */
-  addMarker: function (markerData) {
+  addMarker: function addMarker(markerData) {
     return this.addMarkerToMap(markerData);
   },
   /**
@@ -1780,10 +1796,10 @@ const markerManager = {
    * @param {string} markerId - The ID of the marker to remove
    * @returns {boolean} - Success status
    */
-  removeMarkerFromMap: function (markerId) {
+  removeMarkerFromMap: function removeMarkerFromMap(markerId) {
     try {
       // Remove marker from settings
-      const success = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].removeMarker(markerId);
+      var success = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].removeMarker(markerId);
       if (!success) {
         console.error('Marker not found:', markerId);
         return false;
@@ -1802,7 +1818,7 @@ const markerManager = {
   /**
    * Renders all markers on the map from the global settings
    */
-  renderMarkersOnMap: function () {
+  renderMarkersOnMap: function renderMarkersOnMap() {
     if (!_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"] || !_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].map) {
       console.error('Map not initialized');
       return;
@@ -1810,51 +1826,31 @@ const markerManager = {
 
     // Clear existing markers and add all markers from settings
     _map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].clearMarkers();
-    const markers = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].getMarkers();
-    markers.forEach(marker => {
+    var markers = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].getMarkers();
+    markers.forEach(function (marker) {
       _map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].addMarkerToMap(marker);
     });
   },
   /**
    * Refreshes the markers list in the UI
    */
-  refreshMarkerList: function () {
-    const $markersList = jQuery('#geo-maps-markers-list');
+  refreshMarkerList: function refreshMarkerList() {
+    var $markersList = jQuery('#geo-maps-markers-list');
     if (!$markersList.length) {
       return;
     }
 
     // Clear current list
     $markersList.empty();
-    const markers = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].getMarkers();
+    var markers = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].getMarkers();
     if (markers.length === 0) {
       $markersList.append('<div class="geo-maps-no-markers">No markers added yet</div>');
       return;
     }
 
     // Add each marker to the list
-    markers.forEach(marker => {
-      const $markerItem = jQuery(`
-                <div class="geo-maps-marker-item" data-marker-id="${marker.id}">
-                    <div class="geo-maps-marker-item-icon">
-                        <span class="dashicons dashicons-location"></span>
-                    </div>
-                    <div class="geo-maps-marker-item-info">
-                        <h4 class="geo-maps-marker-item-title">${marker.title}</h4>
-                        <div class="geo-maps-marker-item-coords">
-                            ${marker.latitude.toFixed(4)}, ${marker.longitude.toFixed(4)}
-                        </div>
-                    </div>
-                    <div class="geo-maps-marker-item-actions">
-                        <button type="button" class="geo-maps-button-icon edit-marker" title="Edit marker">
-                            <span class="dashicons dashicons-edit"></span>
-                        </button>
-                        <button type="button" class="geo-maps-button-icon delete-marker" title="Delete marker">
-                            <span class="dashicons dashicons-trash"></span>
-                        </button>
-                    </div>
-                </div>
-            `);
+    markers.forEach(function (marker) {
+      var $markerItem = jQuery("\n                <div class=\"geo-maps-marker-item\" data-marker-id=\"".concat(marker.id, "\">\n                    <div class=\"geo-maps-marker-item-icon\">\n                        <span class=\"dashicons dashicons-location\"></span>\n                    </div>\n                    <div class=\"geo-maps-marker-item-info\">\n                        <h4 class=\"geo-maps-marker-item-title\">").concat(marker.title, "</h4>\n                        <div class=\"geo-maps-marker-item-coords\">\n                            ").concat(marker.latitude.toFixed(4), ", ").concat(marker.longitude.toFixed(4), "\n                        </div>\n                    </div>\n                    <div class=\"geo-maps-marker-item-actions\">\n                        <button type=\"button\" class=\"geo-maps-button-icon edit-marker\" title=\"Edit marker\">\n                            <span class=\"dashicons dashicons-edit\"></span>\n                        </button>\n                        <button type=\"button\" class=\"geo-maps-button-icon delete-marker\" title=\"Delete marker\">\n                            <span class=\"dashicons dashicons-trash\"></span>\n                        </button>\n                    </div>\n                </div>\n            "));
       $markersList.append($markerItem);
     });
   }
@@ -1874,6 +1870,82 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony import */ var _status_manager__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./status-manager */ "./assets/src/admin/builder/status-manager.js");
+function _toConsumableArray(r) {
+  return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread();
+}
+function _nonIterableSpread() {
+  throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+}
+function _unsupportedIterableToArray(r, a) {
+  if (r) {
+    if ("string" == typeof r) return _arrayLikeToArray(r, a);
+    var t = {}.toString.call(r).slice(8, -1);
+    return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
+  }
+}
+function _iterableToArray(r) {
+  if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r);
+}
+function _arrayWithoutHoles(r) {
+  if (Array.isArray(r)) return _arrayLikeToArray(r);
+}
+function _arrayLikeToArray(r, a) {
+  (null == a || a > r.length) && (a = r.length);
+  for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+  return n;
+}
+function ownKeys(e, r) {
+  var t = Object.keys(e);
+  if (Object.getOwnPropertySymbols) {
+    var o = Object.getOwnPropertySymbols(e);
+    r && (o = o.filter(function (r) {
+      return Object.getOwnPropertyDescriptor(e, r).enumerable;
+    })), t.push.apply(t, o);
+  }
+  return t;
+}
+function _objectSpread(e) {
+  for (var r = 1; r < arguments.length; r++) {
+    var t = null != arguments[r] ? arguments[r] : {};
+    r % 2 ? ownKeys(Object(t), !0).forEach(function (r) {
+      _defineProperty(e, r, t[r]);
+    }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) {
+      Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
+    });
+  }
+  return e;
+}
+function _defineProperty(e, r, t) {
+  return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+    value: t,
+    enumerable: !0,
+    configurable: !0,
+    writable: !0
+  }) : e[r] = t, e;
+}
+function _toPropertyKey(t) {
+  var i = _toPrimitive(t, "string");
+  return "symbol" == _typeof(i) ? i : i + "";
+}
+function _toPrimitive(t, r) {
+  if ("object" != _typeof(t) || !t) return t;
+  var e = t[Symbol.toPrimitive];
+  if (void 0 !== e) {
+    var i = e.call(t, r || "default");
+    if ("object" != _typeof(i)) return i;
+    throw new TypeError("@@toPrimitive must return a primitive value.");
+  }
+  return ("string" === r ? String : Number)(t);
+}
+function _typeof(o) {
+  "@babel/helpers - typeof";
+
+  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) {
+    return typeof o;
+  } : function (o) {
+    return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+  }, _typeof(o);
+}
 /**
  * Settings Manager for Geo Maps Builder
  * Handles centralized state management for map settings
@@ -1883,7 +1955,7 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * Settings Manager with core map settings and methods
  */
-const settingsManager = {
+var settingsManager = {
   // Core map settings
   mapType: 'open_street_map',
   // Default map type (open_street_map or google_map)
@@ -1912,7 +1984,7 @@ const settingsManager = {
    * Initialize the settings manager
    * Loads settings from form fields if available, or uses defaults
    */
-  init: function () {
+  init: function init() {
     console.log('Initializing settings manager');
 
     // Try to load settings from form fields
@@ -1925,31 +1997,31 @@ const settingsManager = {
    * Load settings from form fields if available
    * @private
    */
-  _loadSettingsFromForm: function () {
+  _loadSettingsFromForm: function _loadSettingsFromForm() {
     // Try to get map type from form
-    const mapTypeField = document.getElementById('map_type');
+    var mapTypeField = document.getElementById('map_type');
     if (mapTypeField) {
       this.mapType = mapTypeField.value || this.mapType;
     }
 
     // Try to get center coordinates
-    const latField = document.getElementById('map_center_lat');
-    const lngField = document.getElementById('map_center_lng');
+    var latField = document.getElementById('map_center_lat');
+    var lngField = document.getElementById('map_center_lng');
     if (latField && lngField) {
-      const lat = parseFloat(latField.value);
-      const lng = parseFloat(lngField.value);
+      var lat = parseFloat(latField.value);
+      var lng = parseFloat(lngField.value);
       if (!isNaN(lat) && !isNaN(lng)) {
         this.center = {
-          lat,
-          lng
+          lat: lat,
+          lng: lng
         };
       }
     }
 
     // Try to get zoom level
-    const zoomField = document.getElementById('map_zoom');
+    var zoomField = document.getElementById('map_zoom');
     if (zoomField) {
-      const zoom = parseInt(zoomField.value, 10);
+      var zoom = parseInt(zoomField.value, 10);
       if (!isNaN(zoom)) {
         this.zoom = zoom;
       }
@@ -1959,11 +2031,11 @@ const settingsManager = {
    * Set up event listeners for form field changes
    * @private
    */
-  _setupFieldListeners: function () {
-    const self = this;
+  _setupFieldListeners: function _setupFieldListeners() {
+    var self = this;
 
     // Map type change
-    const mapTypeField = document.getElementById('map_type');
+    var mapTypeField = document.getElementById('map_type');
     if (mapTypeField) {
       mapTypeField.addEventListener('change', function () {
         self.updateSetting('mapType', this.value);
@@ -1971,11 +2043,11 @@ const settingsManager = {
     }
 
     // Center coordinates change
-    const latField = document.getElementById('map_center_lat');
-    const lngField = document.getElementById('map_center_lng');
+    var latField = document.getElementById('map_center_lat');
+    var lngField = document.getElementById('map_center_lng');
     if (latField) {
       latField.addEventListener('change', function () {
-        const lat = parseFloat(this.value);
+        var lat = parseFloat(this.value);
         if (!isNaN(lat)) {
           self.updateSetting('center.lat', lat);
         }
@@ -1983,7 +2055,7 @@ const settingsManager = {
     }
     if (lngField) {
       lngField.addEventListener('change', function () {
-        const lng = parseFloat(this.value);
+        var lng = parseFloat(this.value);
         if (!isNaN(lng)) {
           self.updateSetting('center.lng', lng);
         }
@@ -1991,10 +2063,10 @@ const settingsManager = {
     }
 
     // Zoom level change
-    const zoomField = document.getElementById('map_zoom');
+    var zoomField = document.getElementById('map_zoom');
     if (zoomField) {
       zoomField.addEventListener('change', function () {
-        const zoom = parseInt(this.value, 10);
+        var zoom = parseInt(this.value, 10);
         if (!isNaN(zoom)) {
           self.updateSetting('zoom', zoom);
         }
@@ -2008,7 +2080,7 @@ const settingsManager = {
    * @param {*} value - The value to set
    * @returns {Object} - The settings object for chaining
    */
-  updateSetting: function (key, value) {
+  updateSetting: function updateSetting(key, value) {
     if (!key) {
       console.error('Cannot update setting: Key is required');
       return this;
@@ -2016,11 +2088,11 @@ const settingsManager = {
     try {
       // Handle nested properties using dot notation (e.g., "appearance.showScale")
       if (key.includes('.')) {
-        const parts = key.split('.');
-        let obj = this;
+        var parts = key.split('.');
+        var obj = this;
 
         // Navigate to the correct nested object
-        for (let i = 0; i < parts.length - 1; i++) {
+        for (var i = 0; i < parts.length - 1; i++) {
           if (!obj[parts[i]]) {
             obj[parts[i]] = {};
           }
@@ -2036,7 +2108,7 @@ const settingsManager = {
 
       // Trigger a custom event that components can listen for
       jQuery(document).trigger('geoMapsSettingsChanged', [key, value]);
-      console.log(`Map setting updated: ${key} =`, value);
+      console.log("Map setting updated: ".concat(key, " ="), value);
       return this;
     } catch (error) {
       console.error('Error updating setting:', error);
@@ -2049,17 +2121,18 @@ const settingsManager = {
    * @param {*} defaultValue - Default value if setting doesn't exist
    * @returns {*} - The setting value or default
    */
-  getSetting: function (key, defaultValue = null) {
+  getSetting: function getSetting(key) {
+    var defaultValue = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     if (!key) {
       return defaultValue;
     }
     try {
       // Handle nested properties
       if (key.includes('.')) {
-        const parts = key.split('.');
-        let obj = this;
-        for (let i = 0; i < parts.length; i++) {
-          if (!obj || typeof obj !== 'object') {
+        var parts = key.split('.');
+        var obj = this;
+        for (var i = 0; i < parts.length; i++) {
+          if (!obj || _typeof(obj) !== 'object') {
             return defaultValue;
           }
           obj = obj[parts[i]];
@@ -2078,19 +2151,15 @@ const settingsManager = {
    * Get the current settings as a JSON object (for saving to the server)
    * @returns {Object} The settings object
    */
-  getSettings: function () {
+  getSettings: function getSettings() {
     // Create a copy of the settings object without map instances
-    const settings = {
+    var settings = {
       mapType: this.mapType,
-      center: {
-        ...this.center
-      },
+      center: _objectSpread({}, this.center),
       zoom: this.zoom,
       osmProvider: this.osmProvider,
-      markers: [...this.markers],
-      appearance: {
-        ...this.appearance
-      }
+      markers: _toConsumableArray(this.markers),
+      appearance: _objectSpread({}, this.appearance)
     };
     return settings;
   },
@@ -2098,29 +2167,27 @@ const settingsManager = {
    * Get the current map type
    * @returns {string} The map type ('open_street_map' or 'google_map')
    */
-  getMapType: function () {
+  getMapType: function getMapType() {
     return this.mapType;
   },
   /**
    * Get the current map settings
    * @returns {Object} Map settings object
    */
-  getMapSettings: function () {
+  getMapSettings: function getMapSettings() {
     return {
       mapType: this.mapType,
       center: [this.center.lat, this.center.lng],
       zoom: this.zoom,
       osmProvider: this.osmProvider,
-      appearance: {
-        ...this.appearance
-      }
+      appearance: _objectSpread({}, this.appearance)
     };
   },
   /**
    * Set the map center coordinates
    * @param {Array} centerCoords - [lat, lng] center coordinates
    */
-  setMapCenter: function (centerCoords) {
+  setMapCenter: function setMapCenter(centerCoords) {
     if (Array.isArray(centerCoords) && centerCoords.length >= 2) {
       this.center = {
         lat: parseFloat(centerCoords[0]),
@@ -2132,22 +2199,22 @@ const settingsManager = {
    * Set the map zoom level
    * @param {number} zoom - Zoom level
    */
-  setMapZoom: function (zoom) {
+  setMapZoom: function setMapZoom(zoom) {
     this.zoom = parseInt(zoom, 10);
   },
   /**
    * Get all markers
    * @returns {Array} Array of marker objects
    */
-  getMarkers: function () {
-    return [...this.markers];
+  getMarkers: function getMarkers() {
+    return _toConsumableArray(this.markers);
   },
   /**
    * Adds a marker to the collection
    * @param {Object} marker - The marker data to add
    * @returns {string} - The ID of the added marker
    */
-  addMarker: function (marker) {
+  addMarker: function addMarker(marker) {
     // Generate a unique ID if one doesn't exist
     if (!marker.id) {
       marker.id = 'marker_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
@@ -2162,13 +2229,12 @@ const settingsManager = {
    * @param {Object} markerData - The new marker data
    * @returns {boolean} - Success status
    */
-  updateMarker: function (markerId, markerData) {
-    const index = this.markers.findIndex(m => m.id === markerId);
+  updateMarker: function updateMarker(markerId, markerData) {
+    var index = this.markers.findIndex(function (m) {
+      return m.id === markerId;
+    });
     if (index !== -1) {
-      this.markers[index] = {
-        ...this.markers[index],
-        ...markerData
-      };
+      this.markers[index] = _objectSpread(_objectSpread({}, this.markers[index]), markerData);
       jQuery(document).trigger('geoMapsMarkerUpdated', [this.markers[index]]);
       return true;
     }
@@ -2179,9 +2245,11 @@ const settingsManager = {
    * @param {string} markerId - The ID of the marker to remove
    * @returns {boolean} - Success status
    */
-  removeMarker: function (markerId) {
-    const initialLength = this.markers.length;
-    this.markers = this.markers.filter(marker => marker.id !== markerId);
+  removeMarker: function removeMarker(markerId) {
+    var initialLength = this.markers.length;
+    this.markers = this.markers.filter(function (marker) {
+      return marker.id !== markerId;
+    });
     if (this.markers.length < initialLength) {
       jQuery(document).trigger('geoMapsMarkerRemoved', [markerId]);
       return true;
@@ -2211,12 +2279,12 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * Status Manager for handling success and error messages
  */
-const statusManager = {
+var statusManager = {
   /**
    * Initialize the status manager
    * Sets up the status bar if it doesn't exist
    */
-  init: function () {
+  init: function init() {
     // Check if status bar exists
     if (!jQuery('#geo-maps-builder-status').length) {
       // Create status bar element if it doesn't exist
@@ -2229,7 +2297,8 @@ const statusManager = {
    * @param {string} message - The message to display
    * @param {number} duration - Duration in ms to show the message
    */
-  success: function (message, duration = 3000) {
+  success: function success(message) {
+    var duration = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 3000;
     this._showMessage(message, 'success', duration);
   },
   /**
@@ -2237,7 +2306,8 @@ const statusManager = {
    * @param {string} message - The message to display
    * @param {number} duration - Duration in ms to show the message
    */
-  error: function (message, duration = 4000) {
+  error: function error(message) {
+    var duration = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 4000;
     this._showMessage(message, 'error', duration);
   },
   /**
@@ -2247,8 +2317,8 @@ const statusManager = {
    * @param {string} type - The type of message (success or error)
    * @param {number} duration - Duration in ms to show the message
    */
-  _showMessage: function (message, type, duration) {
-    const $statusBar = jQuery('#geo-maps-builder-status');
+  _showMessage: function _showMessage(message, type, duration) {
+    var $statusBar = jQuery('#geo-maps-builder-status');
     if (!$statusBar.length) {
       console.warn('Status bar not found, showing message in console:', message);
       return;
@@ -2373,7 +2443,7 @@ jQuery(document).ready(function ($) {
   };
 
   // Check if all modules are loaded
-  const requiredModules = [{
+  var requiredModules = [{
     name: 'statusManager',
     module: _builder_status_manager__WEBPACK_IMPORTED_MODULE_0__["default"]
   }, {
@@ -2392,15 +2462,16 @@ jQuery(document).ready(function ($) {
     name: 'drawerManager',
     module: _builder_drawer_manager__WEBPACK_IMPORTED_MODULE_4__["default"]
   }];
-  for (const moduleData of requiredModules) {
+  for (var _i = 0, _requiredModules = requiredModules; _i < _requiredModules.length; _i++) {
+    var moduleData = _requiredModules[_i];
     if (!moduleData.module) {
-      console.error(`Required module ${moduleData.name} is not loaded`);
+      console.error("Required module ".concat(moduleData.name, " is not loaded"));
       return;
     }
   }
 
   // Check for map container
-  const mapContainer = document.getElementById('geo-maps-builder-map');
+  var mapContainer = document.getElementById('geo-maps-builder-map');
   if (!mapContainer) {
     console.error('Map container not found - cannot initialize map');
   } else {
@@ -2414,7 +2485,7 @@ jQuery(document).ready(function ($) {
 
   // Set up tab switching functionality
   $('.geo-maps-builder-tab').off('click').on('click', function () {
-    const tabId = $(this).data('tab');
+    var tabId = $(this).data('tab');
 
     // Update active tab
     $('.geo-maps-builder-tab').removeClass('active');
@@ -2426,16 +2497,16 @@ jQuery(document).ready(function ($) {
 
     // Show the corresponding tab content
     $('.geo-maps-builder-tab-content').removeClass('active');
-    $(`.geo-maps-builder-tab-content[data-tab="${tabId}"]`).addClass('active');
-    console.log(`Tab switched to: ${tabId}`);
+    $(".geo-maps-builder-tab-content[data-tab=\"".concat(tabId, "\"]")).addClass('active');
+    console.log("Tab switched to: ".concat(tabId));
   });
 
   // Setup event listener for settings changes that need map reinitialization
   $(document).on('geoMapsSettingsChanged', function (e, key, value) {
-    console.log(`Settings changed: ${key} = ${value}`);
+    console.log("Settings changed: ".concat(key, " = ").concat(value));
 
     // Settings that require map reinitialization
-    const mapReinitSettings = ['mapType',
+    var mapReinitSettings = ['mapType',
     // Changing map provider
     'osmProvider',
     // Changing OSM tile provider
@@ -2443,7 +2514,7 @@ jQuery(document).ready(function ($) {
     ];
 
     // Settings that only need view updates (no full reinitialization)
-    const mapViewSettings = ['center',
+    var mapViewSettings = ['center',
     // Center coordinates
     'center.lat',
     // Latitude
@@ -2453,7 +2524,7 @@ jQuery(document).ready(function ($) {
     ];
 
     // Settings that only need appearance updates
-    const mapAppearanceSettings = ['appearance.showScale',
+    var mapAppearanceSettings = ['appearance.showScale',
     // Toggle scale control
     'appearance.showZoomControl',
     // Toggle zoom controls
@@ -2462,10 +2533,10 @@ jQuery(document).ready(function ($) {
 
     // Check if this setting requires map reinitialization
     if (mapReinitSettings.includes(key)) {
-      console.log(`Setting "${key}" changed - Reinitializing map...`);
+      console.log("Setting \"".concat(key, "\" changed - Reinitializing map..."));
 
       // Use a small timeout to allow all settings to be updated in case multiple changes happen at once
-      setTimeout(() => {
+      setTimeout(function () {
         if (_builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"]) {
           // Completely reinitialize the map using the render engine
           _builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].renderMap();
@@ -2474,16 +2545,16 @@ jQuery(document).ready(function ($) {
           _builder_marker_manager__WEBPACK_IMPORTED_MODULE_3__["default"].renderMarkersOnMap();
 
           // Show success message
-          _builder_status_manager__WEBPACK_IMPORTED_MODULE_0__["default"].success(`Map updated with new ${key} setting`);
+          _builder_status_manager__WEBPACK_IMPORTED_MODULE_0__["default"].success("Map updated with new ".concat(key, " setting"));
         }
       }, 100);
     }
     // Check if this setting only requires view update
     else if (mapViewSettings.includes(key)) {
-      console.log(`Setting "${key}" changed - Updating map view...`);
+      console.log("Setting \"".concat(key, "\" changed - Updating map view..."));
 
       // Get the map instance
-      const map = _builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].getMap();
+      var map = _builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].getMap();
       if (!map) return;
 
       // Update the view based on the setting
@@ -2496,7 +2567,7 @@ jQuery(document).ready(function ($) {
         }
       } else if (key.includes('center')) {
         // Update center coordinates
-        const center = _builder_settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].center;
+        var center = _builder_settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].center;
         if (map instanceof L.Map) {
           map.setView([center.lat, center.lng], map.getZoom());
         } else if (window.google && map instanceof google.maps.Map) {
@@ -2509,10 +2580,10 @@ jQuery(document).ready(function ($) {
     }
     // Check if this setting only requires appearance update
     else if (mapAppearanceSettings.includes(key) || key === 'appearance') {
-      console.log(`Setting "${key}" changed - Updating map appearance...`);
+      console.log("Setting \"".concat(key, "\" changed - Updating map appearance..."));
 
       // Use a small timeout to allow all settings to be updated in case multiple changes happen at once
-      setTimeout(() => {
+      setTimeout(function () {
         if (_builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"] && _builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].updateMapAppearance) {
           _builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].updateMapAppearance();
         }
@@ -2537,7 +2608,7 @@ jQuery(document).ready(function ($) {
   }
 
   // Delay map initialization slightly to ensure everything else is ready
-  setTimeout(() => {
+  setTimeout(function () {
     console.log('Initializing map manager...');
     _builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].init();
 
@@ -2549,18 +2620,18 @@ jQuery(document).ready(function ($) {
   }, 100);
 
   // Handle success message if present in URL parameters
-  const urlParams = new URLSearchParams(window.location.search);
+  var urlParams = new URLSearchParams(window.location.search);
   if (urlParams.has('success') && urlParams.get('success') === '1') {
     _builder_status_manager__WEBPACK_IMPORTED_MODULE_0__["default"].success('Map saved successfully!');
   }
 
   // Handle error message if present in URL parameters
   if (urlParams.has('error')) {
-    const errorCode = urlParams.get('error');
-    let errorMessage = 'An error occurred while saving the map.';
+    var errorCode = urlParams.get('error');
+    var errorMessage = 'An error occurred while saving the map.';
 
     // Map error codes to messages
-    const errorMessages = {
+    var errorMessages = {
       'invalid_nonce': 'Security check failed. Please refresh the page and try again.',
       'permission_denied': 'You do not have permission to save this map.',
       'database_error': 'Database error occurred while saving the map.'
@@ -2574,14 +2645,14 @@ jQuery(document).ready(function ($) {
   // Add event listener for add marker button
   $('#geo-maps-add-marker-button').on('click', function () {
     console.log('Add marker button clicked');
-    const mapCenter = _builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].getMapCenter();
+    var mapCenter = _builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].getMapCenter();
     console.log('Opening marker drawer with map center:', mapCenter);
     _builder_drawer_manager__WEBPACK_IMPORTED_MODULE_4__["default"].openMarkerDrawer('Add', null, mapCenter);
   });
 
   // Add event listener for map click to add marker
   _builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].onMapClick(function (position) {
-    const enableClickToAdd = _builder_settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].getSetting('click_to_add_marker') === 'yes';
+    var enableClickToAdd = _builder_settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].getSetting('click_to_add_marker') === 'yes';
     console.log('Map clicked, click to add marker enabled:', enableClickToAdd);
     if (enableClickToAdd) {
       console.log('Opening marker drawer with clicked position:', position);

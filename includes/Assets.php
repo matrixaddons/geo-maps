@@ -15,6 +15,7 @@ class Assets {
 		wp_register_script('geo-maps-leaflet', GEO_MAPS_ASSETS_URI . 'vendor/leaflet/leaflet.js', array('jquery'), null, true);
 		wp_register_script('geo-maps-leaflet-fullscreen', GEO_MAPS_ASSETS_URI . 'js/fullscreen.js', array('jquery'), null, true);
 
+		// Register render engine with its dependencies
 		$map_render_engine_dependencies = include_once GEO_MAPS_ASSETS_DIR_PATH . 'build/js/render-engine.min.asset.php';
 		$js_dependencies = array_merge(
 			$map_render_engine_dependencies['dependencies'],
@@ -113,6 +114,8 @@ class Assets {
 			GEO_MAPS_VERSION,
 			true
 		);
+		
+		// Enqueue render engine
 		wp_enqueue_script(
 			'geo-maps-builder-render-engine',
 			GEO_MAPS_ASSETS_URI . 'build/js/render-engine.min.js',

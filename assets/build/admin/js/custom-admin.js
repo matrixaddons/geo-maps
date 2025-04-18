@@ -12,7 +12,7 @@
   // Main admin object
   var GeoMapsAdminUI = {
     // Initialize the admin UI
-    init: function () {
+    init: function init() {
       this.setupListingPage();
       this.setupEditPage();
       this.setupShortcodeCopy();
@@ -20,7 +20,7 @@
     /**
      * Setup functionality for the maps listing page
      */
-    setupListingPage: function () {
+    setupListingPage: function setupListingPage() {
       if (!$('#geo-maps-table').length) {
         return;
       }
@@ -57,7 +57,7 @@
     /**
      * Load maps via AJAX
      */
-    loadMaps: function () {
+    loadMaps: function loadMaps() {
       var $tableBody = $('#geo-maps-table-body');
       var $noResults = $('#geo-maps-no-results');
       var search = $('#geo-maps-search').val();
@@ -77,7 +77,7 @@
           search: search,
           map_type: mapType
         },
-        success: function (response) {
+        success: function success(response) {
           if (response.success) {
             var maps = response.data;
             if (maps.length === 0) {
@@ -97,7 +97,7 @@
             $tableBody.html('<tr><td colspan="4">Error loading maps.</td></tr>');
           }
         },
-        error: function () {
+        error: function error() {
           $tableBody.html('<tr><td colspan="4">Error loading maps. Please try again.</td></tr>');
         }
       });
@@ -105,7 +105,7 @@
     /**
      * Delete a map via AJAX
      */
-    deleteMap: function (mapId) {
+    deleteMap: function deleteMap(mapId) {
       $.ajax({
         url: GeoMapsAdmin.ajaxUrl,
         type: 'POST',
@@ -114,10 +114,10 @@
           security: GeoMapsAdmin.nonce,
           map_id: mapId
         },
-        beforeSend: function () {
+        beforeSend: function beforeSend() {
           $('tr[data-id="' + mapId + '"]').addClass('deleting').css('opacity', '0.5');
         },
-        success: function (response) {
+        success: function success(response) {
           if (response.success) {
             $('tr[data-id="' + mapId + '"]').fadeOut(300, function () {
               $(this).remove();
@@ -133,7 +133,7 @@
             GeoMapsAdminUI.showNotification('error', response.data.message || GeoMapsAdmin.messages.error);
           }
         },
-        error: function () {
+        error: function error() {
           $('tr[data-id="' + mapId + '"]').removeClass('deleting').css('opacity', '1');
           GeoMapsAdminUI.showNotification('error', GeoMapsAdmin.messages.error);
         }
@@ -142,7 +142,7 @@
     /**
      * Duplicate a map via AJAX
      */
-    duplicateMap: function (mapId) {
+    duplicateMap: function duplicateMap(mapId) {
       $.ajax({
         url: GeoMapsAdmin.ajaxUrl,
         type: 'POST',
@@ -151,10 +151,10 @@
           security: GeoMapsAdmin.nonce,
           map_id: mapId
         },
-        beforeSend: function () {
+        beforeSend: function beforeSend() {
           $('tr[data-id="' + mapId + '"]').addClass('duplicating').css('opacity', '0.5');
         },
-        success: function (response) {
+        success: function success(response) {
           $('tr[data-id="' + mapId + '"]').removeClass('duplicating').css('opacity', '1');
           if (response.success) {
             GeoMapsAdminUI.showNotification('success', response.data.message);
@@ -164,7 +164,7 @@
             GeoMapsAdminUI.showNotification('error', response.data.message || GeoMapsAdmin.messages.error);
           }
         },
-        error: function () {
+        error: function error() {
           $('tr[data-id="' + mapId + '"]').removeClass('duplicating').css('opacity', '1');
           GeoMapsAdminUI.showNotification('error', GeoMapsAdmin.messages.error);
         }
@@ -173,7 +173,7 @@
     /**
      * Setup functionality for the map edit page
      */
-    setupEditPage: function () {
+    setupEditPage: function setupEditPage() {
       if (!$('#geo-maps-edit-form').length) {
         return;
       }
@@ -222,7 +222,7 @@
     /**
      * Set up marker management functionality
      */
-    setupMarkerManagement: function () {
+    setupMarkerManagement: function setupMarkerManagement() {
       var self = this;
 
       // Ensure both sidebars are visible by default when page loads
@@ -309,7 +309,7 @@
     /**
      * Set up marker drawer functionality
      */
-    setupMarkerDrawer: function () {
+    setupMarkerDrawer: function setupMarkerDrawer() {
       var self = this;
 
       // Close drawer buttons
@@ -344,7 +344,7 @@
     /**
      * Open the marker drawer for adding or editing
      */
-    openMarkerDrawer: function (mode, markerId) {
+    openMarkerDrawer: function openMarkerDrawer(mode, markerId) {
       // Default to add mode
       mode = mode || 'add';
       markerId = markerId || '';
@@ -404,7 +404,7 @@
     /**
      * Close the marker drawer
      */
-    closeMarkerDrawer: function () {
+    closeMarkerDrawer: function closeMarkerDrawer() {
       // Hide the drawer
       $('#geo-maps-marker-drawer').removeClass('active');
 
@@ -417,7 +417,7 @@
     /**
      * Save marker from drawer form
      */
-    saveMarkerFromDrawer: function () {
+    saveMarkerFromDrawer: function saveMarkerFromDrawer() {
       var mode = $('#geo-maps-marker-drawer').data('mode');
       var markerId = $('#geo-maps-marker-drawer').data('marker-id');
       var title = $('#geo-maps-marker-drawer-input-title').val();
@@ -461,7 +461,7 @@
     /**
      * Delete marker from drawer
      */
-    deleteMarkerFromDrawer: function () {
+    deleteMarkerFromDrawer: function deleteMarkerFromDrawer() {
       var markerId = $('#geo-maps-marker-drawer').data('marker-id');
 
       // Remove from DOM
@@ -484,7 +484,7 @@
     /**
      * Enable map placement mode
      */
-    enableMapPlacementMode: function () {
+    enableMapPlacementMode: function enableMapPlacementMode() {
       $('#geo-maps-preview-container').addClass('geo-maps-map-placement-mode');
       $('.geo-maps-map-placement-indicator').addClass('active');
       var self = this;
@@ -507,7 +507,7 @@
     /**
      * Disable map placement mode
      */
-    disableMapPlacementMode: function () {
+    disableMapPlacementMode: function disableMapPlacementMode() {
       $('#geo-maps-preview-container').removeClass('geo-maps-map-placement-mode');
       $('.geo-maps-map-placement-indicator').removeClass('active');
 
@@ -517,7 +517,7 @@
     /**
      * Show a notification message
      */
-    showNotification: function (message, type) {
+    showNotification: function showNotification(message, type) {
       var $notification = $('<div class="geo-maps-notification geo-maps-notification-' + type + '"><span class="dashicons dashicons-' + (type === 'success' ? 'yes-alt' : 'warning') + '"></span>' + message + '</div>');
 
       // Remove any existing notifications
@@ -536,7 +536,7 @@
     /**
      * Debounce function to limit rate of function calls
      */
-    debounce: function (func, wait) {
+    debounce: function debounce(func, wait) {
       var timeout;
       return function () {
         var context = this,
@@ -550,7 +550,7 @@
     /**
      * Set up map preview functionality
      */
-    setupMapPreview: function () {
+    setupMapPreview: function setupMapPreview() {
       var self = this;
 
       // Refresh map preview button
@@ -586,7 +586,7 @@
     /**
      * Initialize the map preview
      */
-    initMapPreview: function () {
+    initMapPreview: function initMapPreview() {
       // This would be implemented with the map library (e.g., Leaflet or Google Maps)
       console.log('Initializing map preview');
 
@@ -636,7 +636,7 @@
     /**
      * Refresh the map preview
      */
-    refreshMapPreview: function () {
+    refreshMapPreview: function refreshMapPreview() {
       // This would be implemented with the map library
       console.log('Refreshing map preview');
 
@@ -646,7 +646,7 @@
     /**
      * Add a new marker to the list
      */
-    addMarkerToList: function (title, lat, lng, description, isVisible, iconType) {
+    addMarkerToList: function addMarkerToList(title, lat, lng, description, isVisible, iconType) {
       var markerId = 'marker_' + Date.now(); // Generate unique ID
       var template = $('#geo-maps-marker-template').html();
 
@@ -689,7 +689,7 @@
     /**
      * Update an existing marker in the list
      */
-    updateMarkerInList: function (markerId, title, lat, lng, description, isVisible, iconType) {
+    updateMarkerInList: function updateMarkerInList(markerId, title, lat, lng, description, isVisible, iconType) {
       var $marker = $('.geo-maps-editor-marker-item[data-marker-id="' + markerId + '"]');
 
       // Update values
@@ -724,7 +724,7 @@
     /**
      * Bind events to a marker item
      */
-    bindMarkerEvents: function ($marker) {
+    bindMarkerEvents: function bindMarkerEvents($marker) {
       var self = this;
       var markerId = $marker.data('marker-id');
 
@@ -809,7 +809,7 @@
     /**
      * Update the marker counts display
      */
-    updateMarkerCounts: function () {
+    updateMarkerCounts: function updateMarkerCounts() {
       var totalCount = $('.geo-maps-editor-marker-item').length;
       var visibleCount = $('.geo-maps-editor-marker-item').not('.geo-maps-marker-hidden').length;
       $('#geo-maps-total-count').text(totalCount);
@@ -818,7 +818,7 @@
     /**
      * Setup shortcode copy functionality
      */
-    setupShortcodeCopy: function () {
+    setupShortcodeCopy: function setupShortcodeCopy() {
       $(document).on('click', '.geo-maps-copy-shortcode', function () {
         var shortcode = $(this).data('shortcode');
 

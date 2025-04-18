@@ -9,7 +9,7 @@ window.geo_maps_ready_call = false;
 					jQuery(".geo_maps_map_render_element").each((index, element) => {
 						const Element = jQuery(element);
 						jQuery(Element).addClass('geo-maps-init');
-						window.Geo_Maps_Render(
+						window.geoMapsRenderEngine.renderMap(
 							Element.attr("ID"),
 							JSON.parse(Element.attr("data-settings"))
 						);

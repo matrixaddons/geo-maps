@@ -48,7 +48,7 @@ jQuery(document).ready(function($) {
     const mapContainer = document.getElementById('geo-maps-builder-map');
     if (!mapContainer) {
         console.error('Map container not found - cannot initialize map');
-    } else {
+            } else {
         console.log('Map container found:', mapContainer.id);
         
         // Check if container already has a map
@@ -107,7 +107,7 @@ jQuery(document).ready(function($) {
             console.log(`Setting "${key}" changed - Reinitializing map...`);
             
             // Use a small timeout to allow all settings to be updated in case multiple changes happen at once
-            setTimeout(() => {
+                setTimeout(() => {
                 if (mapManager) {
                     // Completely reinitialize the map using the render engine
                     mapManager.renderMap();
@@ -152,7 +152,7 @@ jQuery(document).ready(function($) {
             console.log(`Setting "${key}" changed - Updating map appearance...`);
             
             // Use a small timeout to allow all settings to be updated in case multiple changes happen at once
-            setTimeout(() => {
+        setTimeout(() => {
                 if (mapManager && mapManager.updateMapAppearance) {
                     mapManager.updateMapAppearance();
                 }
@@ -174,7 +174,7 @@ jQuery(document).ready(function($) {
     if (!window.geoMapsRenderEngine) {
         console.error('Geo Maps Render Engine is not available. Map functionality will be limited.');
         statusManager.error('Map engine not found. Some features may not work correctly.');
-    } else {
+        } else {
         console.log('Geo Maps Render Engine is available:', window.geoMapsRenderEngine);
     }
     

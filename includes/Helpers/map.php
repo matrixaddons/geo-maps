@@ -3,6 +3,14 @@
 use MatrixAddons\GeoMaps\Repositories\MapRepository;
 
 if (!function_exists('geo_maps_render_map')) {
+	/**
+	 * Renders a map container that will be initialized by the JavaScript render engine.
+	 * 
+	 * Note: The frontend JavaScript now uses the modern geoMapsRenderEngine.renderMap() 
+	 * approach instead of the legacy Geo_Maps_Render() function.
+	 *
+	 * @param array $map_args Map arguments.
+	 */
 	function geo_maps_render_map($map_args = array())
 	{
 		$default_map_args = wp_parse_args($map_args, array(
