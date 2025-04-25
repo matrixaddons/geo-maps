@@ -12,6 +12,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
+/* harmony import */ var _location_search__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../location-search */ "./assets/src/admin/location-search.js");
 function _typeof(o) {
   "@babel/helpers - typeof";
 
@@ -357,8 +358,8 @@ function _asyncToGenerator(n) {
  * initializing drawer content, and managing marker form submission.
  */
 
-// Import dependencies if needed
-// import statusManager from './status-manager';
+// Import dependencies
+
 
 /**
  * Drawer Manager
@@ -485,6 +486,9 @@ var drawerManager = {
 
       // Clean up mini map
       this._cleanupMiniMap();
+
+      // Clean up autocomplete container
+      _location_search__WEBPACK_IMPORTED_MODULE_0__["default"].hideAutocomplete();
 
       // Restore body scroll
       document.body.style.overflow = '';
@@ -723,210 +727,194 @@ var drawerManager = {
   /**
    * Initialize mini map for location selection
    * 
-   * @param {Object|null} position - Initial position for the marker
+   * @param {Object|null} marker - Marker object or position with lat/lng values
    */
   initializeMiniMap: function initializeMiniMap() {
     var _this6 = this;
-    var position = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    console.log('Initializing mini map');
+    var marker = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    console.log('Initializing mini map with marker:', marker);
     var miniMapContainer = document.getElementById('geo-maps-mini-map-container');
     if (!miniMapContainer) {
       console.error('Mini map container not found');
       return;
     }
 
-    // Use default position if none provided
-    if (!position) {
-      position = {
-        lat: 40.7128,
-        lng: -74.0060
-      }; // Default to New York City
-    }
-
-    // Get map type from settings
-    var mapType = window.GeoMapsBuilder.settingsManager.getMapType() || 'open_street_map';
-    console.log('Using map type:', mapType);
-
-    // Clean up existing mini map
+    // Clean up any existing mini map
     this._cleanupMiniMap();
     try {
-      // Check if the render engine is available
-      if (window.geoMapsRenderEngine) {
-        console.log('Using geoMapsRenderEngine to create mini map');
-
-        // Create map settings for the render engine
-        var mapSettings = {
-          map_type: mapType,
-          map_zoom: 10,
-          center_index: 0,
-          map_marker: [{
-            lat: position.lat,
-            lng: position.lng,
-            title: 'Marker Location'
-          }],
-          settings: {
-            osm_provider: 'default',
-            scroll_wheel_zoom: true,
-            popup_show_on: 'click',
-            markers: {
-              default_icon: '',
-              width: '25',
-              height: '40',
-              clustering: false
-            }
-          }
-        };
-
-        // Use the render engine to create the mini map
-        this.miniMap = window.geoMapsRenderEngine.renderMap('geo-maps-mini-map-container', mapSettings);
-        if (!this.miniMap) {
-          throw new Error('Failed to create mini map using render engine');
-        }
-
-        // Get the marker that was created by the render engine
-        if (this.miniMap.geoMapsMarkers && this.miniMap.geoMapsMarkers.length > 0) {
-          this.miniMapMarker = this.miniMap.geoMapsMarkers[0];
-
-          // We need to make the marker draggable manually since the render engine doesn't support this yet
-          if (mapType === 'google_map' && this.miniMap instanceof google.maps.Map) {
-            // For Google Maps, set draggable property and add event listener
-            this.miniMapMarker.setDraggable(true);
-
-            // Add drag event listener
-            google.maps.event.addListener(this.miniMapMarker, 'dragend', function (event) {
-              var lat = event.latLng.lat();
-              var lng = event.latLng.lng();
-              document.getElementById('marker_lat').value = lat.toFixed(6);
-              document.getElementById('marker_lng').value = lng.toFixed(6);
-
-              // Get location name from coordinates and update title if needed
-              _this6._updateTitleFromCoordinates(lat, lng);
-            });
-          } else if (this.miniMap instanceof L.Map) {
-            // For Leaflet, we need to remove and recreate the marker as draggable
-            this.miniMap.removeLayer(this.miniMapMarker);
-            this.miniMapMarker = L.marker([position.lat, position.lng], {
-              draggable: true
-            }).addTo(this.miniMap);
-
-            // Add drag event listener
-            this.miniMapMarker.on('dragend', function (event) {
-              var position = event.target.getLatLng();
-              document.getElementById('marker_lat').value = position.lat.toFixed(6);
-              document.getElementById('marker_lng').value = position.lng.toFixed(6);
-
-              // Get location name from coordinates and update title if needed
-              _this6._updateTitleFromCoordinates(position.lat, position.lng);
-            });
-          }
-        } else {
-          // If the render engine didn't create a marker, we need to add one manually
-          if (mapType === 'google_map' && this.miniMap instanceof google.maps.Map) {
-            this.miniMapMarker = new google.maps.Marker({
-              position: position,
-              map: this.miniMap,
-              draggable: true
-            });
-
-            // Add drag event listener
-            google.maps.event.addListener(this.miniMapMarker, 'dragend', function (event) {
-              var lat = event.latLng.lat();
-              var lng = event.latLng.lng();
-              document.getElementById('marker_lat').value = lat.toFixed(6);
-              document.getElementById('marker_lng').value = lng.toFixed(6);
-
-              // Get location name from coordinates and update title if needed
-              _this6._updateTitleFromCoordinates(lat, lng);
-            });
-          } else if (this.miniMap instanceof L.Map) {
-            this.miniMapMarker = L.marker([position.lat, position.lng], {
-              draggable: true
-            }).addTo(this.miniMap);
-
-            // Add drag event listener
-            this.miniMapMarker.on('dragend', function (event) {
-              var position = event.target.getLatLng();
-              document.getElementById('marker_lat').value = position.lat.toFixed(6);
-              document.getElementById('marker_lng').value = position.lng.toFixed(6);
-
-              // Get location name from coordinates and update title if needed
-              _this6._updateTitleFromCoordinates(position.lat, position.lng);
-            });
-          }
-        }
-      } else {
-        console.warn('geoMapsRenderEngine not available, trying mapManager.createSecondaryMap');
-
-        // Try using map manager as fallback
-        if (window.GeoMapsBuilder && window.GeoMapsBuilder.mapManager && typeof window.GeoMapsBuilder.mapManager.createSecondaryMap === 'function') {
-          console.log('Using mapManager.createSecondaryMap to create mini map');
-          this.miniMap = window.GeoMapsBuilder.mapManager.createSecondaryMap('geo-maps-mini-map-container', mapType, position, 10 // zoom level
-          );
-          if (!this.miniMap) {
-            throw new Error('Failed to create mini map using map manager');
-          }
-
-          // Add draggable marker
-          if (mapType === 'google_map' && this.miniMap instanceof google.maps.Map) {
-            this.miniMapMarker = new google.maps.Marker({
-              position: position,
-              map: this.miniMap,
-              draggable: true
-            });
-
-            // Add drag event listener
-            google.maps.event.addListener(this.miniMapMarker, 'dragend', function (event) {
-              var lat = event.latLng.lat();
-              var lng = event.latLng.lng();
-              document.getElementById('marker_lat').value = lat.toFixed(6);
-              document.getElementById('marker_lng').value = lng.toFixed(6);
-
-              // Get location name from coordinates and update title if needed
-              _this6._updateTitleFromCoordinates(lat, lng);
-            });
-          } else if (this.miniMap instanceof L.Map) {
-            console.log('Creating draggable Leaflet marker');
-            this.miniMap.setView([position.lat, position.lng], 10);
-            console.log('Leaflet mini map created with ID:', this.miniMap._leaflet_id);
-
-            // Add tile layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(this.miniMap);
-
-            // Add marker
-            this.miniMapMarker = L.marker([position.lat, position.lng], {
-              draggable: true
-            }).addTo(this.miniMap);
-
-            // Add drag event listener
-            this.miniMapMarker.on('dragend', function (event) {
-              var position = event.target.getLatLng();
-              document.getElementById('marker_lat').value = position.lat.toFixed(6);
-              document.getElementById('marker_lng').value = position.lng.toFixed(6);
-
-              // Get location name from coordinates and update title if needed
-              _this6._updateTitleFromCoordinates(position.lat, position.lng);
-            });
-          }
+      var _window$GeoMapsBuilde, _window$GeoMapsBuilde2, _window$GeoMapsBuilde3, _window$GeoMapsBuilde4;
+      // Extract position from marker or use default
+      var position;
+      if (marker) {
+        if (marker.latitude && marker.longitude) {
+          position = {
+            lat: parseFloat(marker.latitude),
+            lng: parseFloat(marker.longitude)
+          };
+        } else if (marker.lat && marker.lng) {
+          position = {
+            lat: parseFloat(marker.lat),
+            lng: parseFloat(marker.lng)
+          };
         }
       }
 
-      // Update lat/lng fields
-      document.getElementById('marker_lat').value = position.lat.toFixed(6);
-      document.getElementById('marker_lng').value = position.lng.toFixed(6);
+      // Use default position if none provided or invalid
+      if (!position || isNaN(position.lat) || isNaN(position.lng)) {
+        position = {
+          lat: 40.7128,
+          lng: -74.0060
+        }; // Default to New York City
+        console.log('Using default position for mini map:', position);
+      }
 
-      // Refresh map size after drawer animation completes
-      setTimeout(function () {
-        if (_this6.miniMap) {
-          console.log('Refreshing mini map size');
-          if (mapType === 'google_map') {
-            google.maps.event.trigger(_this6.miniMap, 'resize');
-          } else {
-            _this6.miniMap.invalidateSize();
+      // Get map type from settings manager if available, otherwise default to OSM
+      var mapType = ((_window$GeoMapsBuilde = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde === void 0 || (_window$GeoMapsBuilde = _window$GeoMapsBuilde.settingsManager) === null || _window$GeoMapsBuilde === void 0 ? void 0 : _window$GeoMapsBuilde.getMapType()) || 'open_street_map';
+
+      // Get OSM provider if using OSM
+      var osmProvider = ((_window$GeoMapsBuilde2 = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde2 === void 0 || (_window$GeoMapsBuilde2 = _window$GeoMapsBuilde2.settingsManager) === null || _window$GeoMapsBuilde2 === void 0 ? void 0 : _window$GeoMapsBuilde2.getOSMProvider()) || 'default';
+
+      // Get zoom wheel setting
+      var enableScrollZoom = (_window$GeoMapsBuilde3 = (_window$GeoMapsBuilde4 = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde4 === void 0 || (_window$GeoMapsBuilde4 = _window$GeoMapsBuilde4.settingsManager) === null || _window$GeoMapsBuilde4 === void 0 ? void 0 : _window$GeoMapsBuilde4.getAppearanceSetting('enableScrollZoom')) !== null && _window$GeoMapsBuilde3 !== void 0 ? _window$GeoMapsBuilde3 : true;
+
+      // Create mini map settings
+      var miniMapSettings = {
+        map_type: mapType,
+        settings: {
+          osm_provider: osmProvider,
+          scroll_wheel_zoom: enableScrollZoom,
+          show_control: true,
+          control_position: 'topright'
+        },
+        map_markers: [],
+        center: position,
+        map_zoom: 10
+      };
+      console.log('Creating mini map with settings:', miniMapSettings);
+
+      // Use the render engine to create a mini map
+      if (window.geoMapsRenderEngine && window.geoMapsRenderEngine.renderMap) {
+        // Clear any existing content in the container
+        miniMapContainer.innerHTML = '';
+
+        // Render the map
+        window.geoMapsRenderEngine.renderMap('geo-maps-mini-map-container', miniMapSettings);
+
+        // Get a reference to the map
+        if (window.Geo_Maps_Rendered && window.Geo_Maps_Rendered['geo-maps-mini-map-container']) {
+          this.miniMap = window.Geo_Maps_Rendered['geo-maps-mini-map-container'].map;
+
+          // Handle click events on the map to set marker position
+          if (this.miniMap instanceof L.Map) {
+            // For Leaflet map
+
+            // Add a marker at the specified position
+            this.miniMapMarker = L.marker([position.lat, position.lng], {
+              draggable: true
+            }).addTo(this.miniMap);
+
+            // Set up event listeners for the marker
+            this.miniMapMarker.on('dragend', function (event) {
+              var position = event.target.getLatLng();
+              var lat = position.lat;
+              var lng = position.lng;
+
+              // Update the lat/lng fields
+              document.getElementById('marker_lat').value = lat.toFixed(6);
+              document.getElementById('marker_lng').value = lng.toFixed(6);
+
+              // Update title based on coordinates
+              _this6._updateTitleFromCoordinates(lat, lng);
+            });
+
+            // Add click handler to map to allow user to click to set marker
+            this.miniMap.on('click', function (event) {
+              var position = event.latlng;
+
+              // Update marker position
+              _this6.miniMapMarker.setLatLng(position);
+
+              // Update the lat/lng fields
+              document.getElementById('marker_lat').value = position.lat.toFixed(6);
+              document.getElementById('marker_lng').value = position.lng.toFixed(6);
+
+              // Update title based on coordinates
+              _this6._updateTitleFromCoordinates(position.lat, position.lng);
+            });
+          } else if (window.google && this.miniMap instanceof google.maps.Map) {
+            // For Google Maps
+
+            // Add a marker at the specified position
+            this.miniMapMarker = new google.maps.Marker({
+              position: position,
+              map: this.miniMap,
+              draggable: true
+            });
+
+            // Set up event listeners for the marker
+            google.maps.event.addListener(this.miniMapMarker, 'dragend', function (event) {
+              var position = _this6.miniMapMarker.getPosition();
+              var lat = position.lat();
+              var lng = position.lng();
+
+              // Update the lat/lng fields
+              document.getElementById('marker_lat').value = lat.toFixed(6);
+              document.getElementById('marker_lng').value = lng.toFixed(6);
+
+              // Update title based on coordinates
+              _this6._updateTitleFromCoordinates(lat, lng);
+            });
+
+            // Add click handler to map to allow user to click to set marker
+            google.maps.event.addListener(this.miniMap, 'click', function (event) {
+              var position = event.latLng;
+
+              // Update marker position
+              _this6.miniMapMarker.setPosition(position);
+
+              // Update the lat/lng fields
+              document.getElementById('marker_lat').value = position.lat().toFixed(6);
+              document.getElementById('marker_lng').value = position.lng().toFixed(6);
+
+              // Update title based on coordinates
+              _this6._updateTitleFromCoordinates(position.lat(), position.lng());
+            });
           }
+
+          // Set up lat/lng field event handlers
+          var latField = document.getElementById('marker_lat');
+          var lngField = document.getElementById('marker_lng');
+          if (latField && lngField) {
+            var updateMapFromFields = function updateMapFromFields() {
+              // Update position from lat/lng fields
+              var lat = parseFloat(latField.value);
+              var lng = parseFloat(lngField.value);
+
+              // Check if values are valid
+              if (!isNaN(lat) && !isNaN(lng)) {
+                // Update the marker and map position
+                if (_this6.miniMap instanceof L.Map) {
+                  _this6.miniMapMarker.setLatLng([lat, lng]);
+                  _this6.miniMap.panTo([lat, lng]);
+                } else if (window.google && _this6.miniMap instanceof google.maps.Map) {
+                  var _position = new google.maps.LatLng(lat, lng);
+                  _this6.miniMapMarker.setPosition(_position);
+                  _this6.miniMap.panTo(_position);
+                }
+              }
+            };
+
+            // Listen for changes to the fields
+            latField.addEventListener('change', updateMapFromFields);
+            lngField.addEventListener('change', updateMapFromFields);
+          }
+          console.log('Mini map initialized successfully.');
+        } else {
+          console.error('Mini map not found in rendered maps.');
         }
-      }, 500);
+      } else {
+        console.error('Render engine not available for mini map.');
+      }
     } catch (error) {
       console.error('Error initializing mini map:', error);
     }
@@ -944,210 +932,48 @@ var drawerManager = {
 
     // Set a temporary title while waiting for geocoding
     titleInput.value = "Marker at ".concat(lat.toFixed(4), ", ").concat(lng.toFixed(4));
-
-    // Use Nominatim for reverse geocoding
-    fetch("https://nominatim.openstreetmap.org/reverse?format=json&lat=".concat(lat, "&lon=").concat(lng, "&zoom=18&addressdetails=1")).then(function (response) {
-      return response.json();
-    }).then(function (data) {
-      if (data && data.display_name) {
-        // Extract the most relevant part of the address
-        var locationParts = data.display_name.split(',');
-        var placeName = locationParts[0].trim();
-        titleInput.value = placeName;
-      }
-    })["catch"](function (error) {
-      console.warn('Error getting location name from coordinates:', error);
-      // Keep the temporary title if reverse geocoding fails
-    });
+    try {
+      // Use Nominatim for reverse geocoding with appropriate user-agent
+      fetch("https://nominatim.openstreetmap.org/reverse?format=json&lat=".concat(lat, "&lon=").concat(lng, "&zoom=18&addressdetails=1")).then(function (response) {
+        if (!response.ok) {
+          throw new Error("HTTP error! Status: ".concat(response.status));
+        }
+        return response.json();
+      }).then(function (data) {
+        if (data && data.display_name) {
+          // Check if the title input still has our placeholder value
+          if (titleInput.value === "Marker at ".concat(lat.toFixed(4), ", ").concat(lng.toFixed(4))) {
+            // Extract the most relevant part of the address
+            var locationParts = data.display_name.split(',');
+            var placeName = locationParts[0].trim();
+            titleInput.value = placeName;
+          }
+        }
+      })["catch"](function (error) {
+        console.warn('Error getting location name from coordinates:', error);
+        // Keep the temporary title if reverse geocoding fails
+      });
+    } catch (error) {
+      console.warn('Error in reverse geocoding operation:', error);
+    }
   },
   /**
    * Set up location search for mini map with autocomplete
    */
   setupMiniMapLocationSearch: function setupMiniMapLocationSearch() {
-    var _this7 = this;
-    var searchInput = document.getElementById('location_search');
-    if (!searchInput) {
-      console.warn('Location search input not found');
-      return;
-    }
-    console.log('Setting up location search with autocomplete');
-
-    // Create autocomplete container
-    var autocompleteContainer = document.createElement('div');
-    autocompleteContainer.id = 'location-search-autocomplete';
-    autocompleteContainer.className = 'geo-maps-autocomplete-container';
-    searchInput.parentNode.appendChild(autocompleteContainer);
-
-    // Track current query and timer
-    var currentQuery = '';
-    var searchTimer = null;
-    var searchResults = [];
-
-    // Function to position the autocomplete container
-    var positionAutocomplete = function positionAutocomplete() {
-      var inputRect = searchInput.getBoundingClientRect();
-      autocompleteContainer.style.top = "".concat(inputRect.bottom, "px");
-      autocompleteContainer.style.left = "".concat(inputRect.left, "px");
-      autocompleteContainer.style.width = "".concat(inputRect.width, "px");
-    };
-
-    // Function to select a location from autocomplete
-    var selectLocation = function selectLocation(location) {
-      if (!location) return;
-      var lat = parseFloat(location.lat);
-      var lng = parseFloat(location.lon);
-
-      // Update search input with selection
-      searchInput.value = location.display_name;
-      currentQuery = location.display_name;
-
-      // Update title field if it's empty or has default text
-      var titleInput = document.getElementById('marker_title');
-      if (titleInput && (!titleInput.value || titleInput.value === 'New Marker')) {
-        // Use the name part of the address as the title
-        var locationParts = location.display_name.split(',');
-        titleInput.value = locationParts[0].trim();
-      }
-
-      // Update fields
-      document.getElementById('marker_lat').value = lat.toFixed(6);
-      document.getElementById('marker_lng').value = lng.toFixed(6);
-
-      // Update mini map
-      updateMiniMapView(lat, lng);
-
-      // Clear autocomplete
-      autocompleteContainer.innerHTML = '';
-      autocompleteContainer.style.display = 'none';
-    };
-
-    // Function to update the mini map view
-    var updateMiniMapView = function updateMiniMapView(lat, lng) {
-      // Check if we have a mini map
-      if (!_this7.miniMap) {
-        console.warn('Mini map not available for update');
-        return;
-      }
-      var mapType = window.GeoMapsBuilder.settingsManager.getMapType() || 'open_street_map';
-
-      // Move the map view to the new location
-      if (_this7.miniMap instanceof L.Map) {
-        _this7.miniMap.setView([lat, lng], _this7.miniMap.getZoom());
-
-        // Update marker position
-        if (_this7.miniMapMarker) {
-          _this7.miniMapMarker.setLatLng([lat, lng]);
-        }
-      } else if (window.google && _this7.miniMap instanceof google.maps.Map) {
-        _this7.miniMap.setCenter({
-          lat: lat,
-          lng: lng
-        });
-
-        // Update marker position
-        if (_this7.miniMapMarker) {
-          _this7.miniMapMarker.setPosition({
-            lat: lat,
-            lng: lng
-          });
-        }
-      }
-    };
-
-    // Function to perform search and update autocomplete
-    var performSearch = function performSearch(query) {
-      if (query.length < 3) {
-        autocompleteContainer.innerHTML = '';
-        autocompleteContainer.style.display = 'none';
-        return;
-      }
-
-      // Position autocomplete every time we show it
-      positionAutocomplete();
-
-      // Show loading indicator
-      autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-loading">Searching...</div>';
-      autocompleteContainer.style.display = 'block';
-
-      // Use Nominatim for geocoding
-      fetch("https://nominatim.openstreetmap.org/search?format=json&q=".concat(encodeURIComponent(query), "&limit=5")).then(function (response) {
-        return response.json();
-      }).then(function (data) {
-        searchResults = data;
-        if (data && data.length > 0) {
-          // Clear previous results
-          autocompleteContainer.innerHTML = '';
-
-          // Add results to autocomplete
-          data.forEach(function (location, index) {
-            var resultItem = document.createElement('div');
-            resultItem.className = 'geo-maps-autocomplete-item';
-            resultItem.innerHTML = "\n                                <div class=\"geo-maps-autocomplete-icon\">\n                                    <span class=\"dashicons dashicons-location\"></span>\n                                </div>\n                                <div class=\"geo-maps-autocomplete-content\">\n                                    <div class=\"geo-maps-autocomplete-primary\">".concat(location.display_name.split(',')[0], "</div>\n                                    <div class=\"geo-maps-autocomplete-secondary\">").concat(location.display_name, "</div>\n                                </div>\n                            ");
-            resultItem.addEventListener('click', function () {
-              selectLocation(location);
-            });
-            autocompleteContainer.appendChild(resultItem);
-          });
-          autocompleteContainer.style.display = 'block';
-        } else {
-          autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-no-results">No locations found</div>';
-        }
-      })["catch"](function (error) {
-        console.error('Error searching for location:', error);
-        autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-error">Error searching for location</div>';
-      });
-    };
-
-    // Add input event listener for search as you type
-    searchInput.addEventListener('input', function (e) {
-      var query = e.target.value.trim();
-      currentQuery = query;
-
-      // Clear previous timer
-      if (searchTimer) {
-        clearTimeout(searchTimer);
-      }
-
-      // Set a slight delay to avoid too many requests
-      searchTimer = setTimeout(function () {
-        performSearch(query);
-      }, 300);
-    });
-
-    // Handle keyboard navigation
-    searchInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        // Select first result if available
-        if (searchResults.length > 0) {
-          selectLocation(searchResults[0]);
-        }
-      } else if (e.key === 'Escape') {
-        // Hide autocomplete
-        autocompleteContainer.innerHTML = '';
-        autocompleteContainer.style.display = 'none';
-      }
-    });
-
-    // Close autocomplete when clicking outside
-    document.addEventListener('click', function (e) {
-      if (!searchInput.contains(e.target) && !autocompleteContainer.contains(e.target)) {
-        autocompleteContainer.style.display = 'none';
-      }
-    });
-
-    // Handle window resize
-    window.addEventListener('resize', function () {
-      if (autocompleteContainer.style.display === 'block') {
-        positionAutocomplete();
-      }
+    // Initialize location search with our mini map
+    _location_search__WEBPACK_IMPORTED_MODULE_0__["default"].initialize({
+      inputId: 'location_search',
+      map: this.miniMap,
+      marker: this.miniMapMarker,
+      updateTitleCallback: this._updateTitleFromCoordinates.bind(this)
     });
   },
   /**
    * Set up media selection for marker icon
    */
   setupMediaSelection: function setupMediaSelection() {
-    var _this8 = this;
+    var _this7 = this;
     // Get required elements
     var selectButton = document.getElementById('geo_maps_select_marker_icon');
     var clearButton = document.getElementById('geo_maps_clear_marker_icon');
@@ -1199,7 +1025,7 @@ var drawerManager = {
     // Make the preview container clickable to open media selector
     previewContainer.addEventListener('click', function (e) {
       e.preventDefault();
-      _this8._openMediaSelector(updatePreview, iconInput);
+      _this7._openMediaSelector(updatePreview, iconInput);
     });
 
     // Setup clear button
@@ -1314,9 +1140,9 @@ var drawerManager = {
    * Handle marker form submission
    */
   handleMarkerFormSubmit: function handleMarkerFormSubmit() {
-    var _this9 = this;
+    var _this8 = this;
     return _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-      var _document$getElementB, _document$getElementB2, _document$getElementB3, _document$getElementB4, _document$getElementB5, _document$getElementB6, _window$GeoMapsBuilde, _window$GeoMapsBuilde2, markerId, title, description, lat, lng, iconUrl, markerManager, statusManager, markerData, success, attempt, _attempt;
+      var _document$getElementB, _document$getElementB2, _document$getElementB3, _document$getElementB4, _document$getElementB5, _document$getElementB6, _window$GeoMapsBuilde5, _window$GeoMapsBuilde6, markerId, title, description, lat, lng, iconUrl, markerManager, statusManager, markerData, success, attempt, _attempt;
       return _regeneratorRuntime().wrap(function _callee$(_context) {
         while (1) switch (_context.prev = _context.next) {
           case 0:
@@ -1349,8 +1175,8 @@ var drawerManager = {
             return _context.abrupt("return");
           case 16:
             // Check if we have access to required managers
-            markerManager = (_window$GeoMapsBuilde = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde === void 0 ? void 0 : _window$GeoMapsBuilde.markerManager;
-            statusManager = (_window$GeoMapsBuilde2 = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde2 === void 0 ? void 0 : _window$GeoMapsBuilde2.statusManager;
+            markerManager = (_window$GeoMapsBuilde5 = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde5 === void 0 ? void 0 : _window$GeoMapsBuilde5.markerManager;
+            statusManager = (_window$GeoMapsBuilde6 = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde6 === void 0 ? void 0 : _window$GeoMapsBuilde6.statusManager;
             if (markerManager) {
               _context.next = 22;
               break;
@@ -1455,7 +1281,7 @@ var drawerManager = {
               }
 
               // Close drawer
-              _this9.closeMarkerDrawer();
+              _this8.closeMarkerDrawer();
 
               // Refresh marker list
               markerManager.refreshMarkerList();
@@ -1485,7 +1311,7 @@ var drawerManager = {
    * Initialize drawer manager
    */
   init: function init() {
-    var _this10 = this;
+    var _this9 = this;
     console.log('Drawer Manager initializing');
 
     // Add event handlers for the existing marker drawer in the HTML
@@ -1529,7 +1355,7 @@ var drawerManager = {
     if (closeButton) {
       console.log('Setting up close button event handler');
       closeButton.addEventListener('click', function () {
-        return _this10.closeMarkerDrawer();
+        return _this9.closeMarkerDrawer();
       });
     } else {
       console.warn('Close button not found in the DOM - searching for alternate close button');
@@ -1537,7 +1363,7 @@ var drawerManager = {
       if (altCloseButton) {
         console.log('Found alternate close button, setting up event handler');
         altCloseButton.addEventListener('click', function () {
-          return _this10.closeMarkerDrawer();
+          return _this9.closeMarkerDrawer();
         });
       } else {
         console.error('No close button found, drawer may be difficult to close');
@@ -1546,7 +1372,7 @@ var drawerManager = {
     if (cancelButton) {
       console.log('Setting up cancel button event handler');
       cancelButton.addEventListener('click', function () {
-        return _this10.closeMarkerDrawer();
+        return _this9.closeMarkerDrawer();
       });
     } else {
       console.warn('Cancel button not found in the DOM');
@@ -1558,7 +1384,7 @@ var drawerManager = {
         var form = document.getElementById('geo-maps-marker-form');
         if (form) {
           // Execute the form submission handler
-          _this10.handleMarkerFormSubmit();
+          _this9.handleMarkerFormSubmit();
         } else {
           console.error('Marker form not found');
           alert('Could not find marker form. Please try again.');
@@ -1594,7 +1420,7 @@ var drawerManager = {
       ];
 
       // Check if this setting affects the mini map and if mini map is open
-      if (miniMapSettings.includes(key) && _this10.miniMap) {
+      if (miniMapSettings.includes(key) && _this9.miniMap) {
         console.log("Setting \"".concat(key, "\" changed - Updating mini map..."));
 
         // Get current marker position from form
@@ -1603,7 +1429,7 @@ var drawerManager = {
         if (!isNaN(lat) && !isNaN(lng)) {
           // Reinitialize mini map with current position
           setTimeout(function () {
-            _this10.initializeMiniMap({
+            _this9.initializeMiniMap({
               lat: lat,
               lng: lng
             });
@@ -3409,6 +3235,397 @@ var statusManager = {
   }
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (statusManager);
+
+/***/ }),
+
+/***/ "./assets/src/admin/location-search.js":
+/*!*********************************************!*\
+  !*** ./assets/src/admin/location-search.js ***!
+  \*********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/**
+ * Location Search Module for Geo Maps
+ * Handles location search with autocomplete functionality.
+ */
+
+var locationSearch = function () {
+  // Store references to elements and state
+  var searchInput = null;
+  var autocompleteContainer = null;
+  var searchResults = [];
+  var searchTimer = null;
+  var currentQuery = '';
+  var miniMap = null;
+  var miniMapMarker = null;
+  var updateTitleCallback = null;
+  var eventListenersAttached = false;
+
+  /**
+   * Initialize the location search functionality
+   * @param {Object} config - Configuration options
+   * @param {string} config.inputId - The ID of the search input element
+   * @param {Object} config.map - Reference to the mini map object
+   * @param {Object} config.marker - Reference to the mini map marker
+   * @param {Function} config.updateTitleCallback - Callback function to update title from coordinates
+   */
+  var initialize = function initialize(config) {
+    // Clean up any previous initialization
+    cleanup();
+    searchInput = document.getElementById(config.inputId || 'location_search');
+    if (!searchInput) {
+      console.warn('Location search: Input element not found');
+      return false;
+    }
+    console.log('Location search: Initializing with config', config);
+
+    // Store map references
+    miniMap = config.map || null;
+    miniMapMarker = config.marker || null;
+    updateTitleCallback = config.updateTitleCallback || null;
+
+    // Remove any existing autocomplete container first
+    var existingContainer = document.getElementById('location-search-autocomplete');
+    if (existingContainer) {
+      existingContainer.remove();
+    }
+
+    // Create and append autocomplete container
+    autocompleteContainer = document.createElement('div');
+    autocompleteContainer.id = 'location-search-autocomplete';
+    autocompleteContainer.className = 'geo-maps-autocomplete-container';
+    searchInput.parentNode.appendChild(autocompleteContainer);
+
+    // Set up event listeners
+    setupEventListeners();
+    return true;
+  };
+
+  /**
+   * Clean up all resources used by the location search
+   */
+  var cleanup = function cleanup() {
+    // Remove event listeners if they were attached
+    if (eventListenersAttached && searchInput) {
+      // Clone and replace the input element to remove all event listeners
+      try {
+        var parent = searchInput.parentNode;
+        if (parent) {
+          var clone = searchInput.cloneNode(true);
+          parent.replaceChild(clone, searchInput);
+        }
+      } catch (e) {
+        console.warn('Location search: Error removing event listeners', e);
+      }
+    }
+
+    // Remove autocomplete container
+    hideAutocomplete();
+    var container = document.getElementById('location-search-autocomplete');
+    if (container) {
+      container.remove();
+    }
+
+    // Reset state
+    searchInput = null;
+    autocompleteContainer = null;
+    searchResults = [];
+    if (searchTimer) {
+      clearTimeout(searchTimer);
+      searchTimer = null;
+    }
+    currentQuery = '';
+    eventListenersAttached = false;
+  };
+
+  /**
+   * Set up all event listeners for the search functionality
+   */
+  var setupEventListeners = function setupEventListeners() {
+    if (!searchInput || eventListenersAttached) return;
+
+    // Input event for search as you type
+    searchInput.addEventListener('input', handleInputChange);
+
+    // Keyboard navigation
+    searchInput.addEventListener('keydown', handleKeyDown);
+
+    // Click outside to close
+    document.addEventListener('click', handleDocumentClick);
+
+    // Window resize to reposition
+    window.addEventListener('resize', handleWindowResize);
+    eventListenersAttached = true;
+    console.log('Location search: Event listeners attached');
+  };
+
+  /**
+   * Handle input changes and trigger search
+   * @param {Event} e - The input event
+   */
+  var handleInputChange = function handleInputChange(e) {
+    var query = e.target.value.trim();
+    currentQuery = query;
+
+    // Clear previous timer
+    if (searchTimer) {
+      clearTimeout(searchTimer);
+    }
+
+    // Set delay to avoid too many requests
+    searchTimer = setTimeout(function () {
+      performSearch(query);
+    }, 300);
+  };
+
+  /**
+   * Handle keyboard navigation
+   * @param {KeyboardEvent} e - The keyboard event
+   */
+  var handleKeyDown = function handleKeyDown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // Select first result if available
+      if (searchResults.length > 0) {
+        selectLocation(searchResults[0]);
+      }
+    } else if (e.key === 'Escape') {
+      // Hide autocomplete
+      hideAutocomplete();
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      // TODO: Implement keyboard navigation through results
+      e.preventDefault();
+    }
+  };
+
+  /**
+   * Handle clicks outside the search area
+   * @param {MouseEvent} e - The mouse event
+   */
+  var handleDocumentClick = function handleDocumentClick(e) {
+    if (searchInput && autocompleteContainer && !searchInput.contains(e.target) && !autocompleteContainer.contains(e.target)) {
+      hideAutocomplete();
+    }
+  };
+
+  /**
+   * Handle window resize events
+   */
+  var handleWindowResize = function handleWindowResize() {
+    if (autocompleteContainer && autocompleteContainer.style.display === 'block') {
+      positionAutocomplete();
+    }
+  };
+
+  /**
+   * Position the autocomplete dropdown properly
+   */
+  var positionAutocomplete = function positionAutocomplete() {
+    if (!autocompleteContainer) return;
+
+    // Position relative to parent container, not absolute on page
+    autocompleteContainer.style.position = 'relative';
+    autocompleteContainer.style.width = '100%';
+    autocompleteContainer.style.top = 'auto';
+    autocompleteContainer.style.left = 'auto';
+    autocompleteContainer.style.right = 'auto';
+  };
+
+  /**
+   * Hide the autocomplete dropdown
+   */
+  var hideAutocomplete = function hideAutocomplete() {
+    if (autocompleteContainer) {
+      autocompleteContainer.innerHTML = '';
+      autocompleteContainer.style.display = 'none';
+    }
+  };
+
+  /**
+   * Perform search for locations based on query
+   * @param {string} query - The search query
+   */
+  var performSearch = function performSearch(query) {
+    if (!autocompleteContainer) return;
+    if (query.length < 3) {
+      hideAutocomplete();
+      return;
+    }
+
+    // Position autocomplete every time we show it
+    positionAutocomplete();
+
+    // Show waiting indicator
+    autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-info">Finding locations...</div>';
+    autocompleteContainer.style.display = 'block';
+
+    // Use Nominatim for geocoding
+    fetch("https://nominatim.openstreetmap.org/search?format=json&q=".concat(encodeURIComponent(query), "&limit=5")).then(function (response) {
+      return response.json();
+    }).then(function (data) {
+      searchResults = data;
+      if (!autocompleteContainer) return; // Check if container still exists
+
+      if (data && data.length > 0) {
+        // Clear previous results
+        autocompleteContainer.innerHTML = '';
+
+        // Add results count header
+        var resultsInfo = document.createElement('div');
+        resultsInfo.className = 'geo-maps-autocomplete-info';
+        resultsInfo.textContent = "Found ".concat(data.length, " location").concat(data.length !== 1 ? 's' : '');
+        autocompleteContainer.appendChild(resultsInfo);
+
+        // Add results to autocomplete
+        data.forEach(function (location) {
+          appendResultItem(location);
+        });
+        autocompleteContainer.style.display = 'block';
+      } else {
+        autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-no-results">No locations found</div>';
+      }
+    })["catch"](function (error) {
+      console.error('Error searching for location:', error);
+      if (autocompleteContainer) {
+        autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-error">Error searching for location</div>';
+      }
+    });
+  };
+
+  /**
+   * Create and append a result item to the autocomplete container
+   * @param {Object} location - The location object
+   */
+  var appendResultItem = function appendResultItem(location) {
+    if (!autocompleteContainer) return;
+    var resultItem = document.createElement('div');
+    resultItem.className = 'geo-maps-autocomplete-item';
+
+    // Get the first part of the address as the primary text
+    var primaryText = location.display_name.split(',')[0].trim();
+    resultItem.innerHTML = "\n            <div class=\"geo-maps-autocomplete-icon\">\n                <span class=\"dashicons dashicons-location\"></span>\n            </div>\n            <div class=\"geo-maps-autocomplete-content\">\n                <div class=\"geo-maps-autocomplete-primary\">".concat(primaryText, "</div>\n                <div class=\"geo-maps-autocomplete-secondary\">").concat(location.display_name, "</div>\n            </div>\n        ");
+    resultItem.addEventListener('click', function () {
+      selectLocation(location);
+    });
+    autocompleteContainer.appendChild(resultItem);
+  };
+
+  /**
+   * Select a location from the search results
+   * @param {Object} location - The selected location
+   */
+  var selectLocation = function selectLocation(location) {
+    if (!location || !searchInput) return;
+    var lat = parseFloat(location.lat);
+    var lng = parseFloat(location.lon);
+
+    // Update search input with selection
+    searchInput.value = location.display_name;
+    currentQuery = location.display_name;
+
+    // Update title field if it's empty or has default text
+    var titleInput = document.getElementById('marker_title');
+    if (titleInput && (!titleInput.value || titleInput.value === 'New Marker' || titleInput.value.startsWith('Marker at '))) {
+      // Use the name part of the address as the title
+      var locationParts = location.display_name.split(',');
+      titleInput.value = locationParts[0].trim();
+    }
+
+    // Update lat/lng fields
+    updateCoordinateFields(lat, lng);
+
+    // Update mini map
+    updateMiniMapView(lat, lng);
+
+    // Update title using callback if available
+    if (updateTitleCallback && typeof updateTitleCallback === 'function') {
+      try {
+        updateTitleCallback(lat, lng);
+      } catch (e) {
+        console.warn('Error calling updateTitleCallback:', e);
+      }
+    }
+
+    // Hide autocomplete
+    hideAutocomplete();
+  };
+
+  /**
+   * Update latitude and longitude fields
+   * @param {number} lat - Latitude
+   * @param {number} lng - Longitude
+   */
+  var updateCoordinateFields = function updateCoordinateFields(lat, lng) {
+    var latField = document.getElementById('marker_lat');
+    var lngField = document.getElementById('marker_lng');
+    if (latField) {
+      latField.value = lat.toFixed(6);
+    }
+    if (lngField) {
+      lngField.value = lng.toFixed(6);
+    }
+  };
+
+  /**
+   * Update the mini map view with new coordinates
+   * @param {number} lat - Latitude
+   * @param {number} lng - Longitude
+   */
+  var updateMiniMapView = function updateMiniMapView(lat, lng) {
+    // Check if we have a mini map
+    if (!miniMap) {
+      console.warn('Mini map not available for update');
+      return;
+    }
+
+    // Validate coordinates
+    if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      console.warn('Invalid coordinates provided:', lat, lng);
+      return;
+    }
+    try {
+      // Move the map view to the new location
+      if (typeof L !== 'undefined' && miniMap instanceof L.Map) {
+        miniMap.setView([lat, lng], miniMap.getZoom());
+
+        // Update marker position
+        if (miniMapMarker) {
+          miniMapMarker.setLatLng([lat, lng]);
+        }
+      } else if (typeof google !== 'undefined' && google.maps && miniMap instanceof google.maps.Map) {
+        miniMap.setCenter({
+          lat: lat,
+          lng: lng
+        });
+
+        // Update marker position
+        if (miniMapMarker) {
+          miniMapMarker.setPosition({
+            lat: lat,
+            lng: lng
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error updating mini map view:', error);
+    }
+  };
+
+  // Public API
+  return {
+    initialize: initialize,
+    selectLocation: selectLocation,
+    hideAutocomplete: hideAutocomplete,
+    cleanup: cleanup
+  };
+}();
+
+// Export the locationSearch module
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (locationSearch);
 
 /***/ })
 
