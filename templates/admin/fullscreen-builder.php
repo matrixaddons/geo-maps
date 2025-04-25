@@ -403,30 +403,97 @@ if (!defined('ABSPATH')) exit;
             
             </div>
             
-            <!-- Left Marker Drawer (hidden by default) -->
-            <div class="geo-maps-builder-marker-drawer" id="geo-maps-marker-drawer">
-                <div class="geo-maps-builder-marker-drawer-header">
-                    <h3 class="geo-maps-builder-marker-drawer-title">
-                        <span class="dashicons dashicons-location" aria-hidden="true"></span>
-                        <span id="geo-maps-marker-drawer-action"></span> <?php _e('Marker', 'geo-maps'); ?>
-                    </h3>
-                    <button type="button" class="geo-maps-builder-marker-drawer-close">
-                        <span class="dashicons dashicons-no-alt"></span>
-                    </button>
-                </div>
-                
-                <div class="geo-maps-builder-marker-drawer-content">
-                    <!-- Content will be dynamically added by JavaScript -->
-                </div>
-                
-                <div class="geo-maps-builder-marker-drawer-footer">
-                    <div class="geo-maps-builder-marker-drawer-actions">
-                        <button type="button" id="geo-maps-cancel-marker" class="geo-maps-button geo-maps-button-secondary">
-                            <span class="dashicons dashicons-no-alt"></span> <?php _e('Cancel', 'geo-maps'); ?>
+            <!-- Marker Drawer - Slide out panel for adding/editing markers -->
+            <div id="geo-maps-marker-drawer" class="geo-maps-builder-marker-drawer">
+                <div class="geo-maps-builder-marker-drawer-inner">
+                    <div class="geo-maps-builder-marker-drawer-header">
+                        <h2><span class="dashicons dashicons-location"></span> <span id="geo-maps-marker-drawer-action">Add</span> Marker</h2>
+                        <button type="button" class="geo-maps-builder-marker-drawer-close">
+                            <span class="dashicons dashicons-no-alt"></span>
                         </button>
-                        <button type="button" id="geo-maps-save-marker" class="geo-maps-button geo-maps-button-primary">
-                            <span class="dashicons dashicons-saved"></span> <?php _e('Save', 'geo-maps'); ?>
-                        </button>
+                    </div>
+                    <div id="geo-maps-drawer-content" class="geo-maps-builder-marker-drawer-content">
+                        <!-- Marker Form with Better Styling -->
+                        <form id="geo-maps-marker-form" class="geo-maps-form">
+                            <input type="hidden" id="marker_id" name="marker_id" value="">
+                            
+                            <!-- Marker Information -->
+                            <div class="geo-maps-builder-section">
+                                <h3 class="geo-maps-builder-section-title">
+                                    <span class="dashicons dashicons-info-outline"></span>
+                                    Marker Information
+                                </h3>
+                                <div class="geo-maps-builder-field">
+                                    <label class="geo-maps-label" for="marker_title">Title</label>
+                                    <input type="text" id="marker_title" name="marker_title" class="geo-maps-input" required value="">
+                                </div>
+                                <div class="geo-maps-builder-field">
+                                    <label class="geo-maps-label" for="marker_description">Description</label>
+                                    <textarea id="marker_description" name="marker_description" class="geo-maps-textarea" rows="4"></textarea>
+                                </div>
+                            </div>
+                            
+                            <!-- Marker Location -->
+                            <div class="geo-maps-builder-section">
+                                <h3 class="geo-maps-builder-section-title">
+                                    <span class="dashicons dashicons-location"></span>
+                                    Location
+                                </h3>
+                                <div id="geo-maps-location-search-container" class="geo-maps-builder-field">
+                                    <label class="geo-maps-label" for="location_search">Search Location</label>
+                                    <input type="text" id="location_search" name="location_search" class="geo-maps-input" placeholder="Enter address or place name">
+                                </div>
+                                <div id="geo-maps-mini-map-container" class="geo-maps-mini-map"></div>
+                                <div class="geo-maps-flex geo-maps-gap-md" style="margin-top: 15px;">
+                                    <div class="geo-maps-builder-field" style="flex: 1;">
+                                        <label class="geo-maps-label" for="marker_lat">Latitude</label>
+                                        <input type="text" id="marker_lat" name="marker_lat" class="geo-maps-input" required value="">
+                                    </div>
+                                    <div class="geo-maps-builder-field" style="flex: 1;">
+                                        <label class="geo-maps-label" for="marker_lng">Longitude</label>
+                                        <input type="text" id="marker_lng" name="marker_lng" class="geo-maps-input" required value="">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Marker Appearance -->
+                            <div class="geo-maps-builder-section">
+                                <h3 class="geo-maps-builder-section-title">
+                                    <span class="dashicons dashicons-visibility"></span>
+                                    Appearance
+                                </h3>
+                                <div class="geo-maps-builder-field">
+                                    <label class="geo-maps-label" for="geo_maps_marker_icon">Custom Icon</label>
+                                    <div class="geo-maps-media-field geo-maps-droppable-media-field">
+                                        <input type="hidden" id="geo_maps_marker_icon" name="geo_maps_marker_icon" class="geo-maps-input" value="">
+                                        <div class="geo-maps-media-preview empty" id="geo-maps-marker-icon-preview-container">
+                                            <div class="geo-maps-media-placeholder">
+                                                <span class="dashicons dashicons-upload"></span>
+                                                <span class="geo-maps-upload-text"><?php esc_html_e('Drop image here or click to upload', 'geo-maps'); ?></span>
+                                            </div>
+                                            <img id="geo-maps-marker-icon-preview" src="" alt="Marker icon" style="display: none;">
+                                        </div>
+                                        <div class="geo-maps-media-actions">
+                                            <button type="button" id="geo_maps_clear_marker_icon" class="geo-maps-button geo-maps-button-text geo-maps-media-clear" style="display:none;">
+                                                <span class="dashicons dashicons-no" aria-hidden="true"></span> <?php esc_html_e('Remove', 'geo-maps'); ?>
+                                            </button>
+                                            <input type="hidden" id="geo_maps_select_marker_icon">
+                                        </div>
+                                    </div>
+                                    <p class="geo-maps-description"><?php esc_html_e("Custom icon for this marker. Leave empty to use the default.", 'geo-maps'); ?></p>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="geo-maps-builder-marker-drawer-footer">
+                        <div class="geo-maps-builder-marker-drawer-actions">
+                            <button type="button" id="geo-maps-cancel-marker" class="geo-maps-button geo-maps-button-secondary">
+                                <span class="dashicons dashicons-no-alt"></span> <?php _e('Cancel', 'geo-maps'); ?>
+                            </button>
+                            <button type="button" id="geo-maps-save-marker" class="geo-maps-button geo-maps-button-primary">
+                                <span class="dashicons dashicons-saved"></span> <?php _e('Save', 'geo-maps'); ?>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

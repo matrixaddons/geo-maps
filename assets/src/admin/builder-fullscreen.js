@@ -132,7 +132,7 @@ jQuery(document).ready(function($) {
             if (key === 'zoom') {
                 // Update zoom level
                 if (map instanceof L.Map) {
-                    map.setZoom(value);
+                    mapManager.safeSetZoom(value);
                 } else if (window.google && map instanceof google.maps.Map) {
                     map.setZoom(value);
                 }
@@ -141,7 +141,7 @@ jQuery(document).ready(function($) {
                 const center = settingsManager.center;
                 
                 if (map instanceof L.Map) {
-                    map.setView([center.lat, center.lng], map.getZoom());
+                    mapManager.safeSetMapView(center);
                 } else if (window.google && map instanceof google.maps.Map) {
                     map.setCenter({ lat: center.lat, lng: center.lng });
                 }
@@ -217,11 +217,81 @@ jQuery(document).ready(function($) {
     }
     
     // Add event listener for add marker button
-    $('#geo-maps-add-marker-button').on('click', function() {
+    $('#geo-maps-add-marker-btn').on('click', function() {
         console.log('Add marker button clicked');
+        
+        // Check if drawerManager is initialized
+        if (!drawerManager) {
+            console.error('Drawer manager not initialized. Cannot open marker drawer.');
+            alert('The marker system is not ready yet. Please try again in a moment.');
+            return;
+        }
+        
+        // Check if map is initialized first
+        if (!mapManager.getMap()) {
+            console.error('Map not initialized. Cannot add marker.');
+            statusManager.error('Map not ready. Please try again in a moment.');
+            return;
+        }
+        
+        // Get the current map center
         const mapCenter = mapManager.getMapCenter();
+        
+        if (!mapCenter || !mapCenter.lat || !mapCenter.lng) {
+            console.error('Invalid map center:', mapCenter);
+            statusManager.error('Cannot determine map center. Please try again.');
+            return;
+        }
+        
         console.log('Opening marker drawer with map center:', mapCenter);
-        drawerManager.openMarkerDrawer('Add', null, mapCenter);
+        
+        try {
+            // Open the marker drawer with the current map center
+            drawerManager.openMarkerDrawer('Add', null, mapCenter);
+            
+            // Add a failsafe check to ensure the drawer is visible
+            setTimeout(function() {
+                const drawer = document.getElementById('geo-maps-marker-drawer');
+                
+                if (drawer && (!drawer.classList.contains('open') || 
+                    window.getComputedStyle(drawer).transform.includes('-500') ||
+                    window.getComputedStyle(drawer).display === 'none')) {
+                    
+                    console.log('Drawer not properly opened by drawerManager, applying failsafe');
+                    
+                    // Force the drawer to be visible with inline styles
+                    drawer.style.display = 'flex';
+                    drawer.style.transform = 'translateX(0)';
+                    drawer.classList.add('open');
+                    document.body.classList.add('geo-maps-drawer-open');
+                    
+                    // Apply additional styles to ensure visibility
+                    drawer.style.opacity = '1';
+                    drawer.style.visibility = 'visible';
+                    drawer.style.zIndex = '999';
+                    
+                    // Log success
+                    console.log('Applied failsafe styles to drawer:', {
+                        display: drawer.style.display,
+                        transform: drawer.style.transform,
+                        classes: drawer.className
+                    });
+                }
+            }, 400);
+        } catch (error) {
+            console.error('Error opening marker drawer:', error);
+            statusManager.error('Error opening marker drawer. Please try again.');
+            
+            // Try direct DOM manipulation as a fallback
+            const drawer = document.getElementById('geo-maps-marker-drawer');
+            if (drawer) {
+                console.log('Attempting direct DOM manipulation as fallback');
+                drawer.style.display = 'flex';
+                drawer.style.transform = 'translateX(0)';
+                drawer.classList.add('open');
+                document.body.classList.add('geo-maps-drawer-open');
+            }
+        }
     });
     
     // Add event listener for map click to add marker

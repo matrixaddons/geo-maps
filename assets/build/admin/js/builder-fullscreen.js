@@ -12,6 +12,344 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
+function _typeof(o) {
+  "@babel/helpers - typeof";
+
+  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) {
+    return typeof o;
+  } : function (o) {
+    return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+  }, _typeof(o);
+}
+function _regeneratorRuntime() {
+  "use strict";
+
+  /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */
+  _regeneratorRuntime = function _regeneratorRuntime() {
+    return e;
+  };
+  var t,
+    e = {},
+    r = Object.prototype,
+    n = r.hasOwnProperty,
+    o = Object.defineProperty || function (t, e, r) {
+      t[e] = r.value;
+    },
+    i = "function" == typeof Symbol ? Symbol : {},
+    a = i.iterator || "@@iterator",
+    c = i.asyncIterator || "@@asyncIterator",
+    u = i.toStringTag || "@@toStringTag";
+  function define(t, e, r) {
+    return Object.defineProperty(t, e, {
+      value: r,
+      enumerable: !0,
+      configurable: !0,
+      writable: !0
+    }), t[e];
+  }
+  try {
+    define({}, "");
+  } catch (t) {
+    define = function define(t, e, r) {
+      return t[e] = r;
+    };
+  }
+  function wrap(t, e, r, n) {
+    var i = e && e.prototype instanceof Generator ? e : Generator,
+      a = Object.create(i.prototype),
+      c = new Context(n || []);
+    return o(a, "_invoke", {
+      value: makeInvokeMethod(t, r, c)
+    }), a;
+  }
+  function tryCatch(t, e, r) {
+    try {
+      return {
+        type: "normal",
+        arg: t.call(e, r)
+      };
+    } catch (t) {
+      return {
+        type: "throw",
+        arg: t
+      };
+    }
+  }
+  e.wrap = wrap;
+  var h = "suspendedStart",
+    l = "suspendedYield",
+    f = "executing",
+    s = "completed",
+    y = {};
+  function Generator() {}
+  function GeneratorFunction() {}
+  function GeneratorFunctionPrototype() {}
+  var p = {};
+  define(p, a, function () {
+    return this;
+  });
+  var d = Object.getPrototypeOf,
+    v = d && d(d(values([])));
+  v && v !== r && n.call(v, a) && (p = v);
+  var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p);
+  function defineIteratorMethods(t) {
+    ["next", "throw", "return"].forEach(function (e) {
+      define(t, e, function (t) {
+        return this._invoke(e, t);
+      });
+    });
+  }
+  function AsyncIterator(t, e) {
+    function invoke(r, o, i, a) {
+      var c = tryCatch(t[r], t, o);
+      if ("throw" !== c.type) {
+        var u = c.arg,
+          h = u.value;
+        return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) {
+          invoke("next", t, i, a);
+        }, function (t) {
+          invoke("throw", t, i, a);
+        }) : e.resolve(h).then(function (t) {
+          u.value = t, i(u);
+        }, function (t) {
+          return invoke("throw", t, i, a);
+        });
+      }
+      a(c.arg);
+    }
+    var r;
+    o(this, "_invoke", {
+      value: function value(t, n) {
+        function callInvokeWithMethodAndArg() {
+          return new e(function (e, r) {
+            invoke(t, n, e, r);
+          });
+        }
+        return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg();
+      }
+    });
+  }
+  function makeInvokeMethod(e, r, n) {
+    var o = h;
+    return function (i, a) {
+      if (o === f) throw Error("Generator is already running");
+      if (o === s) {
+        if ("throw" === i) throw a;
+        return {
+          value: t,
+          done: !0
+        };
+      }
+      for (n.method = i, n.arg = a;;) {
+        var c = n.delegate;
+        if (c) {
+          var u = maybeInvokeDelegate(c, n);
+          if (u) {
+            if (u === y) continue;
+            return u;
+          }
+        }
+        if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) {
+          if (o === h) throw o = s, n.arg;
+          n.dispatchException(n.arg);
+        } else "return" === n.method && n.abrupt("return", n.arg);
+        o = f;
+        var p = tryCatch(e, r, n);
+        if ("normal" === p.type) {
+          if (o = n.done ? s : l, p.arg === y) continue;
+          return {
+            value: p.arg,
+            done: n.done
+          };
+        }
+        "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg);
+      }
+    };
+  }
+  function maybeInvokeDelegate(e, r) {
+    var n = r.method,
+      o = e.iterator[n];
+    if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y;
+    var i = tryCatch(o, e.iterator, r.arg);
+    if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y;
+    var a = i.arg;
+    return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y);
+  }
+  function pushTryEntry(t) {
+    var e = {
+      tryLoc: t[0]
+    };
+    1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e);
+  }
+  function resetTryEntry(t) {
+    var e = t.completion || {};
+    e.type = "normal", delete e.arg, t.completion = e;
+  }
+  function Context(t) {
+    this.tryEntries = [{
+      tryLoc: "root"
+    }], t.forEach(pushTryEntry, this), this.reset(!0);
+  }
+  function values(e) {
+    if (e || "" === e) {
+      var r = e[a];
+      if (r) return r.call(e);
+      if ("function" == typeof e.next) return e;
+      if (!isNaN(e.length)) {
+        var o = -1,
+          i = function next() {
+            for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next;
+            return next.value = t, next.done = !0, next;
+          };
+        return i.next = i;
+      }
+    }
+    throw new TypeError(_typeof(e) + " is not iterable");
+  }
+  return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", {
+    value: GeneratorFunctionPrototype,
+    configurable: !0
+  }), o(GeneratorFunctionPrototype, "constructor", {
+    value: GeneratorFunction,
+    configurable: !0
+  }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) {
+    var e = "function" == typeof t && t.constructor;
+    return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name));
+  }, e.mark = function (t) {
+    return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t;
+  }, e.awrap = function (t) {
+    return {
+      __await: t
+    };
+  }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () {
+    return this;
+  }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) {
+    void 0 === i && (i = Promise);
+    var a = new AsyncIterator(wrap(t, r, n, o), i);
+    return e.isGeneratorFunction(r) ? a : a.next().then(function (t) {
+      return t.done ? t.value : a.next();
+    });
+  }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () {
+    return this;
+  }), define(g, "toString", function () {
+    return "[object Generator]";
+  }), e.keys = function (t) {
+    var e = Object(t),
+      r = [];
+    for (var n in e) r.push(n);
+    return r.reverse(), function next() {
+      for (; r.length;) {
+        var t = r.pop();
+        if (t in e) return next.value = t, next.done = !1, next;
+      }
+      return next.done = !0, next;
+    };
+  }, e.values = values, Context.prototype = {
+    constructor: Context,
+    reset: function reset(e) {
+      if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t);
+    },
+    stop: function stop() {
+      this.done = !0;
+      var t = this.tryEntries[0].completion;
+      if ("throw" === t.type) throw t.arg;
+      return this.rval;
+    },
+    dispatchException: function dispatchException(e) {
+      if (this.done) throw e;
+      var r = this;
+      function handle(n, o) {
+        return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o;
+      }
+      for (var o = this.tryEntries.length - 1; o >= 0; --o) {
+        var i = this.tryEntries[o],
+          a = i.completion;
+        if ("root" === i.tryLoc) return handle("end");
+        if (i.tryLoc <= this.prev) {
+          var c = n.call(i, "catchLoc"),
+            u = n.call(i, "finallyLoc");
+          if (c && u) {
+            if (this.prev < i.catchLoc) return handle(i.catchLoc, !0);
+            if (this.prev < i.finallyLoc) return handle(i.finallyLoc);
+          } else if (c) {
+            if (this.prev < i.catchLoc) return handle(i.catchLoc, !0);
+          } else {
+            if (!u) throw Error("try statement without catch or finally");
+            if (this.prev < i.finallyLoc) return handle(i.finallyLoc);
+          }
+        }
+      }
+    },
+    abrupt: function abrupt(t, e) {
+      for (var r = this.tryEntries.length - 1; r >= 0; --r) {
+        var o = this.tryEntries[r];
+        if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) {
+          var i = o;
+          break;
+        }
+      }
+      i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null);
+      var a = i ? i.completion : {};
+      return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a);
+    },
+    complete: function complete(t, e) {
+      if ("throw" === t.type) throw t.arg;
+      return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y;
+    },
+    finish: function finish(t) {
+      for (var e = this.tryEntries.length - 1; e >= 0; --e) {
+        var r = this.tryEntries[e];
+        if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y;
+      }
+    },
+    "catch": function _catch(t) {
+      for (var e = this.tryEntries.length - 1; e >= 0; --e) {
+        var r = this.tryEntries[e];
+        if (r.tryLoc === t) {
+          var n = r.completion;
+          if ("throw" === n.type) {
+            var o = n.arg;
+            resetTryEntry(r);
+          }
+          return o;
+        }
+      }
+      throw Error("illegal catch attempt");
+    },
+    delegateYield: function delegateYield(e, r, n) {
+      return this.delegate = {
+        iterator: values(e),
+        resultName: r,
+        nextLoc: n
+      }, "next" === this.method && (this.arg = t), y;
+    }
+  }, e;
+}
+function asyncGeneratorStep(n, t, e, r, o, a, c) {
+  try {
+    var i = n[a](c),
+      u = i.value;
+  } catch (n) {
+    return void e(n);
+  }
+  i.done ? t(u) : Promise.resolve(u).then(r, o);
+}
+function _asyncToGenerator(n) {
+  return function () {
+    var t = this,
+      e = arguments;
+    return new Promise(function (r, o) {
+      var a = n.apply(t, e);
+      function _next(n) {
+        asyncGeneratorStep(a, r, o, _next, _throw, "next", n);
+      }
+      function _throw(n) {
+        asyncGeneratorStep(a, r, o, _next, _throw, "throw", n);
+      }
+      _next(void 0);
+    });
+  };
+}
 /**
  * Drawer Manager Module
  * 
@@ -43,115 +381,123 @@ var drawerManager = {
    */
   miniMapMarker: null,
   /**
-   * Open the marker drawer for adding or editing a marker
-   *
-   * @param {string} mode - 'Add' or 'Edit'
-   * @param {Object|null} marker - Marker data if editing, null if adding
-   * @param {Object|null} position - Position to place marker if adding new
+   * Open the marker drawer for a given marker or for adding a new marker
+   * 
+   * @param {string} mode - The mode: 'Add' or 'Edit'
+   * @param {Object|null} marker - The marker to edit if in edit mode
+   * @param {Object|null} position - Position for new marker when in add mode
    */
   openMarkerDrawer: function openMarkerDrawer() {
     var _this = this;
     var mode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'Add';
     var marker = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     var position = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    console.log("Opening marker drawer in ".concat(mode, " mode"));
+    console.log('Opening marker drawer in mode:', mode, 'marker:', marker, 'position:', position);
+    try {
+      // Store the marker reference if in edit mode
+      this.currentMarker = marker;
 
-    // Store the current marker being edited
-    this.currentMarker = marker;
-
-    // Get DOM elements
-    var drawerContainer = document.getElementById('geo-maps-drawer-container');
-    var drawerTitle = document.getElementById('geo-maps-drawer-title');
-
-    // Initialize drawer content if it doesn't exist yet
-    if (!document.getElementById('geo-maps-marker-form')) {
-      this._initializeDrawerContent();
-    }
-
-    // Set drawer title based on mode
-    if (drawerTitle) {
-      drawerTitle.textContent = "".concat(mode, " Marker");
-    }
-
-    // Show the drawer
-    if (drawerContainer) {
-      drawerContainer.classList.add('open');
-      document.body.classList.add('drawer-open');
-    }
-
-    // Reset form
-    var form = document.getElementById('geo-maps-marker-form');
-    if (form) {
-      form.reset();
-    }
-
-    // Set marker ID if editing
-    if (mode === 'Edit' && marker) {
-      var idField = document.getElementById('marker_id');
-      if (idField) {
-        idField.value = marker.id || '';
+      // Find drawer title element to update with mode
+      this.drawerTitle = document.getElementById('geo-maps-marker-drawer-action');
+      if (this.drawerTitle) {
+        this.drawerTitle.textContent = mode;
       }
 
-      // Fill in other form fields
-      document.getElementById('marker_title').value = marker.title || '';
-      document.getElementById('marker_description').value = marker.description || '';
-      document.getElementById('marker_lat').value = marker.latitude || '';
-      document.getElementById('marker_lng').value = marker.longitude || '';
-
-      // Handle marker icon if it exists
-      if (marker.iconUrl) {
-        document.getElementById('geo_maps_marker_icon').value = marker.iconUrl;
-        // Update icon preview if applicable
-        var iconPreview = document.getElementById('geo-maps-marker-icon-preview');
-        if (iconPreview) {
-          iconPreview.src = marker.iconUrl;
-          iconPreview.style.display = 'block';
+      // Find the drawer container if not already set
+      if (!this.drawerContainer) {
+        this.drawerContainer = document.getElementById('geo-maps-marker-drawer');
+        if (!this.drawerContainer) {
+          console.error('Drawer container not found, cannot open drawer');
+          return;
         }
       }
 
-      // Set position for mini map from marker data
-      position = {
-        lat: parseFloat(marker.latitude),
-        lng: parseFloat(marker.longitude)
-      };
+      // Make the drawer visible
+      this.drawerContainer.style.display = 'block';
+
+      // Trigger reflow before adding the open class for transition
+      void this.drawerContainer.offsetWidth;
+      this.drawerContainer.classList.add('open');
+      document.body.classList.add('geo-maps-drawer-open');
+
+      // Prevent body scroll when drawer is open
+      document.body.style.overflow = 'hidden';
+
+      // Initialize the drawer content
+      this._initializeDrawerContent(marker);
+
+      // If a position is provided (for new markers), update the position fields
+      if (position && !marker) {
+        var latInput = document.getElementById('marker_lat');
+        var lngInput = document.getElementById('marker_lng');
+        if (latInput && position.lat) {
+          latInput.value = position.lat.toFixed(6);
+        }
+        if (lngInput && position.lng) {
+          lngInput.value = position.lng.toFixed(6);
+        }
+
+        // Also update minimap with this position after a short delay
+        setTimeout(function () {
+          if (_this.miniMap) {
+            if (_this.miniMap instanceof L.Map) {
+              _this.miniMap.setView([position.lat, position.lng], _this.miniMap.getZoom());
+              if (_this.miniMapMarker) {
+                _this.miniMapMarker.setLatLng([position.lat, position.lng]);
+              }
+            } else if (window.google && _this.miniMap instanceof google.maps.Map) {
+              _this.miniMap.setCenter(position);
+              if (_this.miniMapMarker) {
+                _this.miniMapMarker.setPosition(position);
+              }
+            }
+          }
+        }, 300);
+      }
+    } catch (error) {
+      console.error('Error opening marker drawer:', error);
     }
-
-    // Initialize mini map with position
-    setTimeout(function () {
-      _this.initializeMiniMap(position);
-      _this.setupMiniMapLocationSearch();
-    }, 300);
-
-    // Set up media selection for marker icon
-    this.setupMediaSelection();
   },
   /**
    * Close the marker drawer
    */
   closeMarkerDrawer: function closeMarkerDrawer() {
+    var _this2 = this;
     console.log('Closing marker drawer');
+    try {
+      // Hide the drawer
+      if (this.drawerContainer) {
+        this.drawerContainer.classList.remove('open');
+        document.body.classList.remove('geo-maps-drawer-open');
 
-    // Get DOM elements
-    var drawerContainer = document.getElementById('geo-maps-drawer-container');
+        // Set explicit display style to ensure it's hidden
+        setTimeout(function () {
+          if (_this2.drawerContainer && !_this2.drawerContainer.classList.contains('open')) {
+            _this2.drawerContainer.style.display = 'none';
+          }
+        }, 300); // Wait for transition to complete
+      } else {
+        console.warn('Drawer container not found, cannot close properly');
+      }
 
-    // Hide the drawer
-    if (drawerContainer) {
-      drawerContainer.classList.remove('open');
-      document.body.classList.remove('drawer-open');
+      // Clear current marker reference
+      this.currentMarker = null;
+
+      // Clean up mini map
+      this._cleanupMiniMap();
+
+      // Restore body scroll
+      document.body.style.overflow = '';
+    } catch (error) {
+      console.error('Error closing marker drawer:', error);
     }
-
-    // Clear current marker reference
-    this.currentMarker = null;
-
-    // Clean up mini map
-    this._cleanupMiniMap();
   },
   /**
    * Clean up mini map properly
    * @private
    */
   _cleanupMiniMap: function _cleanupMiniMap() {
-    var _this2 = this;
+    var _this3 = this;
     // Clean up mini map
     if (this.miniMap) {
       console.log('Cleaning up mini map');
@@ -185,7 +531,7 @@ var drawerManager = {
           // Remove all layers
           console.log('Removing mini map layers');
           this.miniMap.eachLayer(function (layer) {
-            _this2.miniMap.removeLayer(layer);
+            _this3.miniMap.removeLayer(layer);
           });
 
           // Remove the map
@@ -217,24 +563,161 @@ var drawerManager = {
     }
   },
   /**
-   * Initialize drawer content with the necessary HTML structure
+   * Initialize drawer content with the marker values
    * @private
    */
-  _initializeDrawerContent: function _initializeDrawerContent() {
-    var _this3 = this;
-    var drawerContent = document.getElementById('geo-maps-drawer-content');
-    if (!drawerContent) return;
+  _initializeDrawerContent: function _initializeDrawerContent(marker) {
+    var _this4 = this;
+    try {
+      console.log('Initializing drawer content with marker data:', marker);
 
-    // Create form structure
-    drawerContent.innerHTML = "\n            <form id=\"geo-maps-marker-form\" class=\"geo-maps-form\">\n                <input type=\"hidden\" id=\"marker_id\" name=\"marker_id\" value=\"\">\n                \n                <!-- Marker Information -->\n                <div class=\"geo-maps-form-section\">\n                    <h3>Marker Information</h3>\n                    <div class=\"geo-maps-form-field\">\n                        <label for=\"marker_title\">Title</label>\n                        <input type=\"text\" id=\"marker_title\" name=\"marker_title\" required>\n                    </div>\n                    <div class=\"geo-maps-form-field\">\n                        <label for=\"marker_description\">Description</label>\n                        <textarea id=\"marker_description\" name=\"marker_description\" rows=\"4\"></textarea>\n                    </div>\n                </div>\n                \n                <!-- Marker Location -->\n                <div class=\"geo-maps-form-section\">\n                    <h3>Location</h3>\n                    <div id=\"geo-maps-location-search-container\" class=\"geo-maps-form-field\">\n                        <label for=\"location_search\">Search Location</label>\n                        <input type=\"text\" id=\"location_search\" name=\"location_search\" placeholder=\"Enter address or place name\">\n                    </div>\n                    <div id=\"geo-maps-mini-map-container\" style=\"height: 200px; margin-bottom: 15px;\"></div>\n                    <div class=\"geo-maps-form-field\">\n                        <label for=\"marker_lat\">Latitude</label>\n                        <input type=\"text\" id=\"marker_lat\" name=\"marker_lat\" required>\n                    </div>\n                    <div class=\"geo-maps-form-field\">\n                        <label for=\"marker_lng\">Longitude</label>\n                        <input type=\"text\" id=\"marker_lng\" name=\"marker_lng\" required>\n                    </div>\n                </div>\n                \n                <!-- Marker Appearance -->\n                <div class=\"geo-maps-form-section\">\n                    <h3>Appearance</h3>\n                    <div class=\"geo-maps-form-field\">\n                        <label for=\"geo_maps_marker_icon\">Custom Icon</label>\n                        <div class=\"geo-maps-media-field\">\n                            <input type=\"text\" id=\"geo_maps_marker_icon\" name=\"geo_maps_marker_icon\">\n                            <button type=\"button\" id=\"geo_maps_select_marker_icon\" class=\"button\">Select Icon</button>\n                            <div class=\"geo-maps-icon-preview\">\n                                <img id=\"geo-maps-marker-icon-preview\" src=\"\" style=\"display: none; max-width: 40px; max-height: 40px;\">\n                            </div>\n                        </div>\n                    </div>\n                </div>\n                \n                <!-- Form Actions -->\n                <div class=\"geo-maps-form-actions\">\n                    <button type=\"button\" id=\"geo-maps-marker-drawer-save\" class=\"button button-primary\">Save Marker</button>\n                    <button type=\"button\" id=\"geo-maps-marker-drawer-close\" class=\"button\">Cancel</button>\n                </div>\n            </form>\n        ";
+      // Update hidden ID field
+      var idField = document.getElementById('marker_id');
+      if (idField) {
+        idField.value = (marker === null || marker === void 0 ? void 0 : marker.id) || '';
+      }
 
-    // Add event listeners
-    var saveButton = document.getElementById('geo-maps-marker-drawer-save');
-    if (saveButton) {
-      saveButton.addEventListener('click', function (e) {
-        e.preventDefault();
-        _this3.handleMarkerFormSubmit();
-      });
+      // Update title field
+      var titleField = document.getElementById('marker_title');
+      if (titleField) {
+        titleField.value = (marker === null || marker === void 0 ? void 0 : marker.title) || '';
+      }
+
+      // Update description field
+      var descField = document.getElementById('marker_description');
+      if (descField) {
+        descField.value = (marker === null || marker === void 0 ? void 0 : marker.description) || '';
+      }
+
+      // Update lat/lng fields
+      var latField = document.getElementById('marker_lat');
+      var lngField = document.getElementById('marker_lng');
+      if (latField && marker !== null && marker !== void 0 && marker.latitude) {
+        latField.value = marker.latitude.toFixed(6);
+      } else if (latField) {
+        latField.value = '';
+      }
+      if (lngField && marker !== null && marker !== void 0 && marker.longitude) {
+        lngField.value = marker.longitude.toFixed(6);
+      } else if (lngField) {
+        lngField.value = '';
+      }
+
+      // Update icon preview
+      var iconField = document.getElementById('geo_maps_marker_icon');
+      var iconPreview = document.getElementById('geo-maps-marker-icon-preview');
+      var iconPreviewContainer = document.getElementById('geo-maps-marker-icon-preview-container');
+      var clearButton = document.getElementById('geo_maps_clear_marker_icon');
+      if (iconField) {
+        iconField.value = (marker === null || marker === void 0 ? void 0 : marker.iconUrl) || '';
+      }
+      if (iconPreview && iconPreviewContainer) {
+        if (marker !== null && marker !== void 0 && marker.iconUrl) {
+          // Show the image
+          iconPreview.src = marker.iconUrl;
+          iconPreview.style.display = '';
+
+          // Update container class
+          iconPreviewContainer.classList.remove('empty');
+
+          // Hide placeholder if exists
+          var placeholder = iconPreviewContainer.querySelector('.geo-maps-media-placeholder');
+          if (placeholder) {
+            placeholder.style.display = 'none';
+          }
+
+          // Show clear button
+          if (clearButton) {
+            clearButton.style.display = '';
+          }
+        } else {
+          // Hide the image
+          iconPreview.src = '';
+          iconPreview.style.display = 'none';
+
+          // Update container class
+          iconPreviewContainer.classList.add('empty');
+
+          // Show placeholder if exists
+          var _placeholder = iconPreviewContainer.querySelector('.geo-maps-media-placeholder');
+          if (_placeholder) {
+            _placeholder.style.display = '';
+          }
+
+          // Hide clear button
+          if (clearButton) {
+            clearButton.style.display = 'none';
+          }
+        }
+      }
+
+      // Initialize mini map and set up event handlers
+      setTimeout(function () {
+        _this4.initializeMiniMap(marker);
+        _this4.setupMiniMapLocationSearch();
+        _this4.setupMediaSelection();
+      }, 100);
+    } catch (error) {
+      console.error('Error initializing drawer content:', error);
+    }
+  },
+  /**
+   * Set up event listeners for the drawer
+   * @private
+   */
+  _setupDrawerEventListeners: function _setupDrawerEventListeners() {
+    var _this5 = this;
+    console.log('Setting up drawer event listeners');
+    try {
+      // Set up marker form submission
+      var form = document.getElementById('geo-maps-marker-form');
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          _this5.handleMarkerFormSubmit();
+        });
+        console.log('Added submit event listener to marker form');
+      } else {
+        console.warn('Marker form not found for event listener setup');
+      }
+
+      // Set up close button
+      var closeButton = document.querySelector('.geo-maps-builder-marker-drawer-close');
+      if (closeButton) {
+        closeButton.addEventListener('click', function () {
+          console.log('Close button clicked');
+          _this5.closeMarkerDrawer();
+        });
+        console.log('Added click event listener to close button');
+      } else {
+        console.warn('Close button not found for event listener setup');
+      }
+
+      // Set up cancel button
+      var cancelButton = document.getElementById('geo-maps-cancel-marker');
+      if (cancelButton) {
+        cancelButton.addEventListener('click', function () {
+          console.log('Cancel button clicked');
+          _this5.closeMarkerDrawer();
+        });
+        console.log('Added click event listener to cancel button');
+      } else {
+        console.warn('Cancel button not found for event listener setup');
+      }
+
+      // Set up save button
+      var saveButton = document.getElementById('geo-maps-save-marker');
+      if (saveButton) {
+        saveButton.addEventListener('click', function () {
+          console.log('Save button clicked');
+          _this5.handleMarkerFormSubmit();
+        });
+        console.log('Added click event listener to save button');
+      } else {
+        console.warn('Save button not found for event listener setup');
+      }
+    } catch (error) {
+      console.error('Error setting up drawer event listeners:', error);
     }
   },
   /**
@@ -243,7 +726,7 @@ var drawerManager = {
    * @param {Object|null} position - Initial position for the marker
    */
   initializeMiniMap: function initializeMiniMap() {
-    var _this4 = this;
+    var _this6 = this;
     var position = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     console.log('Initializing mini map');
     var miniMapContainer = document.getElementById('geo-maps-mini-map-container');
@@ -311,8 +794,13 @@ var drawerManager = {
 
             // Add drag event listener
             google.maps.event.addListener(this.miniMapMarker, 'dragend', function (event) {
-              document.getElementById('marker_lat').value = event.latLng.lat().toFixed(6);
-              document.getElementById('marker_lng').value = event.latLng.lng().toFixed(6);
+              var lat = event.latLng.lat();
+              var lng = event.latLng.lng();
+              document.getElementById('marker_lat').value = lat.toFixed(6);
+              document.getElementById('marker_lng').value = lng.toFixed(6);
+
+              // Get location name from coordinates and update title if needed
+              _this6._updateTitleFromCoordinates(lat, lng);
             });
           } else if (this.miniMap instanceof L.Map) {
             // For Leaflet, we need to remove and recreate the marker as draggable
@@ -326,6 +814,9 @@ var drawerManager = {
               var position = event.target.getLatLng();
               document.getElementById('marker_lat').value = position.lat.toFixed(6);
               document.getElementById('marker_lng').value = position.lng.toFixed(6);
+
+              // Get location name from coordinates and update title if needed
+              _this6._updateTitleFromCoordinates(position.lat, position.lng);
             });
           }
         } else {
@@ -339,8 +830,13 @@ var drawerManager = {
 
             // Add drag event listener
             google.maps.event.addListener(this.miniMapMarker, 'dragend', function (event) {
-              document.getElementById('marker_lat').value = event.latLng.lat().toFixed(6);
-              document.getElementById('marker_lng').value = event.latLng.lng().toFixed(6);
+              var lat = event.latLng.lat();
+              var lng = event.latLng.lng();
+              document.getElementById('marker_lat').value = lat.toFixed(6);
+              document.getElementById('marker_lng').value = lng.toFixed(6);
+
+              // Get location name from coordinates and update title if needed
+              _this6._updateTitleFromCoordinates(lat, lng);
             });
           } else if (this.miniMap instanceof L.Map) {
             this.miniMapMarker = L.marker([position.lat, position.lng], {
@@ -352,6 +848,9 @@ var drawerManager = {
               var position = event.target.getLatLng();
               document.getElementById('marker_lat').value = position.lat.toFixed(6);
               document.getElementById('marker_lng').value = position.lng.toFixed(6);
+
+              // Get location name from coordinates and update title if needed
+              _this6._updateTitleFromCoordinates(position.lat, position.lng);
             });
           }
         }
@@ -361,14 +860,14 @@ var drawerManager = {
         // Try using map manager as fallback
         if (window.GeoMapsBuilder && window.GeoMapsBuilder.mapManager && typeof window.GeoMapsBuilder.mapManager.createSecondaryMap === 'function') {
           console.log('Using mapManager.createSecondaryMap to create mini map');
-          this.miniMap = window.GeoMapsBuilder.mapManager.createSecondaryMap('geo-maps-mini-map-container', position, 10, mapType);
+          this.miniMap = window.GeoMapsBuilder.mapManager.createSecondaryMap('geo-maps-mini-map-container', mapType, position, 10 // zoom level
+          );
           if (!this.miniMap) {
-            throw new Error('Failed to create mini map using mapManager');
+            throw new Error('Failed to create mini map using map manager');
           }
 
-          // Add marker based on map type
+          // Add draggable marker
           if (mapType === 'google_map' && this.miniMap instanceof google.maps.Map) {
-            // Add Google Maps marker
             this.miniMapMarker = new google.maps.Marker({
               position: position,
               map: this.miniMap,
@@ -377,56 +876,17 @@ var drawerManager = {
 
             // Add drag event listener
             google.maps.event.addListener(this.miniMapMarker, 'dragend', function (event) {
-              document.getElementById('marker_lat').value = event.latLng.lat().toFixed(6);
-              document.getElementById('marker_lng').value = event.latLng.lng().toFixed(6);
+              var lat = event.latLng.lat();
+              var lng = event.latLng.lng();
+              document.getElementById('marker_lat').value = lat.toFixed(6);
+              document.getElementById('marker_lng').value = lng.toFixed(6);
+
+              // Get location name from coordinates and update title if needed
+              _this6._updateTitleFromCoordinates(lat, lng);
             });
           } else if (this.miniMap instanceof L.Map) {
-            // Add Leaflet marker
-            this.miniMapMarker = L.marker([position.lat, position.lng], {
-              draggable: true
-            }).addTo(this.miniMap);
-
-            // Add drag event listener
-            this.miniMapMarker.on('dragend', function (event) {
-              var position = event.target.getLatLng();
-              document.getElementById('marker_lat').value = position.lat.toFixed(6);
-              document.getElementById('marker_lng').value = position.lng.toFixed(6);
-            });
-          }
-        } else {
-          console.warn('mapManager.createSecondaryMap not available, falling back to direct initialization');
-
-          // Fallback to original implementation
-          if (mapType === 'google_map') {
-            // Initialize Google Maps mini map
-            this.miniMap = new google.maps.Map(miniMapContainer, {
-              center: position,
-              zoom: 10,
-              mapTypeId: google.maps.MapTypeId.ROADMAP,
-              mapTypeControl: false,
-              streetViewControl: false
-            });
-
-            // Add marker
-            this.miniMapMarker = new google.maps.Marker({
-              position: position,
-              map: this.miniMap,
-              draggable: true
-            });
-
-            // Add drag event listener
-            google.maps.event.addListener(this.miniMapMarker, 'dragend', function (event) {
-              document.getElementById('marker_lat').value = event.latLng.lat().toFixed(6);
-              document.getElementById('marker_lng').value = event.latLng.lng().toFixed(6);
-            });
-          } else {
-            // Initialize Leaflet mini map with minimal options
-            this.miniMap = L.map(miniMapContainer, {
-              fadeAnimation: false,
-              zoomAnimation: false,
-              markerZoomAnimation: false,
-              zoomControl: false
-            }).setView([position.lat, position.lng], 10);
+            console.log('Creating draggable Leaflet marker');
+            this.miniMap.setView([position.lat, position.lng], 10);
             console.log('Leaflet mini map created with ID:', this.miniMap._leaflet_id);
 
             // Add tile layer
@@ -444,6 +904,9 @@ var drawerManager = {
               var position = event.target.getLatLng();
               document.getElementById('marker_lat').value = position.lat.toFixed(6);
               document.getElementById('marker_lng').value = position.lng.toFixed(6);
+
+              // Get location name from coordinates and update title if needed
+              _this6._updateTitleFromCoordinates(position.lat, position.lng);
             });
           }
         }
@@ -455,12 +918,12 @@ var drawerManager = {
 
       // Refresh map size after drawer animation completes
       setTimeout(function () {
-        if (_this4.miniMap) {
+        if (_this6.miniMap) {
           console.log('Refreshing mini map size');
           if (mapType === 'google_map') {
-            google.maps.event.trigger(_this4.miniMap, 'resize');
+            google.maps.event.trigger(_this6.miniMap, 'resize');
           } else {
-            _this4.miniMap.invalidateSize();
+            _this6.miniMap.invalidateSize();
           }
         }
       }, 500);
@@ -469,86 +932,214 @@ var drawerManager = {
     }
   },
   /**
-   * Set up location search for mini map
+   * Update marker title from coordinates using reverse geocoding
+   * @private
+   */
+  _updateTitleFromCoordinates: function _updateTitleFromCoordinates(lat, lng) {
+    // Don't update if user has already set a custom title
+    var titleInput = document.getElementById('marker_title');
+    if (!titleInput || titleInput.value && titleInput.value !== 'New Marker' && !titleInput.value.startsWith('Marker at ')) {
+      return;
+    }
+
+    // Set a temporary title while waiting for geocoding
+    titleInput.value = "Marker at ".concat(lat.toFixed(4), ", ").concat(lng.toFixed(4));
+
+    // Use Nominatim for reverse geocoding
+    fetch("https://nominatim.openstreetmap.org/reverse?format=json&lat=".concat(lat, "&lon=").concat(lng, "&zoom=18&addressdetails=1")).then(function (response) {
+      return response.json();
+    }).then(function (data) {
+      if (data && data.display_name) {
+        // Extract the most relevant part of the address
+        var locationParts = data.display_name.split(',');
+        var placeName = locationParts[0].trim();
+        titleInput.value = placeName;
+      }
+    })["catch"](function (error) {
+      console.warn('Error getting location name from coordinates:', error);
+      // Keep the temporary title if reverse geocoding fails
+    });
+  },
+  /**
+   * Set up location search for mini map with autocomplete
    */
   setupMiniMapLocationSearch: function setupMiniMapLocationSearch() {
-    var _this5 = this;
+    var _this7 = this;
     var searchInput = document.getElementById('location_search');
-    if (!searchInput) return;
+    if (!searchInput) {
+      console.warn('Location search input not found');
+      return;
+    }
+    console.log('Setting up location search with autocomplete');
+
+    // Create autocomplete container
+    var autocompleteContainer = document.createElement('div');
+    autocompleteContainer.id = 'location-search-autocomplete';
+    autocompleteContainer.className = 'geo-maps-autocomplete-container';
+    searchInput.parentNode.appendChild(autocompleteContainer);
+
+    // Track current query and timer
+    var currentQuery = '';
+    var searchTimer = null;
+    var searchResults = [];
+
+    // Function to position the autocomplete container
+    var positionAutocomplete = function positionAutocomplete() {
+      var inputRect = searchInput.getBoundingClientRect();
+      autocompleteContainer.style.top = "".concat(inputRect.bottom, "px");
+      autocompleteContainer.style.left = "".concat(inputRect.left, "px");
+      autocompleteContainer.style.width = "".concat(inputRect.width, "px");
+    };
+
+    // Function to select a location from autocomplete
+    var selectLocation = function selectLocation(location) {
+      if (!location) return;
+      var lat = parseFloat(location.lat);
+      var lng = parseFloat(location.lon);
+
+      // Update search input with selection
+      searchInput.value = location.display_name;
+      currentQuery = location.display_name;
+
+      // Update title field if it's empty or has default text
+      var titleInput = document.getElementById('marker_title');
+      if (titleInput && (!titleInput.value || titleInput.value === 'New Marker')) {
+        // Use the name part of the address as the title
+        var locationParts = location.display_name.split(',');
+        titleInput.value = locationParts[0].trim();
+      }
+
+      // Update fields
+      document.getElementById('marker_lat').value = lat.toFixed(6);
+      document.getElementById('marker_lng').value = lng.toFixed(6);
+
+      // Update mini map
+      updateMiniMapView(lat, lng);
+
+      // Clear autocomplete
+      autocompleteContainer.innerHTML = '';
+      autocompleteContainer.style.display = 'none';
+    };
+
+    // Function to update the mini map view
+    var updateMiniMapView = function updateMiniMapView(lat, lng) {
+      // Check if we have a mini map
+      if (!_this7.miniMap) {
+        console.warn('Mini map not available for update');
+        return;
+      }
+      var mapType = window.GeoMapsBuilder.settingsManager.getMapType() || 'open_street_map';
+
+      // Move the map view to the new location
+      if (_this7.miniMap instanceof L.Map) {
+        _this7.miniMap.setView([lat, lng], _this7.miniMap.getZoom());
+
+        // Update marker position
+        if (_this7.miniMapMarker) {
+          _this7.miniMapMarker.setLatLng([lat, lng]);
+        }
+      } else if (window.google && _this7.miniMap instanceof google.maps.Map) {
+        _this7.miniMap.setCenter({
+          lat: lat,
+          lng: lng
+        });
+
+        // Update marker position
+        if (_this7.miniMapMarker) {
+          _this7.miniMapMarker.setPosition({
+            lat: lat,
+            lng: lng
+          });
+        }
+      }
+    };
+
+    // Function to perform search and update autocomplete
+    var performSearch = function performSearch(query) {
+      if (query.length < 3) {
+        autocompleteContainer.innerHTML = '';
+        autocompleteContainer.style.display = 'none';
+        return;
+      }
+
+      // Position autocomplete every time we show it
+      positionAutocomplete();
+
+      // Show loading indicator
+      autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-loading">Searching...</div>';
+      autocompleteContainer.style.display = 'block';
+
+      // Use Nominatim for geocoding
+      fetch("https://nominatim.openstreetmap.org/search?format=json&q=".concat(encodeURIComponent(query), "&limit=5")).then(function (response) {
+        return response.json();
+      }).then(function (data) {
+        searchResults = data;
+        if (data && data.length > 0) {
+          // Clear previous results
+          autocompleteContainer.innerHTML = '';
+
+          // Add results to autocomplete
+          data.forEach(function (location, index) {
+            var resultItem = document.createElement('div');
+            resultItem.className = 'geo-maps-autocomplete-item';
+            resultItem.innerHTML = "\n                                <div class=\"geo-maps-autocomplete-icon\">\n                                    <span class=\"dashicons dashicons-location\"></span>\n                                </div>\n                                <div class=\"geo-maps-autocomplete-content\">\n                                    <div class=\"geo-maps-autocomplete-primary\">".concat(location.display_name.split(',')[0], "</div>\n                                    <div class=\"geo-maps-autocomplete-secondary\">").concat(location.display_name, "</div>\n                                </div>\n                            ");
+            resultItem.addEventListener('click', function () {
+              selectLocation(location);
+            });
+            autocompleteContainer.appendChild(resultItem);
+          });
+          autocompleteContainer.style.display = 'block';
+        } else {
+          autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-no-results">No locations found</div>';
+        }
+      })["catch"](function (error) {
+        console.error('Error searching for location:', error);
+        autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-error">Error searching for location</div>';
+      });
+    };
+
+    // Add input event listener for search as you type
+    searchInput.addEventListener('input', function (e) {
+      var query = e.target.value.trim();
+      currentQuery = query;
+
+      // Clear previous timer
+      if (searchTimer) {
+        clearTimeout(searchTimer);
+      }
+
+      // Set a slight delay to avoid too many requests
+      searchTimer = setTimeout(function () {
+        performSearch(query);
+      }, 300);
+    });
+
+    // Handle keyboard navigation
     searchInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         e.preventDefault();
-        var query = searchInput.value.trim();
-        if (!query) return;
+        // Select first result if available
+        if (searchResults.length > 0) {
+          selectLocation(searchResults[0]);
+        }
+      } else if (e.key === 'Escape') {
+        // Hide autocomplete
+        autocompleteContainer.innerHTML = '';
+        autocompleteContainer.style.display = 'none';
+      }
+    });
 
-        // Use Nominatim for geocoding (for simplicity)
-        fetch("https://nominatim.openstreetmap.org/search?format=json&q=".concat(encodeURIComponent(query))).then(function (response) {
-          return response.json();
-        }).then(function (data) {
-          if (data && data.length > 0) {
-            var location = data[0];
-            var lat = parseFloat(location.lat);
-            var lng = parseFloat(location.lon);
+    // Close autocomplete when clicking outside
+    document.addEventListener('click', function (e) {
+      if (!searchInput.contains(e.target) && !autocompleteContainer.contains(e.target)) {
+        autocompleteContainer.style.display = 'none';
+      }
+    });
 
-            // Update fields
-            document.getElementById('marker_lat').value = lat.toFixed(6);
-            document.getElementById('marker_lng').value = lng.toFixed(6);
-
-            // Update mini map
-            var mapType = window.GeoMapsBuilder.settingsManager.getMapType() || 'open_street_map';
-
-            // Check if we have a mini map
-            if (!_this5.miniMap) return;
-
-            // Use render engine to update map position if available
-            if (window.geoMapsRenderEngine) {
-              // Move the map view to the new location
-              if (_this5.miniMap instanceof L.Map) {
-                _this5.miniMap.setView([lat, lng], _this5.miniMap.getZoom());
-              } else if (window.google && _this5.miniMap instanceof google.maps.Map) {
-                _this5.miniMap.setCenter({
-                  lat: lat,
-                  lng: lng
-                });
-              }
-
-              // Update marker position
-              if (_this5.miniMapMarker) {
-                if (_this5.miniMap instanceof L.Map) {
-                  _this5.miniMapMarker.setLatLng([lat, lng]);
-                } else if (window.google && _this5.miniMap instanceof google.maps.Map) {
-                  _this5.miniMapMarker.setPosition({
-                    lat: lat,
-                    lng: lng
-                  });
-                }
-              }
-            } else {
-              // Fallback to direct update
-              if (_this5.miniMap instanceof L.Map) {
-                _this5.miniMap.setView([lat, lng], _this5.miniMap.getZoom());
-                if (_this5.miniMapMarker) {
-                  _this5.miniMapMarker.setLatLng([lat, lng]);
-                }
-              } else if (window.google && _this5.miniMap instanceof google.maps.Map) {
-                _this5.miniMap.setCenter({
-                  lat: lat,
-                  lng: lng
-                });
-                if (_this5.miniMapMarker) {
-                  _this5.miniMapMarker.setPosition({
-                    lat: lat,
-                    lng: lng
-                  });
-                }
-              }
-            }
-          } else {
-            console.warn('No locations found for query:', query);
-          }
-        })["catch"](function (error) {
-          console.error('Error searching for location:', error);
-        });
+    // Handle window resize
+    window.addEventListener('resize', function () {
+      if (autocompleteContainer.style.display === 'block') {
+        positionAutocomplete();
       }
     });
   },
@@ -556,131 +1147,439 @@ var drawerManager = {
    * Set up media selection for marker icon
    */
   setupMediaSelection: function setupMediaSelection() {
+    var _this8 = this;
+    // Get required elements
     var selectButton = document.getElementById('geo_maps_select_marker_icon');
-    if (!selectButton) return;
-    selectButton.addEventListener('click', function (e) {
-      e.preventDefault();
+    var clearButton = document.getElementById('geo_maps_clear_marker_icon');
+    var iconInput = document.getElementById('geo_maps_marker_icon');
+    var previewImg = document.getElementById('geo-maps-marker-icon-preview');
+    var previewContainer = document.getElementById('geo-maps-marker-icon-preview-container');
+    if (!selectButton || !clearButton || !iconInput || !previewImg || !previewContainer) {
+      console.warn('Media selection elements not found');
+      return;
+    }
+    console.log('Setting up media selection');
 
-      // Check if WordPress media library is available
-      if (typeof wp === 'undefined' || !wp.media) {
-        console.error('WordPress media library not available');
+    // Function to update preview
+    var updatePreview = function updatePreview(url) {
+      if (url) {
+        // Show image
+        previewImg.src = url;
+        previewImg.style.display = '';
+
+        // Remove empty class and placeholder
+        previewContainer.classList.remove('empty');
+        var placeholder = previewContainer.querySelector('.geo-maps-media-placeholder');
+        if (placeholder) {
+          placeholder.style.display = 'none';
+        }
+
+        // Show clear button
+        clearButton.style.display = '';
+      } else {
+        // Hide image
+        previewImg.src = '';
+        previewImg.style.display = 'none';
+
+        // Add empty class and show placeholder
+        previewContainer.classList.add('empty');
+        var _placeholder2 = previewContainer.querySelector('.geo-maps-media-placeholder');
+        if (_placeholder2) {
+          _placeholder2.style.display = '';
+        }
+
+        // Hide clear button
+        clearButton.style.display = 'none';
+      }
+    };
+
+    // Initialize preview based on current value
+    updatePreview(iconInput.value);
+
+    // Make the preview container clickable to open media selector
+    previewContainer.addEventListener('click', function (e) {
+      e.preventDefault();
+      _this8._openMediaSelector(updatePreview, iconInput);
+    });
+
+    // Setup clear button
+    clearButton.addEventListener('click', function (e) {
+      e.preventDefault();
+      iconInput.value = '';
+      updatePreview('');
+    });
+
+    // Setup drag and drop
+    previewContainer.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      previewContainer.classList.add('drag-over');
+    });
+    previewContainer.addEventListener('dragleave', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      previewContainer.classList.remove('drag-over');
+    });
+    previewContainer.addEventListener('drop', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      previewContainer.classList.remove('drag-over');
+      var files = e.dataTransfer.files;
+      if (files.length === 0) return;
+      var file = files[0];
+
+      // Check if it's an image
+      if (!file.type.match('image.*')) {
+        alert('Please drop an image file');
         return;
       }
 
-      // Create media frame
-      var mediaFrame = wp.media({
-        title: 'Select Marker Icon',
-        button: {
-          text: 'Use this icon'
-        },
-        multiple: false,
-        library: {
-          type: 'image'
+      // Create a temporary URL for the image
+      var tempUrl = URL.createObjectURL(file);
+
+      // Create FormData for upload
+      var formData = new FormData();
+      formData.append('action', 'upload-attachment');
+      formData.append('_wpnonce', wpApiSettings.nonce);
+      formData.append('async-upload', file);
+
+      // Show loading state
+      previewContainer.classList.add('loading');
+
+      // Upload using WordPress AJAX
+      fetch(wpApiSettings.ajax_url, {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin'
+      }).then(function (response) {
+        return response.json();
+      }).then(function (data) {
+        if (data.success) {
+          // Set the URL from the response
+          iconInput.value = data.data.url;
+          updatePreview(data.data.url);
+        } else {
+          var _data$data;
+          console.error('Upload failed:', data);
+          alert('Upload failed: ' + (((_data$data = data.data) === null || _data$data === void 0 ? void 0 : _data$data.message) || 'Unknown error'));
+          updatePreview('');
         }
+      })["catch"](function (error) {
+        console.error('Upload error:', error);
+        alert('Upload failed due to a network error');
+        updatePreview('');
+      })["finally"](function () {
+        // Remove loading state
+        previewContainer.classList.remove('loading');
+        // Revoke the temporary URL
+        URL.revokeObjectURL(tempUrl);
       });
-
-      // Handle selection
-      mediaFrame.on('select', function () {
-        var attachment = mediaFrame.state().get('selection').first().toJSON();
-        document.getElementById('geo_maps_marker_icon').value = attachment.url;
-
-        // Update preview
-        var preview = document.getElementById('geo-maps-marker-icon-preview');
-        if (preview) {
-          preview.src = attachment.url;
-          preview.style.display = 'block';
-        }
-      });
-
-      // Open media frame
-      mediaFrame.open();
     });
+  },
+  /**
+   * Open media selector
+   * @private
+   */
+  _openMediaSelector: function _openMediaSelector(updatePreview, iconInput) {
+    // Check if WordPress media library is available
+    if (typeof wp === 'undefined' || !wp.media) {
+      console.error('WordPress media library not available');
+      alert('Media library not available');
+      return;
+    }
+
+    // Create media frame
+    var mediaFrame = wp.media({
+      title: 'Select Marker Icon',
+      button: {
+        text: 'Use this icon'
+      },
+      multiple: false,
+      library: {
+        type: 'image'
+      }
+    });
+
+    // Handle selection
+    mediaFrame.on('select', function () {
+      var attachment = mediaFrame.state().get('selection').first().toJSON();
+      iconInput.value = attachment.url;
+      updatePreview(attachment.url);
+    });
+
+    // Open media frame
+    mediaFrame.open();
   },
   /**
    * Handle marker form submission
    */
   handleMarkerFormSubmit: function handleMarkerFormSubmit() {
-    // Get form data
-    var markerId = document.getElementById('marker_id').value;
-    var title = document.getElementById('marker_title').value;
-    var description = document.getElementById('marker_description').value;
-    var lat = document.getElementById('marker_lat').value;
-    var lng = document.getElementById('marker_lng').value;
-    var iconUrl = document.getElementById('geo_maps_marker_icon').value;
+    var _this9 = this;
+    return _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+      var _document$getElementB, _document$getElementB2, _document$getElementB3, _document$getElementB4, _document$getElementB5, _document$getElementB6, _window$GeoMapsBuilde, _window$GeoMapsBuilde2, markerId, title, description, lat, lng, iconUrl, markerManager, statusManager, markerData, success, attempt, _attempt;
+      return _regeneratorRuntime().wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            console.log('Handling marker form submission');
+            _context.prev = 1;
+            // Get form data
+            markerId = (_document$getElementB = document.getElementById('marker_id')) === null || _document$getElementB === void 0 ? void 0 : _document$getElementB.value;
+            title = (_document$getElementB2 = document.getElementById('marker_title')) === null || _document$getElementB2 === void 0 ? void 0 : _document$getElementB2.value;
+            description = (_document$getElementB3 = document.getElementById('marker_description')) === null || _document$getElementB3 === void 0 ? void 0 : _document$getElementB3.value;
+            lat = (_document$getElementB4 = document.getElementById('marker_lat')) === null || _document$getElementB4 === void 0 ? void 0 : _document$getElementB4.value;
+            lng = (_document$getElementB5 = document.getElementById('marker_lng')) === null || _document$getElementB5 === void 0 ? void 0 : _document$getElementB5.value;
+            iconUrl = (_document$getElementB6 = document.getElementById('geo_maps_marker_icon')) === null || _document$getElementB6 === void 0 ? void 0 : _document$getElementB6.value; // Validate form
+            if (title) {
+              _context.next = 12;
+              break;
+            }
+            console.error('Missing title');
+            alert('Please enter a title for the marker');
+            return _context.abrupt("return");
+          case 12:
+            if (!(!lat || !lng || isNaN(parseFloat(lat)) || isNaN(parseFloat(lng)))) {
+              _context.next = 16;
+              break;
+            }
+            console.error('Invalid coordinates:', {
+              lat: lat,
+              lng: lng
+            });
+            alert('Please provide valid latitude and longitude coordinates');
+            return _context.abrupt("return");
+          case 16:
+            // Check if we have access to required managers
+            markerManager = (_window$GeoMapsBuilde = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde === void 0 ? void 0 : _window$GeoMapsBuilde.markerManager;
+            statusManager = (_window$GeoMapsBuilde2 = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde2 === void 0 ? void 0 : _window$GeoMapsBuilde2.statusManager;
+            if (markerManager) {
+              _context.next = 22;
+              break;
+            }
+            console.error('Marker manager not found');
+            alert('Marker manager not found. Unable to save marker.');
+            return _context.abrupt("return");
+          case 22:
+            // Prepare marker data with proper data types
+            markerData = {
+              title: title.trim(),
+              description: (description === null || description === void 0 ? void 0 : description.trim()) || '',
+              latitude: parseFloat(lat),
+              longitude: parseFloat(lng),
+              iconUrl: (iconUrl === null || iconUrl === void 0 ? void 0 : iconUrl.trim()) || ''
+            };
+            console.log('Marker data prepared:', markerData);
 
-    // Validate form
-    if (!title || !lat || !lng) {
-      alert('Please fill in all required fields (Title, Latitude, Longitude)');
-      return;
-    }
+            // Edit existing or add new marker
+            success = false;
+            if (!markerId) {
+              _context.next = 46;
+              break;
+            }
+            console.log('Updating existing marker with ID:', markerId);
+            markerData.id = markerId;
 
-    // Check if we have access to required managers
-    var markerManager = window.GeoMapsBuilder.markerManager;
-    var statusManager = window.GeoMapsBuilder.statusManager;
-    if (!markerManager) {
-      alert('Marker manager not found. Unable to save marker.');
-      return;
-    }
+            // Try up to 3 times with a slight delay between attempts
+            attempt = 1;
+          case 29:
+            if (!(attempt <= 3)) {
+              _context.next = 44;
+              break;
+            }
+            console.log("Update attempt ".concat(attempt));
+            success = markerManager.updateMarker(markerData);
+            if (!success) {
+              _context.next = 37;
+              break;
+            }
+            console.log('Marker updated successfully');
+            return _context.abrupt("break", 44);
+          case 37:
+            if (!(attempt < 3)) {
+              _context.next = 41;
+              break;
+            }
+            console.log('Update failed, waiting before retry...');
+            // Wait 300ms before retrying
+            _context.next = 41;
+            return new Promise(function (resolve) {
+              return setTimeout(resolve, 300);
+            });
+          case 41:
+            attempt++;
+            _context.next = 29;
+            break;
+          case 44:
+            _context.next = 64;
+            break;
+          case 46:
+            console.log('Adding new marker');
+            // Generate unique ID for new marker
+            markerData.id = 'marker_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
 
-    // Prepare marker data
-    var markerData = {
-      title: title,
-      description: description,
-      latitude: parseFloat(lat),
-      longitude: parseFloat(lng),
-      iconUrl: iconUrl
-    };
+            // Try up to 3 times with a slight delay between attempts
+            _attempt = 1;
+          case 49:
+            if (!(_attempt <= 3)) {
+              _context.next = 64;
+              break;
+            }
+            console.log("Add attempt ".concat(_attempt));
+            success = markerManager.addMarker(markerData);
+            if (!success) {
+              _context.next = 57;
+              break;
+            }
+            console.log('Marker added successfully with ID:', markerData.id);
+            return _context.abrupt("break", 64);
+          case 57:
+            if (!(_attempt < 3)) {
+              _context.next = 61;
+              break;
+            }
+            console.log('Add failed, waiting before retry...');
+            // Wait 300ms before retrying
+            _context.next = 61;
+            return new Promise(function (resolve) {
+              return setTimeout(resolve, 300);
+            });
+          case 61:
+            _attempt++;
+            _context.next = 49;
+            break;
+          case 64:
+            if (success) {
+              if (statusManager) {
+                statusManager.success(markerId ? 'Marker updated successfully' : 'Marker added successfully');
+              } else {
+                alert(markerId ? 'Marker updated successfully' : 'Marker added successfully');
+              }
 
-    // Edit existing or add new marker
-    if (markerId) {
-      markerData.id = markerId;
-      var success = markerManager.updateMarker(markerData);
-      if (success) {
-        if (statusManager) {
-          statusManager.success('Marker updated successfully');
-        } else {
-          alert('Marker updated successfully');
+              // Close drawer
+              _this9.closeMarkerDrawer();
+
+              // Refresh marker list
+              markerManager.refreshMarkerList();
+            } else {
+              console.error('Failed to', markerId ? 'update' : 'add', 'marker after multiple attempts');
+              if (statusManager) {
+                statusManager.error(markerId ? 'Error updating marker' : 'Error adding marker');
+              } else {
+                alert(markerId ? 'Error updating marker' : 'Error adding marker');
+              }
+            }
+            _context.next = 71;
+            break;
+          case 67:
+            _context.prev = 67;
+            _context.t0 = _context["catch"](1);
+            console.error('Error handling marker form submission:', _context.t0);
+            alert('An unexpected error occurred while saving the marker. Please try again.');
+          case 71:
+          case "end":
+            return _context.stop();
         }
-      } else {
-        if (statusManager) {
-          statusManager.error('Error updating marker');
-        } else {
-          alert('Error updating marker');
-        }
-        return;
-      }
-    } else {
-      // Generate unique ID for new marker
-      markerData.id = 'marker_' + Date.now();
-      var _success = markerManager.addMarker(markerData);
-      if (_success) {
-        if (statusManager) {
-          statusManager.success('Marker added successfully');
-        } else {
-          alert('Marker added successfully');
-        }
-      } else {
-        if (statusManager) {
-          statusManager.error('Error adding marker');
-        } else {
-          alert('Error adding marker');
-        }
-        return;
-      }
-    }
-
-    // Close drawer
-    this.closeMarkerDrawer();
-
-    // Refresh marker list
-    markerManager.refreshMarkerList();
+      }, _callee, null, [[1, 67]]);
+    }))();
   },
   /**
    * Initialize drawer manager
    */
   init: function init() {
-    var _this6 = this;
-    console.log('Drawer Manager initialized');
+    var _this10 = this;
+    console.log('Drawer Manager initializing');
+
+    // Add event handlers for the existing marker drawer in the HTML
+    var drawerElement = document.getElementById('geo-maps-marker-drawer');
+    if (!drawerElement) {
+      console.error('Marker drawer element not found in the DOM. Drawer functionality will not work.');
+      return;
+    }
+    console.log('Found marker drawer element in the DOM:', drawerElement);
+    console.log('Drawer element classes:', drawerElement.className);
+
+    // Store a reference to the drawer elements
+    this.drawerContainer = drawerElement;
+
+    // More robust title element selection
+    this.drawerTitle = document.getElementById('geo-maps-marker-drawer-action');
+    if (!this.drawerTitle) {
+      console.warn('Drawer title element not found. Drawer functionality may be limited.');
+    }
+
+    // More robust content element selection
+    this.drawerContent = document.querySelector('.geo-maps-builder-marker-drawer-content');
+    if (!this.drawerContent) {
+      // Try to find within the drawer element as a fallback
+      this.drawerContent = drawerElement.querySelector('.geo-maps-builder-marker-drawer-content');
+      if (!this.drawerContent) {
+        console.error('Could not find drawer content element. Drawer functionality will be limited.');
+      } else {
+        console.log('Found content using alternate selector:', this.drawerContent);
+      }
+    } else {
+      console.log('Found drawer content element:', this.drawerContent);
+    }
+
+    // More robust button selection with helpful error messages
+    var closeButton = document.querySelector('.geo-maps-builder-marker-drawer-close');
+    var cancelButton = document.getElementById('geo-maps-cancel-marker');
+    var saveButton = document.getElementById('geo-maps-save-marker');
+
+    // Set up event handlers for drawer buttons
+    if (closeButton) {
+      console.log('Setting up close button event handler');
+      closeButton.addEventListener('click', function () {
+        return _this10.closeMarkerDrawer();
+      });
+    } else {
+      console.warn('Close button not found in the DOM - searching for alternate close button');
+      var altCloseButton = document.querySelector('#geo-maps-marker-drawer-close, .geo-maps-builder-marker-drawer-close');
+      if (altCloseButton) {
+        console.log('Found alternate close button, setting up event handler');
+        altCloseButton.addEventListener('click', function () {
+          return _this10.closeMarkerDrawer();
+        });
+      } else {
+        console.error('No close button found, drawer may be difficult to close');
+      }
+    }
+    if (cancelButton) {
+      console.log('Setting up cancel button event handler');
+      cancelButton.addEventListener('click', function () {
+        return _this10.closeMarkerDrawer();
+      });
+    } else {
+      console.warn('Cancel button not found in the DOM');
+    }
+    if (saveButton) {
+      console.log('Setting up save button event handler');
+      saveButton.addEventListener('click', function () {
+        console.log('Save button clicked');
+        var form = document.getElementById('geo-maps-marker-form');
+        if (form) {
+          // Execute the form submission handler
+          _this10.handleMarkerFormSubmit();
+        } else {
+          console.error('Marker form not found');
+          alert('Could not find marker form. Please try again.');
+        }
+      });
+    } else {
+      console.warn('Save button not found in the DOM');
+    }
+
+    // Apply any necessary initial styles to ensure the drawer is properly configured
+    if (this.drawerContainer) {
+      // Ensure the drawer is initially hidden but with correct styling
+      this.drawerContainer.style.display = 'none';
+
+      // Log initial styles
+      console.log('Initial drawer styles:', {
+        display: window.getComputedStyle(this.drawerContainer).display,
+        transform: window.getComputedStyle(this.drawerContainer).transform,
+        zIndex: window.getComputedStyle(this.drawerContainer).zIndex
+      });
+    }
 
     // Set up event handler for settings changes that affect the mini map
     jQuery(document).on('geoMapsSettingsChanged', function (e, key, value) {
@@ -695,7 +1594,7 @@ var drawerManager = {
       ];
 
       // Check if this setting affects the mini map and if mini map is open
-      if (miniMapSettings.includes(key) && _this6.miniMap) {
+      if (miniMapSettings.includes(key) && _this10.miniMap) {
         console.log("Setting \"".concat(key, "\" changed - Updating mini map..."));
 
         // Get current marker position from form
@@ -704,7 +1603,7 @@ var drawerManager = {
         if (!isNaN(lat) && !isNaN(lng)) {
           // Reinitialize mini map with current position
           setTimeout(function () {
-            _this6.initializeMiniMap({
+            _this10.initializeMiniMap({
               lat: lat,
               lng: lng
             });
@@ -1080,25 +1979,28 @@ var mapManager = {
    * @returns {Object} - {lat, lng} object
    */
   getMapCenter: function getMapCenter() {
-    if (!this.map) {
-      return _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].center;
-    }
+    // Create a variable to store the center
+    var center = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].center;
 
-    // Get center from the appropriate map type
-    if (this.map instanceof L.Map) {
-      var center = this.map.getCenter();
-      return {
-        lat: center.lat,
-        lng: center.lng
-      };
-    } else if (window.google && this.map instanceof google.maps.Map) {
-      var _center = this.map.getCenter();
-      return {
-        lat: _center.lat(),
-        lng: _center.lng()
-      };
-    }
-    return _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].center;
+    // Use safeMapOperation to safely get the center
+    this.safeMapOperation(function (map) {
+      if (map instanceof L.Map) {
+        var mapCenter = map.getCenter();
+        center = {
+          lat: mapCenter.lat,
+          lng: mapCenter.lng
+        };
+      } else if (window.google && map instanceof google.maps.Map) {
+        var _mapCenter = map.getCenter();
+        center = {
+          lat: _mapCenter.lat(),
+          lng: _mapCenter.lng()
+        };
+      }
+    }, {
+      silent: true
+    });
+    return center;
   },
   /**
    * Get map instance
@@ -1185,44 +2087,60 @@ var mapManager = {
    */
   _setupMapEvents: function _setupMapEvents() {
     var _this2 = this;
-    if (!this.map) return;
-
-    // Check map type and set appropriate event handlers
-    if (this.map instanceof L.Map) {
-      // Leaflet map events
-      this.map.on('moveend', function () {
-        var center = _this2.map.getCenter();
-        _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].updateSetting('center', {
-          lat: center.lat,
-          lng: center.lng
+    this.safeMapOperation(function (map) {
+      // Check map type and set appropriate event handlers
+      if (map instanceof L.Map) {
+        // Leaflet map events
+        map.on('moveend', function () {
+          _this2.safeMapOperation(function (m) {
+            var center = m.getCenter();
+            _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].updateSetting('center', {
+              lat: center.lat,
+              lng: center.lng
+            });
+          }, {
+            silent: true
+          });
         });
-      });
-      this.map.on('zoomend', function () {
-        var zoom = _this2.map.getZoom();
-        _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].updateSetting('zoom', zoom);
-      });
-    } else if (window.google && this.map instanceof google.maps.Map) {
-      // Google Maps events
-      this.map.addListener('center_changed', function () {
-        var center = _this2.map.getCenter();
-        _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].updateSetting('center', {
-          lat: center.lat(),
-          lng: center.lng()
+        map.on('zoomend', function () {
+          _this2.safeMapOperation(function (m) {
+            var zoom = m.getZoom();
+            _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].updateSetting('zoom', zoom);
+          }, {
+            silent: true
+          });
         });
-      });
-      this.map.addListener('zoom_changed', function () {
-        var zoom = _this2.map.getZoom();
-        _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].updateSetting('zoom', zoom);
-      });
-    }
+      } else if (window.google && map instanceof google.maps.Map) {
+        // Google Maps events
+        map.addListener('center_changed', function () {
+          _this2.safeMapOperation(function (m) {
+            var center = m.getCenter();
+            _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].updateSetting('center', {
+              lat: center.lat(),
+              lng: center.lng()
+            });
+          }, {
+            silent: true
+          });
+        });
+        map.addListener('zoom_changed', function () {
+          _this2.safeMapOperation(function (m) {
+            var zoom = m.getZoom();
+            _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].updateSetting('zoom', zoom);
+          }, {
+            silent: true
+          });
+        });
+      }
 
-    // Register for render engine events
-    if (window.geoMapsRenderEngine.on) {
-      window.geoMapsRenderEngine.on('markerClick', function (data) {
-        console.log('Marker clicked:', data);
-        // You can handle marker clicks here if needed
-      });
-    }
+      // Register for render engine events
+      if (window.geoMapsRenderEngine.on) {
+        window.geoMapsRenderEngine.on('markerClick', function (data) {
+          console.log('Marker clicked:', data);
+          // You can handle marker clicks here if needed
+        });
+      }
+    });
   },
   /**
    * Renders the map using the current settings and render engine
@@ -1343,105 +2261,134 @@ var mapManager = {
    * @returns {Object|null} - The marker object or null if failed
    */
   addMarkerToMap: function addMarkerToMap(markerData) {
-    if (!this.map) {
-      console.error('Map not initialized');
-      return null;
-    }
+    var _this3 = this;
     if (!markerData.latitude || !markerData.longitude) {
       console.error('Marker position is required');
       return null;
     }
-    try {
-      // Format marker data for the render engine
-      var formattedMarkerData = {
-        lat: parseFloat(markerData.latitude),
-        lng: parseFloat(markerData.longitude),
-        title: markerData.title || '',
-        content: markerData.description || '',
-        icon: markerData.iconUrl || '',
-        id: markerData.id
-      };
 
-      // Use the render engine to add the marker
-      if (window.geoMapsRenderEngine && window.geoMapsRenderEngine.addMarker) {
-        var marker = window.geoMapsRenderEngine.addMarker(this.map, formattedMarkerData, {
-          defaultIcon: markerData.iconUrl || '',
-          popupShowOn: 'click'
-        });
-        if (marker) {
+    // Format marker data for the render engine
+    var formattedMarkerData = {
+      lat: parseFloat(markerData.latitude),
+      lng: parseFloat(markerData.longitude),
+      title: markerData.title || '',
+      content: markerData.description || '',
+      icon: markerData.iconUrl || '',
+      id: markerData.id
+    };
+
+    // Create a variable to store the created marker
+    var createdMarker = null;
+
+    // Use safeMapOperation to ensure the map is ready
+    var success = this.safeMapOperation(function (map) {
+      console.log('Safely adding marker to map:', {
+        id: markerData.id,
+        lat: formattedMarkerData.lat,
+        lng: formattedMarkerData.lng
+      });
+      try {
+        // Use the render engine to add the marker if available
+        if (window.geoMapsRenderEngine && window.geoMapsRenderEngine.addMarker) {
+          console.log('Using render engine to add marker');
+          createdMarker = window.geoMapsRenderEngine.addMarker(map, formattedMarkerData, {
+            defaultIcon: markerData.iconUrl || '',
+            popupShowOn: 'click'
+          });
+        } else {
+          console.log('Render engine not available, using fallback method');
+          // Fallback to direct marker creation
+          if (map instanceof L.Map) {
+            createdMarker = _this3._createLeafletMarker(markerData);
+          } else if (window.google && map instanceof google.maps.Map) {
+            createdMarker = _this3._createGoogleMarker(markerData);
+          } else {
+            console.error('Unknown map type');
+            return;
+          }
+        }
+        if (createdMarker) {
+          console.log('Marker created successfully with ID:', markerData.id);
           // Store marker reference for later manipulation
-          this.markers.push({
+          _this3.markers.push({
             id: markerData.id,
-            marker: marker,
+            marker: createdMarker,
             data: _objectSpread({}, markerData)
           });
-          return marker;
-        }
-      } else {
-        // Fallback to direct marker creation if render engine's addMarker isn't available
-        var _marker;
-
-        // Create appropriate marker type based on map type
-        if (this.map instanceof L.Map) {
-          _marker = this._createLeafletMarker(markerData);
-        } else if (window.google && this.map instanceof google.maps.Map) {
-          _marker = this._createGoogleMarker(markerData);
         } else {
-          console.error('Unknown map type');
-          return null;
+          console.error('Failed to create marker');
         }
-
-        // Store marker reference for later manipulation
-        this.markers.push({
-          id: markerData.id,
-          marker: _marker,
-          data: _objectSpread({}, markerData)
-        });
-        return _marker;
+      } catch (error) {
+        console.error('Error in marker creation:', error);
       }
-    } catch (error) {
-      console.error('Error adding marker:', error);
-      return null;
+    });
+    if (!success) {
+      console.error('Could not add marker - map operations not safe');
     }
-    return null;
+    return createdMarker;
   },
   /**
    * Create a Leaflet marker (fallback method)
    * @private
    * @param {Object} markerData - The marker data
-   * @returns {Object} - The Leaflet marker object
+   * @returns {Object|null} - The Leaflet marker object or null if failed
    */
   _createLeafletMarker: function _createLeafletMarker(markerData) {
-    var options = {
-      draggable: false,
-      title: markerData.title || ''
-    };
-
-    // Use custom icon if specified
-    if (markerData.iconUrl) {
-      options.icon = L.icon({
-        iconUrl: markerData.iconUrl,
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34]
-      });
-    }
-
-    // Create marker and add to map
-    var marker = L.marker([markerData.latitude, markerData.longitude], options).addTo(this.map);
-
-    // Add popup if title or description exists
-    if (markerData.title || markerData.description) {
-      var content = '';
-      if (markerData.title) {
-        content += "<h3>".concat(markerData.title, "</h3>");
+    try {
+      if (!this.map) {
+        console.error('Map not initialized');
+        return null;
       }
-      if (markerData.description) {
-        content += "<div>".concat(markerData.description, "</div>");
+      if (!this.map._loaded) {
+        console.error('Map not fully loaded yet');
+        return null;
       }
-      marker.bindPopup(content);
+      var options = {
+        draggable: false,
+        title: markerData.title || ''
+      };
+
+      // Use custom icon if specified
+      if (markerData.iconUrl) {
+        options.icon = L.icon({
+          iconUrl: markerData.iconUrl,
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34]
+        });
+      }
+      console.log('Creating Leaflet marker at:', [markerData.latitude, markerData.longitude]);
+
+      // First create marker without adding it to the map
+      var marker = L.marker([markerData.latitude, markerData.longitude], options);
+
+      // Check if map is ready before adding the marker
+      if (this.map._container && this.map._panes && this.map._mapPane && this.map._mapPane._leaflet_pos) {
+        console.log('Map is ready, adding marker');
+
+        // Add to map
+        marker.addTo(this.map);
+
+        // Add popup if title or description exists
+        if (markerData.title || markerData.description) {
+          var content = '';
+          if (markerData.title) {
+            content += "<h3>".concat(markerData.title, "</h3>");
+          }
+          if (markerData.description) {
+            content += "<div>".concat(markerData.description, "</div>");
+          }
+          marker.bindPopup(content);
+        }
+        return marker;
+      } else {
+        console.error('Map is not ready for markers - required elements missing');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error creating Leaflet marker:', error);
+      return null;
     }
-    return marker;
   },
   /**
    * Create a Google Maps marker (fallback method)
@@ -1450,7 +2397,7 @@ var mapManager = {
    * @returns {Object} - The Google Maps marker object
    */
   _createGoogleMarker: function _createGoogleMarker(markerData) {
-    var _this3 = this;
+    var _this4 = this;
     var options = {
       position: {
         lat: parseFloat(markerData.latitude),
@@ -1485,7 +2432,7 @@ var mapManager = {
         content: content
       });
       marker.addListener('click', function () {
-        infoWindow.open(_this3.map, marker);
+        infoWindow.open(_this4.map, marker);
       });
     }
     return marker;
@@ -1532,16 +2479,16 @@ var mapManager = {
    * Clear all markers from the map
    */
   clearMarkers: function clearMarkers() {
-    var _this4 = this;
+    var _this5 = this;
     // Try to use render engine to clear markers
     if (window.geoMapsRenderEngine && window.geoMapsRenderEngine.clearMarkers && this.map) {
       window.geoMapsRenderEngine.clearMarkers(this.map);
     } else {
       // Fallback to direct removal
       this.markers.forEach(function (item) {
-        if (_this4.map instanceof L.Map) {
-          _this4.map.removeLayer(item.marker);
-        } else if (window.google && _this4.map instanceof google.maps.Map) {
+        if (_this5.map instanceof L.Map) {
+          _this5.map.removeLayer(item.marker);
+        } else if (window.google && _this5.map instanceof google.maps.Map) {
           item.marker.setMap(null);
         }
       });
@@ -1554,7 +2501,7 @@ var mapManager = {
    * Render all markers from settings data
    */
   renderMarkers: function renderMarkers() {
-    var _this5 = this;
+    var _this6 = this;
     // Get markers from settings
     var markers = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].getMarkers();
 
@@ -1563,7 +2510,7 @@ var mapManager = {
 
     // Add each marker to the map
     markers.forEach(function (markerData) {
-      _this5.addMarkerToMap(markerData);
+      _this6.addMarkerToMap(markerData);
     });
   },
   /**
@@ -1572,58 +2519,179 @@ var mapManager = {
    * @returns {boolean} - Success status
    */
   updateMapAppearance: function updateMapAppearance() {
-    if (!this.map) {
-      console.error('Map not initialized');
-      return false;
-    }
-    try {
-      var appearance = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].appearance;
-
+    var appearance = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].appearance;
+    return this.safeMapOperation(function (map) {
       // Update map settings for Leaflet maps
-      if (this.map instanceof L.Map) {
+      if (map instanceof L.Map) {
         // Update zoom control visibility
         if (appearance.showZoomControl) {
-          if (!this.map.zoomControl) {
-            this.map.addControl(new L.Control.Zoom());
+          if (!map.zoomControl) {
+            map.addControl(new L.Control.Zoom());
           }
         } else {
-          if (this.map.zoomControl) {
-            this.map.removeControl(this.map.zoomControl);
+          if (map.zoomControl) {
+            map.removeControl(map.zoomControl);
           }
         }
 
         // Update scroll wheel zoom
         if (appearance.enableScrollZoom) {
-          this.map.scrollWheelZoom.enable();
+          map.scrollWheelZoom.enable();
         } else {
-          this.map.scrollWheelZoom.disable();
+          map.scrollWheelZoom.disable();
         }
 
         // Update scale control visibility
-        var hasScaleControl = this.map.getContainer().querySelectorAll('.leaflet-control-scale').length > 0;
+        var hasScaleControl = map.getContainer().querySelectorAll('.leaflet-control-scale').length > 0;
         if (appearance.showScale && !hasScaleControl) {
-          L.control.scale().addTo(this.map);
+          L.control.scale().addTo(map);
         } else if (!appearance.showScale && hasScaleControl) {
           // Find and remove scale control
-          this.map.getContainer().querySelectorAll('.leaflet-control-scale').forEach(function (el) {
+          map.getContainer().querySelectorAll('.leaflet-control-scale').forEach(function (el) {
             el.remove();
           });
         }
       }
       // Update map settings for Google Maps
-      else if (window.google && this.map instanceof google.maps.Map) {
-        this.map.setOptions({
+      else if (window.google && map instanceof google.maps.Map) {
+        map.setOptions({
           zoomControl: appearance.showZoomControl,
           scrollwheel: appearance.enableScrollZoom,
           scaleControl: appearance.showScale
         });
       }
       console.log('Map appearance updated successfully');
-      return true;
-    } catch (error) {
-      console.error('Error updating map appearance:', error);
+    });
+  },
+  /**
+   * Safely perform an operation on the map
+   * Prevents errors related to the map not being fully initialized or _leaflet_pos being undefined
+   * 
+   * @param {Function} operation - The operation to perform on the map
+   * @param {Object} options - Additional options
+   * @param {boolean} options.silent - Whether to suppress warning messages
+   * @returns {boolean} Success status
+   */
+  safeMapOperation: function safeMapOperation(operation) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    // Check if operation is a function
+    if (typeof operation !== 'function') {
+      console.error('Map operation must be a function');
       return false;
     }
+    if (!this.map) {
+      if (!options.silent) {
+        console.warn('Map not initialized, operation skipped');
+      }
+      return false;
+    }
+    try {
+      // For Leaflet maps, perform additional safety checks
+      if (this.map instanceof L.Map) {
+        // Check if map is properly initialized
+        if (!this.map._loaded) {
+          if (!options.silent) {
+            console.warn('Map not fully loaded yet, operation skipped');
+          }
+          return false;
+        }
+
+        // Check if map container exists
+        if (!this.map._container) {
+          if (!options.silent) {
+            console.warn('Map container not available, operation skipped');
+          }
+          return false;
+        }
+
+        // Check if map pane exists
+        if (!this.map._mapPane) {
+          if (!options.silent) {
+            console.warn('Map pane not available, operation skipped');
+          }
+          return false;
+        }
+
+        // Check specifically for _leaflet_pos which causes the common TypeError
+        if (!this.map._mapPane._leaflet_pos) {
+          if (!options.silent) {
+            console.warn('Map pane position not initialized (_leaflet_pos is undefined), operation skipped');
+          }
+          return false;
+        }
+
+        // Check for other critical map components
+        if (!this.map._size || !this.map._zoom) {
+          if (!options.silent) {
+            console.warn('Map size or zoom not initialized, operation skipped');
+          }
+          return false;
+        }
+
+        // Check if map is in a detached state
+        if (this.map._container && !document.body.contains(this.map._container)) {
+          if (!options.silent) {
+            console.warn('Map container is detached from DOM, operation skipped');
+          }
+          return false;
+        }
+      }
+
+      // Perform the operation
+      operation(this.map);
+      return true;
+    } catch (error) {
+      console.error('Error performing map operation:', error);
+      return false;
+    }
+  },
+  /**
+   * Safely set the map center
+   * @param {Object} center - The center coordinates {lat, lng}
+   * @param {number} zoom - Optional zoom level
+   * @returns {boolean} - Success status
+   */
+  safeSetMapView: function safeSetMapView(center) {
+    var zoom = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    if (!center || typeof center.lat === 'undefined' || typeof center.lng === 'undefined') {
+      console.error('Invalid center coordinates');
+      return false;
+    }
+    return this.safeMapOperation(function (map) {
+      if (map instanceof L.Map) {
+        if (zoom !== null) {
+          map.setView([center.lat, center.lng], zoom);
+        } else {
+          map.panTo([center.lat, center.lng]);
+        }
+      } else if (window.google && map instanceof google.maps.Map) {
+        map.setCenter({
+          lat: center.lat,
+          lng: center.lng
+        });
+        if (zoom !== null) {
+          map.setZoom(zoom);
+        }
+      }
+    });
+  },
+  /**
+   * Safely set the map zoom level
+   * @param {number} zoom - The zoom level
+   * @returns {boolean} - Success status
+   */
+  safeSetZoom: function safeSetZoom(zoom) {
+    if (typeof zoom !== 'number' || isNaN(zoom)) {
+      console.error('Invalid zoom level');
+      return false;
+    }
+    return this.safeMapOperation(function (map) {
+      if (map instanceof L.Map) {
+        map.setZoom(zoom);
+      } else if (window.google && map instanceof google.maps.Map) {
+        map.setZoom(zoom);
+      }
+    });
   }
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (mapManager);
@@ -2561,7 +3629,7 @@ jQuery(document).ready(function ($) {
       if (key === 'zoom') {
         // Update zoom level
         if (map instanceof L.Map) {
-          map.setZoom(value);
+          _builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].safeSetZoom(value);
         } else if (window.google && map instanceof google.maps.Map) {
           map.setZoom(value);
         }
@@ -2569,7 +3637,7 @@ jQuery(document).ready(function ($) {
         // Update center coordinates
         var center = _builder_settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].center;
         if (map instanceof L.Map) {
-          map.setView([center.lat, center.lng], map.getZoom());
+          _builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].safeSetMapView(center);
         } else if (window.google && map instanceof google.maps.Map) {
           map.setCenter({
             lat: center.lat,
@@ -2643,11 +3711,74 @@ jQuery(document).ready(function ($) {
   }
 
   // Add event listener for add marker button
-  $('#geo-maps-add-marker-button').on('click', function () {
+  $('#geo-maps-add-marker-btn').on('click', function () {
     console.log('Add marker button clicked');
+
+    // Check if drawerManager is initialized
+    if (!_builder_drawer_manager__WEBPACK_IMPORTED_MODULE_4__["default"]) {
+      console.error('Drawer manager not initialized. Cannot open marker drawer.');
+      alert('The marker system is not ready yet. Please try again in a moment.');
+      return;
+    }
+
+    // Check if map is initialized first
+    if (!_builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].getMap()) {
+      console.error('Map not initialized. Cannot add marker.');
+      _builder_status_manager__WEBPACK_IMPORTED_MODULE_0__["default"].error('Map not ready. Please try again in a moment.');
+      return;
+    }
+
+    // Get the current map center
     var mapCenter = _builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].getMapCenter();
+    if (!mapCenter || !mapCenter.lat || !mapCenter.lng) {
+      console.error('Invalid map center:', mapCenter);
+      _builder_status_manager__WEBPACK_IMPORTED_MODULE_0__["default"].error('Cannot determine map center. Please try again.');
+      return;
+    }
     console.log('Opening marker drawer with map center:', mapCenter);
-    _builder_drawer_manager__WEBPACK_IMPORTED_MODULE_4__["default"].openMarkerDrawer('Add', null, mapCenter);
+    try {
+      // Open the marker drawer with the current map center
+      _builder_drawer_manager__WEBPACK_IMPORTED_MODULE_4__["default"].openMarkerDrawer('Add', null, mapCenter);
+
+      // Add a failsafe check to ensure the drawer is visible
+      setTimeout(function () {
+        var drawer = document.getElementById('geo-maps-marker-drawer');
+        if (drawer && (!drawer.classList.contains('open') || window.getComputedStyle(drawer).transform.includes('-500') || window.getComputedStyle(drawer).display === 'none')) {
+          console.log('Drawer not properly opened by drawerManager, applying failsafe');
+
+          // Force the drawer to be visible with inline styles
+          drawer.style.display = 'flex';
+          drawer.style.transform = 'translateX(0)';
+          drawer.classList.add('open');
+          document.body.classList.add('geo-maps-drawer-open');
+
+          // Apply additional styles to ensure visibility
+          drawer.style.opacity = '1';
+          drawer.style.visibility = 'visible';
+          drawer.style.zIndex = '999';
+
+          // Log success
+          console.log('Applied failsafe styles to drawer:', {
+            display: drawer.style.display,
+            transform: drawer.style.transform,
+            classes: drawer.className
+          });
+        }
+      }, 400);
+    } catch (error) {
+      console.error('Error opening marker drawer:', error);
+      _builder_status_manager__WEBPACK_IMPORTED_MODULE_0__["default"].error('Error opening marker drawer. Please try again.');
+
+      // Try direct DOM manipulation as a fallback
+      var drawer = document.getElementById('geo-maps-marker-drawer');
+      if (drawer) {
+        console.log('Attempting direct DOM manipulation as fallback');
+        drawer.style.display = 'flex';
+        drawer.style.transform = 'translateX(0)';
+        drawer.classList.add('open');
+        document.body.classList.add('geo-maps-drawer-open');
+      }
+    }
   });
 
   // Add event listener for map click to add marker

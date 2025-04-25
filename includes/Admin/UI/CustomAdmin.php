@@ -261,6 +261,14 @@ class CustomAdmin
                 GEO_MAPS_VERSION
             );
             
+            // Add the drawer fix CSS with timestamp to prevent caching
+            wp_enqueue_style(
+                'geo-maps-drawer-fix-css',
+                GEO_MAPS_PLUGIN_URI . 'assets/src/admin/drawer-fix.css',
+                ['geo-maps-builder-fullscreen-css'],
+                GEO_MAPS_VERSION . '.' . time() // Add timestamp to ensure the latest version is used
+            );
+            
             // Ensure media CSS is loaded
             wp_enqueue_style('media-views');
             
@@ -274,6 +282,50 @@ class CustomAdmin
                 true
             );
             
+            // Add the drawer debug script with timestamp to prevent caching
+            wp_enqueue_script(
+                'geo-maps-drawer-debug-js',
+                GEO_MAPS_PLUGIN_URI . 'assets/build/admin/js/drawer-debug.js',
+                ['jquery', 'geo-maps-builder-fullscreen-js'],
+                GEO_MAPS_VERSION . '.' . time(), // Add timestamp to ensure the latest version is used
+                true
+            );
+            
+            // Add a small inline script to track drawer visibility issues
+            wp_add_inline_script('geo-maps-drawer-debug-js', '
+                jQuery(document).ready(function($) {
+                    console.log("Drawer debug script inline code loaded");
+                    
+                    // Add an additional event listener to the add marker button
+                    $("#geo-maps-add-marker-btn").on("click", function() {
+                        console.log("Add marker button clicked (inline)");
+                        setTimeout(function() {
+                            const drawer = document.getElementById("geo-maps-marker-drawer");
+                            if (drawer) {
+                                console.log("Drawer visibility check:", {
+                                    display: window.getComputedStyle(drawer).display,
+                                    transform: window.getComputedStyle(drawer).transform,
+                                    opacity: window.getComputedStyle(drawer).opacity,
+                                    classes: drawer.className
+                                });
+                                
+                                // Force drawer to be visible if it\'s not already
+                                if (!drawer.classList.contains("open") || 
+                                    window.getComputedStyle(drawer).transform.includes("matrix") && 
+                                    window.getComputedStyle(drawer).transform.includes("-500")) {
+                                    console.log("Force showing drawer");
+                                    drawer.style.display = "flex";
+                                    drawer.style.transform = "translateX(0)";
+                                    drawer.classList.add("open");
+                                    document.body.classList.add("drawer-open");
+                                }
+                            } else {
+                                console.error("Drawer element not found");
+                            }
+                        }, 500);
+                    });
+                });
+            ');
         
         } else {
             // Standard admin JS for other pages

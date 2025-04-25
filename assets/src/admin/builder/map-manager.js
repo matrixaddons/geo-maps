@@ -76,26 +76,27 @@ const mapManager = {
      * @returns {Object} - {lat, lng} object
      */
     getMapCenter: function() {
-        if (!this.map) {
-            return settingsManager.center;
-        }
+        // Create a variable to store the center
+        let center = settingsManager.center;
         
-        // Get center from the appropriate map type
-        if (this.map instanceof L.Map) {
-            const center = this.map.getCenter();
-            return {
-                lat: center.lat,
-                lng: center.lng
-            };
-        } else if (window.google && this.map instanceof google.maps.Map) {
-            const center = this.map.getCenter();
-            return {
-                lat: center.lat(),
-                lng: center.lng()
-            };
-        }
+        // Use safeMapOperation to safely get the center
+        this.safeMapOperation(map => {
+            if (map instanceof L.Map) {
+                const mapCenter = map.getCenter();
+                center = {
+                    lat: mapCenter.lat,
+                    lng: mapCenter.lng
+                };
+            } else if (window.google && map instanceof google.maps.Map) {
+                const mapCenter = map.getCenter();
+                center = {
+                    lat: mapCenter.lat(),
+                    lng: mapCenter.lng()
+                };
+            }
+        }, { silent: true });
         
-        return settingsManager.center;
+        return center;
     },
     
     /**
@@ -188,46 +189,54 @@ const mapManager = {
      * @private
      */
     _setupMapEvents: function() {
-        if (!this.map) return;
-        
-        // Check map type and set appropriate event handlers
-        if (this.map instanceof L.Map) {
-            // Leaflet map events
-            this.map.on('moveend', () => {
-                const center = this.map.getCenter();
-                settingsManager.updateSetting('center', {
-                    lat: center.lat,
-                    lng: center.lng
+        this.safeMapOperation(map => {
+            // Check map type and set appropriate event handlers
+            if (map instanceof L.Map) {
+                // Leaflet map events
+                map.on('moveend', () => {
+                    this.safeMapOperation(m => {
+                        const center = m.getCenter();
+                        settingsManager.updateSetting('center', {
+                            lat: center.lat,
+                            lng: center.lng
+                        });
+                    }, { silent: true });
                 });
-            });
-            
-            this.map.on('zoomend', () => {
-                const zoom = this.map.getZoom();
-                settingsManager.updateSetting('zoom', zoom);
-            });
-        } else if (window.google && this.map instanceof google.maps.Map) {
-            // Google Maps events
-            this.map.addListener('center_changed', () => {
-                const center = this.map.getCenter();
-                settingsManager.updateSetting('center', {
-                    lat: center.lat(),
-                    lng: center.lng()
+                
+                map.on('zoomend', () => {
+                    this.safeMapOperation(m => {
+                        const zoom = m.getZoom();
+                        settingsManager.updateSetting('zoom', zoom);
+                    }, { silent: true });
                 });
-            });
+            } else if (window.google && map instanceof google.maps.Map) {
+                // Google Maps events
+                map.addListener('center_changed', () => {
+                    this.safeMapOperation(m => {
+                        const center = m.getCenter();
+                        settingsManager.updateSetting('center', {
+                            lat: center.lat(),
+                            lng: center.lng()
+                        });
+                    }, { silent: true });
+                });
+                
+                map.addListener('zoom_changed', () => {
+                    this.safeMapOperation(m => {
+                        const zoom = m.getZoom();
+                        settingsManager.updateSetting('zoom', zoom);
+                    }, { silent: true });
+                });
+            }
             
-            this.map.addListener('zoom_changed', () => {
-                const zoom = this.map.getZoom();
-                settingsManager.updateSetting('zoom', zoom);
-            });
-        }
-        
-        // Register for render engine events
-        if (window.geoMapsRenderEngine.on) {
-            window.geoMapsRenderEngine.on('markerClick', (data) => {
-                console.log('Marker clicked:', data);
-                // You can handle marker clicks here if needed
-            });
-        }
+            // Register for render engine events
+            if (window.geoMapsRenderEngine.on) {
+                window.geoMapsRenderEngine.on('markerClick', (data) => {
+                    console.log('Marker clicked:', data);
+                    // You can handle marker clicks here if needed
+                });
+            }
+        });
     },
     
     /**
@@ -357,119 +366,148 @@ const mapManager = {
      * @returns {Object|null} - The marker object or null if failed
      */
     addMarkerToMap: function(markerData) {
-        if (!this.map) {
-            console.error('Map not initialized');
-            return null;
-        }
-        
         if (!markerData.latitude || !markerData.longitude) {
             console.error('Marker position is required');
             return null;
         }
         
-        try {
-            // Format marker data for the render engine
-            const formattedMarkerData = {
-                lat: parseFloat(markerData.latitude),
-                lng: parseFloat(markerData.longitude),
-                title: markerData.title || '',
-                content: markerData.description || '',
-                icon: markerData.iconUrl || '',
-                id: markerData.id
-            };
+        // Format marker data for the render engine
+        const formattedMarkerData = {
+            lat: parseFloat(markerData.latitude),
+            lng: parseFloat(markerData.longitude),
+            title: markerData.title || '',
+            content: markerData.description || '',
+            icon: markerData.iconUrl || '',
+            id: markerData.id
+        };
+        
+        // Create a variable to store the created marker
+        let createdMarker = null;
+        
+        // Use safeMapOperation to ensure the map is ready
+        const success = this.safeMapOperation(map => {
+            console.log('Safely adding marker to map:', {
+                id: markerData.id,
+                lat: formattedMarkerData.lat,
+                lng: formattedMarkerData.lng
+            });
             
-            // Use the render engine to add the marker
-            if (window.geoMapsRenderEngine && window.geoMapsRenderEngine.addMarker) {
-                const marker = window.geoMapsRenderEngine.addMarker(this.map, formattedMarkerData, {
-                    defaultIcon: markerData.iconUrl || '',
-                    popupShowOn: 'click'
-                });
+            try {
+                // Use the render engine to add the marker if available
+                if (window.geoMapsRenderEngine && window.geoMapsRenderEngine.addMarker) {
+                    console.log('Using render engine to add marker');
+                    createdMarker = window.geoMapsRenderEngine.addMarker(map, formattedMarkerData, {
+                        defaultIcon: markerData.iconUrl || '',
+                        popupShowOn: 'click'
+                    });
+                } else {
+                    console.log('Render engine not available, using fallback method');
+                    // Fallback to direct marker creation
+                    if (map instanceof L.Map) {
+                        createdMarker = this._createLeafletMarker(markerData);
+                    } else if (window.google && map instanceof google.maps.Map) {
+                        createdMarker = this._createGoogleMarker(markerData);
+                    } else {
+                        console.error('Unknown map type');
+                        return;
+                    }
+                }
                 
-                if (marker) {
+                if (createdMarker) {
+                    console.log('Marker created successfully with ID:', markerData.id);
                     // Store marker reference for later manipulation
                     this.markers.push({
                         id: markerData.id,
-                        marker: marker,
+                        marker: createdMarker,
                         data: { ...markerData }
                     });
-                    
-                    return marker;
-                }
-            } else {
-                // Fallback to direct marker creation if render engine's addMarker isn't available
-                let marker;
-                
-                // Create appropriate marker type based on map type
-                if (this.map instanceof L.Map) {
-                    marker = this._createLeafletMarker(markerData);
-                } else if (window.google && this.map instanceof google.maps.Map) {
-                    marker = this._createGoogleMarker(markerData);
                 } else {
-                    console.error('Unknown map type');
-                    return null;
+                    console.error('Failed to create marker');
                 }
-                
-                // Store marker reference for later manipulation
-                this.markers.push({
-                    id: markerData.id,
-                    marker: marker,
-                    data: { ...markerData }
-                });
-                
-                return marker;
+            } catch (error) {
+                console.error('Error in marker creation:', error);
             }
-        } catch (error) {
-            console.error('Error adding marker:', error);
-            return null;
+        });
+        
+        if (!success) {
+            console.error('Could not add marker - map operations not safe');
         }
         
-        return null;
+        return createdMarker;
     },
     
     /**
      * Create a Leaflet marker (fallback method)
      * @private
      * @param {Object} markerData - The marker data
-     * @returns {Object} - The Leaflet marker object
+     * @returns {Object|null} - The Leaflet marker object or null if failed
      */
     _createLeafletMarker: function(markerData) {
-        const options = {
-            draggable: false,
-            title: markerData.title || ''
-        };
-        
-        // Use custom icon if specified
-        if (markerData.iconUrl) {
-            options.icon = L.icon({
-                iconUrl: markerData.iconUrl,
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34]
-            });
-        }
-        
-        // Create marker and add to map
-        const marker = L.marker(
-            [markerData.latitude, markerData.longitude], 
-            options
-        ).addTo(this.map);
-        
-        // Add popup if title or description exists
-        if (markerData.title || markerData.description) {
-            let content = '';
-            
-            if (markerData.title) {
-                content += `<h3>${markerData.title}</h3>`;
+        try {
+            if (!this.map) {
+                console.error('Map not initialized');
+                return null;
             }
             
-            if (markerData.description) {
-                content += `<div>${markerData.description}</div>`;
+            if (!this.map._loaded) {
+                console.error('Map not fully loaded yet');
+                return null;
             }
             
-            marker.bindPopup(content);
+            const options = {
+                draggable: false,
+                title: markerData.title || ''
+            };
+            
+            // Use custom icon if specified
+            if (markerData.iconUrl) {
+                options.icon = L.icon({
+                    iconUrl: markerData.iconUrl,
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34]
+                });
+            }
+            
+            console.log('Creating Leaflet marker at:', [markerData.latitude, markerData.longitude]);
+            
+            // First create marker without adding it to the map
+            const marker = L.marker(
+                [markerData.latitude, markerData.longitude], 
+                options
+            );
+            
+            // Check if map is ready before adding the marker
+            if (this.map._container && this.map._panes && this.map._mapPane && this.map._mapPane._leaflet_pos) {
+                console.log('Map is ready, adding marker');
+                
+                // Add to map
+                marker.addTo(this.map);
+                
+                // Add popup if title or description exists
+                if (markerData.title || markerData.description) {
+                    let content = '';
+                    
+                    if (markerData.title) {
+                        content += `<h3>${markerData.title}</h3>`;
+                    }
+                    
+                    if (markerData.description) {
+                        content += `<div>${markerData.description}</div>`;
+                    }
+                    
+                    marker.bindPopup(content);
+                }
+                
+                return marker;
+            } else {
+                console.error('Map is not ready for markers - required elements missing');
+                return null;
+            }
+        } catch (error) {
+            console.error('Error creating Leaflet marker:', error);
+            return null;
         }
-        
-        return marker;
     },
     
     /**
@@ -608,48 +646,43 @@ const mapManager = {
      * @returns {boolean} - Success status
      */
     updateMapAppearance: function() {
-        if (!this.map) {
-            console.error('Map not initialized');
-            return false;
-        }
+        const appearance = settingsManager.appearance;
         
-        try {
-            const appearance = settingsManager.appearance;
-            
+        return this.safeMapOperation(map => {
             // Update map settings for Leaflet maps
-            if (this.map instanceof L.Map) {
+            if (map instanceof L.Map) {
                 // Update zoom control visibility
                 if (appearance.showZoomControl) {
-                    if (!this.map.zoomControl) {
-                        this.map.addControl(new L.Control.Zoom());
+                    if (!map.zoomControl) {
+                        map.addControl(new L.Control.Zoom());
                     }
                 } else {
-                    if (this.map.zoomControl) {
-                        this.map.removeControl(this.map.zoomControl);
+                    if (map.zoomControl) {
+                        map.removeControl(map.zoomControl);
                     }
                 }
                 
                 // Update scroll wheel zoom
                 if (appearance.enableScrollZoom) {
-                    this.map.scrollWheelZoom.enable();
+                    map.scrollWheelZoom.enable();
                 } else {
-                    this.map.scrollWheelZoom.disable();
+                    map.scrollWheelZoom.disable();
                 }
                 
                 // Update scale control visibility
-                const hasScaleControl = this.map.getContainer().querySelectorAll('.leaflet-control-scale').length > 0;
+                const hasScaleControl = map.getContainer().querySelectorAll('.leaflet-control-scale').length > 0;
                 if (appearance.showScale && !hasScaleControl) {
-                    L.control.scale().addTo(this.map);
+                    L.control.scale().addTo(map);
                 } else if (!appearance.showScale && hasScaleControl) {
                     // Find and remove scale control
-                    this.map.getContainer().querySelectorAll('.leaflet-control-scale').forEach(el => {
+                    map.getContainer().querySelectorAll('.leaflet-control-scale').forEach(el => {
                         el.remove();
                     });
                 }
             } 
             // Update map settings for Google Maps
-            else if (window.google && this.map instanceof google.maps.Map) {
-                this.map.setOptions({
+            else if (window.google && map instanceof google.maps.Map) {
+                map.setOptions({
                     zoomControl: appearance.showZoomControl,
                     scrollwheel: appearance.enableScrollZoom,
                     scaleControl: appearance.showScale
@@ -657,11 +690,139 @@ const mapManager = {
             }
             
             console.log('Map appearance updated successfully');
-            return true;
-        } catch (error) {
-            console.error('Error updating map appearance:', error);
+        });
+    },
+    
+    /**
+     * Safely perform an operation on the map
+     * Prevents errors related to the map not being fully initialized or _leaflet_pos being undefined
+     * 
+     * @param {Function} operation - The operation to perform on the map
+     * @param {Object} options - Additional options
+     * @param {boolean} options.silent - Whether to suppress warning messages
+     * @returns {boolean} Success status
+     */
+    safeMapOperation: function(operation, options = {}) {
+        // Check if operation is a function
+        if (typeof operation !== 'function') {
+            console.error('Map operation must be a function');
             return false;
         }
+        
+        if (!this.map) {
+            if (!options.silent) {
+                console.warn('Map not initialized, operation skipped');
+            }
+            return false;
+        }
+        
+        try {
+            // For Leaflet maps, perform additional safety checks
+            if (this.map instanceof L.Map) {
+                // Check if map is properly initialized
+                if (!this.map._loaded) {
+                    if (!options.silent) {
+                        console.warn('Map not fully loaded yet, operation skipped');
+                    }
+                    return false;
+                }
+                
+                // Check if map container exists
+                if (!this.map._container) {
+                    if (!options.silent) {
+                        console.warn('Map container not available, operation skipped');
+                    }
+                    return false;
+                }
+                
+                // Check if map pane exists
+                if (!this.map._mapPane) {
+                    if (!options.silent) {
+                        console.warn('Map pane not available, operation skipped');
+                    }
+                    return false;
+                }
+                
+                // Check specifically for _leaflet_pos which causes the common TypeError
+                if (!this.map._mapPane._leaflet_pos) {
+                    if (!options.silent) {
+                        console.warn('Map pane position not initialized (_leaflet_pos is undefined), operation skipped');
+                    }
+                    return false;
+                }
+                
+                // Check for other critical map components
+                if (!this.map._size || !this.map._zoom) {
+                    if (!options.silent) {
+                        console.warn('Map size or zoom not initialized, operation skipped');
+                    }
+                    return false;
+                }
+                
+                // Check if map is in a detached state
+                if (this.map._container && !document.body.contains(this.map._container)) {
+                    if (!options.silent) {
+                        console.warn('Map container is detached from DOM, operation skipped');
+                    }
+                    return false;
+                }
+            }
+            
+            // Perform the operation
+            operation(this.map);
+            return true;
+        } catch (error) {
+            console.error('Error performing map operation:', error);
+            return false;
+        }
+    },
+    
+    /**
+     * Safely set the map center
+     * @param {Object} center - The center coordinates {lat, lng}
+     * @param {number} zoom - Optional zoom level
+     * @returns {boolean} - Success status
+     */
+    safeSetMapView: function(center, zoom = null) {
+        if (!center || typeof center.lat === 'undefined' || typeof center.lng === 'undefined') {
+            console.error('Invalid center coordinates');
+            return false;
+        }
+        
+        return this.safeMapOperation(map => {
+            if (map instanceof L.Map) {
+                if (zoom !== null) {
+                    map.setView([center.lat, center.lng], zoom);
+                } else {
+                    map.panTo([center.lat, center.lng]);
+                }
+            } else if (window.google && map instanceof google.maps.Map) {
+                map.setCenter({ lat: center.lat, lng: center.lng });
+                if (zoom !== null) {
+                    map.setZoom(zoom);
+                }
+            }
+        });
+    },
+    
+    /**
+     * Safely set the map zoom level
+     * @param {number} zoom - The zoom level
+     * @returns {boolean} - Success status
+     */
+    safeSetZoom: function(zoom) {
+        if (typeof zoom !== 'number' || isNaN(zoom)) {
+            console.error('Invalid zoom level');
+            return false;
+        }
+        
+        return this.safeMapOperation(map => {
+            if (map instanceof L.Map) {
+                map.setZoom(zoom);
+            } else if (window.google && map instanceof google.maps.Map) {
+                map.setZoom(zoom);
+            }
+        });
     }
 };
 

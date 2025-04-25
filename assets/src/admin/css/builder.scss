@@ -1,0 +1,179 @@
+/* Marker Drawer Styles */
+.geo-maps-builder-marker-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  background-color: #fff;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  overflow-y: auto;
+  display: none;
+  opacity: 0;
+  visibility: hidden;
+  
+  &.open {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    display: flex;
+  }
+  
+  .geo-maps-builder-marker-drawer-inner {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .geo-maps-builder-marker-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #ddd;
+    
+    h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      
+      .dashicons {
+        margin-right: 10px;
+        color: #007cba;
+      }
+    }
+    
+    .geo-maps-builder-marker-drawer-close {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 5px;
+      
+      .dashicons {
+        font-size: 20px;
+        color: #666;
+        transition: color 0.2s ease;
+        
+        &:hover {
+          color: #d63638;
+        }
+      }
+    }
+  }
+  
+  .geo-maps-builder-marker-drawer-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  
+  .geo-maps-builder-marker-drawer-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    background: #f9f9f9;
+  }
+}
+
+/* Section styling for marker drawer */
+.geo-maps-builder-section {
+  margin-bottom: 25px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  
+  .geo-maps-builder-section-title {
+    background: #f5f5f5;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    
+    span.dashicons {
+      margin-right: 8px;
+      color: #007cba;
+    }
+    
+    h3 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+  }
+  
+  .geo-maps-builder-section-content {
+    padding: 15px;
+  }
+}
+
+/* Field styling for marker drawer */
+.geo-maps-builder-field {
+  margin-bottom: 15px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  
+  input, textarea, select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    
+    &:focus {
+      border-color: #007cba;
+      box-shadow: 0 0 0 1px #007cba;
+      outline: none;
+    }
+  }
+  
+  textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+  
+  &.geo-maps-builder-field-row {
+    display: flex;
+    gap: 10px;
+  }
+  
+  &.geo-maps-builder-field-half {
+    width: 50%;
+  }
+}
+
+/* Mini map container */
+#geo-maps-marker-mini-map-container {
+  height: 200px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+}
+
+/* Body class for drawer overlay */
+body.geo-maps-drawer-open {
+  &:after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+  }
+} 
