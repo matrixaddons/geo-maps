@@ -31,6 +31,18 @@ const confirmModal = {
     currentReject: null,
     
     /**
+     * Flag to track whether event listeners have been attached
+     * @type {boolean}
+     */
+    eventListenersAttached: false,
+    
+    /**
+     * Flag to track whether a confirmation is in progress
+     * @type {boolean}
+     */
+    confirmationInProgress: false,
+    
+    /**
      * Initialize the confirmation modal
      */
     init() {
@@ -39,8 +51,11 @@ const confirmModal = {
             this._createModalElement();
         }
         
-        // Set up global event listener for delete marker buttons
-        this._setupGlobalEventListeners();
+        // Set up global event listener for delete marker buttons (only once)
+        if (!this.eventListenersAttached) {
+            this._setupGlobalEventListeners();
+            this.eventListenersAttached = true;
+        }
     },
     
     /**
@@ -124,7 +139,7 @@ const confirmModal = {
         }
         
         // Confirm button
-        const confirmBtn = this.modalElement.querySelector('.geo-maps-confirm-modal-confirm .geo-maps-button-content');
+        const confirmBtn = this.modalElement.querySelector('.geo-maps-confirm-modal-confirm');
         if (confirmBtn) {
             confirmBtn.addEventListener('click', () => this._handleConfirm());
         }
@@ -140,7 +155,7 @@ const confirmModal = {
         
         // Handle escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.modalElement.style.display !== 'none') {
+            if (e.key === 'Escape' && this.modalElement && this.modalElement.style.display !== 'none') {
                 this._handleCancel();
             }
         });
@@ -151,35 +166,104 @@ const confirmModal = {
      * @private
      */
     _setupGlobalEventListeners() {
-        // Using event delegation to handle clicks on delete marker buttons
+        // Track which marker ID is currently being processed
+        let processingMarkerId = null;
+        
+        // Main document click listener with capture phase
         document.addEventListener('click', (e) => {
-            // Find delete marker buttons
-            if (e.target && (
-                e.target.classList.contains('delete-marker') || 
-                e.target.closest('.delete-marker')
-            )) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Get the marker ID
-                const markerItem = e.target.closest('.geo-maps-marker-item');
-                if (markerItem) {
-                    const markerId = markerItem.dataset.markerId;
-                    if (markerId) {
-                        this.confirm({
-                            title: 'Delete Marker',
-                            message: 'Are you sure you want to delete this marker? This action cannot be undone.',
-                            confirmText: 'Delete',
-                            icon: 'trash'
-                        }).then(confirmed => {
-                            if (confirmed && window.GeoMapsBuilder && window.GeoMapsBuilder.markerManager) {
-                                window.GeoMapsBuilder.markerManager.removeMarkerFromMap(markerId);
-                            }
-                        });
-                    }
-                }
+            // Immediately stop propagation for any SVG or path inside delete button
+            const isSvgElement = e.target.tagName === 'svg' || e.target.tagName === 'path';
+            const isInsideDeleteButton = isSvgElement && e.target.closest('.delete-marker');
+            
+            if (isInsideDeleteButton) {
+                // Immediately stop propagation to prevent bubbling to multiple parent elements
+                e.stopImmediatePropagation();
             }
-        });
+            
+            // Get the actual delete button
+            const deleteButton = e.target.classList?.contains('delete-marker') ? 
+                e.target : 
+                e.target.closest?.('.delete-marker');
+                
+            if (!deleteButton) {
+                return; // Not a delete marker button
+            }
+            
+            console.log('Delete button clicked');
+            
+            // Stop event immediately and prevent bubbling
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            // Most important check: Skip if modal is already visible
+            if (this.modalElement && (
+                this.modalElement.style.display === 'flex' || 
+                this.modalElement.classList.contains('active')
+            )) {
+                console.log('Modal is already visible, ignoring click');
+                return;
+            }
+            
+            // Find marker ID upfront to validate
+            const markerItem = deleteButton.closest('.geo-maps-marker-item');
+            if (!markerItem || !markerItem.dataset.markerId) {
+                console.log('Invalid marker element - missing ID');
+                return;
+            }
+            
+            const markerId = markerItem.dataset.markerId;
+            
+            // Skip if we're already processing this exact marker
+            if (processingMarkerId === markerId) {
+                console.log('Already processing this marker ID: ' + markerId);
+                return;
+            }
+            
+            // Set the processing marker ID
+            processingMarkerId = markerId;
+            
+            // Ensure no existing promise is active
+            if (this.currentResolve) {
+                console.log('A previous promise is still active, canceling it first');
+                try {
+                    this.currentResolve(false);
+                } catch(e) {
+                    // Ignore errors from resolving the previous promise
+                }
+                this.currentResolve = null;
+                this.currentReject = null;
+                this.hide();
+            }
+            
+            // Make sure confirmationInProgress is reset
+            this.confirmationInProgress = false;
+            
+            // Process immediately without a timeout
+            try {
+                // Show the confirmation modal
+                this.confirm({
+                    title: 'Delete Marker',
+                    message: 'Are you sure you want to delete this marker? This action cannot be undone.',
+                    confirmText: 'Delete',
+                    icon: 'trash'
+                }).then(confirmed => {
+                    if (confirmed && window.GeoMapsBuilder && window.GeoMapsBuilder.markerManager) {
+                        window.GeoMapsBuilder.markerManager.removeMarkerFromMap(markerId);
+                    }
+                }).catch(error => {
+                    if (error.message !== 'A confirmation is already in progress') {
+                        console.error('Confirmation error:', error);
+                    }
+                }).finally(() => {
+                    // Clear processing marker ID when done
+                    processingMarkerId = null;
+                });
+            } catch (error) {
+                console.error('Error in delete marker handler:', error);
+                processingMarkerId = null;
+            }
+        }, { capture: true });
     },
     
     /**
@@ -187,11 +271,20 @@ const confirmModal = {
      * @private
      */
     _handleConfirm() {
+        if (!this.currentResolve) {
+            return;
+        }
+        
         this.hide();
-        if (this.currentResolve) {
+        
+        try {
             this.currentResolve(true);
+        } catch (error) {
+            console.error('Error during confirmation:', error);
+        } finally {
             this.currentResolve = null;
             this.currentReject = null;
+            this.confirmationInProgress = false;
         }
     },
     
@@ -200,11 +293,20 @@ const confirmModal = {
      * @private
      */
     _handleCancel() {
+        if (!this.currentResolve) {
+            return;
+        }
+        
         this.hide();
-        if (this.currentResolve) {
+        
+        try {
             this.currentResolve(false);
+        } catch (error) {
+            console.error('Error during cancellation:', error);
+        } finally {
             this.currentResolve = null;
             this.currentReject = null;
+            this.confirmationInProgress = false;
         }
     },
     
@@ -219,6 +321,21 @@ const confirmModal = {
      * @returns {Promise<boolean>} - Resolves to true if confirmed, false if cancelled
      */
     confirm(options = {}) {
+        // Skip if modal is already visible
+        if (this.modalElement && (
+            this.modalElement.style.display === 'flex' || 
+            this.modalElement.classList.contains('active')
+        )) {
+            console.log('Modal is already visible');
+            return Promise.reject(new Error('A confirmation is already in progress'));
+        }
+        
+        // Skip if confirmation already has a promise
+        if (this.currentResolve !== null) {
+            console.log('Confirmation already has an active promise');
+            return Promise.reject(new Error('A confirmation is already in progress'));
+        }
+        
         const defaults = {
             title: 'Confirm Action',
             message: 'Are you sure you want to proceed?',
