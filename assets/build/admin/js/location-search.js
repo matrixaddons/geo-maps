@@ -69,12 +69,30 @@ var locationSearch = function () {
   var initialize = function initialize(config) {
     // Clean up any previous initialization
     cleanup();
-    searchInput = document.getElementById(config.inputId || 'location_search');
-    if (!searchInput) {
-      console.warn('Location search: Input element not found');
-      return false;
-    }
+
+    // Log the initialization attempt
     console.log('Location search: Initializing with config', config);
+
+    // Try to get the search input
+    var inputId = config.inputId || 'location_search';
+    searchInput = document.getElementById(inputId);
+    if (!searchInput) {
+      console.warn("Location search: Input element not found with ID \"".concat(inputId, "\""));
+
+      // Try to find the input by selector or placeholder
+      var alternateInput = document.querySelector("input[name=\"".concat(inputId, "\"], input[placeholder*=\"location\"], input[placeholder*=\"address\"]"));
+      if (alternateInput) {
+        console.log('Location search: Found alternative input element:', alternateInput);
+        searchInput = alternateInput;
+
+        // Add the ID to make future lookups easier
+        searchInput.id = inputId;
+      } else {
+        console.error('Location search: No suitable input element found. Search functionality disabled.');
+        return false;
+      }
+    }
+    console.log('Location search: Using input element:', searchInput);
 
     // Store map references
     miniMap = config.map || null;
@@ -91,10 +109,30 @@ var locationSearch = function () {
     autocompleteContainer = document.createElement('div');
     autocompleteContainer.id = 'location-search-autocomplete';
     autocompleteContainer.className = 'geo-maps-autocomplete-container';
-    searchInput.parentNode.appendChild(autocompleteContainer);
+
+    // Append to parent or body if parent not available
+    if (searchInput.parentNode) {
+      searchInput.parentNode.appendChild(autocompleteContainer);
+    } else {
+      document.body.appendChild(autocompleteContainer);
+      console.warn('Location search: Input has no parent, appending autocomplete to body instead');
+    }
+
+    // Add special styles to make the autocomplete container visible
+    autocompleteContainer.style.position = 'absolute';
+    autocompleteContainer.style.zIndex = '9999';
+    autocompleteContainer.style.background = '#fff';
+    autocompleteContainer.style.border = '1px solid #ddd';
+    autocompleteContainer.style.borderRadius = '4px';
+    autocompleteContainer.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+    autocompleteContainer.style.width = '100%';
+    autocompleteContainer.style.maxHeight = '300px';
+    autocompleteContainer.style.overflowY = 'auto';
+    autocompleteContainer.style.display = 'none';
 
     // Set up event listeners
     setupEventListeners();
+    console.log('Location search: Initialization complete');
     return true;
   };
 

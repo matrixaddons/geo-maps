@@ -347,14 +347,21 @@ const drawerManager = {
         console.log('Setting up drawer event listeners');
         
         try {
-            // Set up marker form submission
+            // Find the form but don't set up any submit handler
             const form = document.getElementById('geo-maps-marker-form');
             if (form) {
-                form.addEventListener('submit', (e) => {
+                // Remove any existing submit handler by replacing the form
+                const newForm = form.cloneNode(true);
+                form.parentNode.replaceChild(newForm, form);
+                
+                // Prevent default form submission behavior
+                newForm.addEventListener('submit', (e) => {
+                    console.log('Preventing default form submission');
                     e.preventDefault();
-                    this.handleMarkerFormSubmit();
+                    e.stopPropagation();
+                    return false;
                 });
-                console.log('Added submit event listener to marker form');
+                console.log('Disabled form submission events');
             } else {
                 console.warn('Marker form not found for event listener setup');
             }
@@ -362,7 +369,11 @@ const drawerManager = {
             // Set up close button
             const closeButton = document.querySelector('.geo-maps-builder-marker-drawer-close');
             if (closeButton) {
-                closeButton.addEventListener('click', () => {
+                // Remove existing listeners using clone method
+                const newCloseButton = closeButton.cloneNode(true);
+                closeButton.parentNode.replaceChild(newCloseButton, closeButton);
+                
+                newCloseButton.addEventListener('click', () => {
                     console.log('Close button clicked');
                     this.closeMarkerDrawer();
                 });
@@ -374,7 +385,11 @@ const drawerManager = {
             // Set up cancel button
             const cancelButton = document.getElementById('geo-maps-cancel-marker');
             if (cancelButton) {
-                cancelButton.addEventListener('click', () => {
+                // Remove existing listeners using clone method
+                const newCancelButton = cancelButton.cloneNode(true);
+                cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
+                
+                newCancelButton.addEventListener('click', () => {
                     console.log('Cancel button clicked');
                     this.closeMarkerDrawer();
                 });
@@ -383,14 +398,18 @@ const drawerManager = {
                 console.warn('Cancel button not found for event listener setup');
             }
             
-            // Set up save button
+            // Set up save button with a simple direct click handler - no form submission
             const saveButton = document.getElementById('geo-maps-save-marker');
             if (saveButton) {
-                saveButton.addEventListener('click', () => {
-                    console.log('Save button clicked');
+                // Remove existing listeners using clone method
+                const newSaveButton = saveButton.cloneNode(true);
+                saveButton.parentNode.replaceChild(newSaveButton, saveButton);
+                
+                newSaveButton.addEventListener('click', () => {
+                    console.log('Save button clicked - direct handler');
                     this.handleMarkerFormSubmit();
                 });
-                console.log('Added click event listener to save button');
+                console.log('Added click event listener to save button (direct handler)');
             } else {
                 console.warn('Save button not found for event listener setup');
             }
@@ -705,7 +724,91 @@ const drawerManager = {
         console.log('Setting up location search with mini map:', this.miniMap);
         
         try {
-            // Initialize location search with our mini map
+            // Find the location search input explicitly
+            const searchInput = document.getElementById('location_search');
+            
+            if (!searchInput) {
+                console.error('Location search input not found with ID: location_search');
+                
+                // Try alternative ID that might be used in CSS
+                const altSearchInput = document.getElementById('geo_maps_location_search');
+                if (altSearchInput) {
+                    console.log('Found alternative location search input with ID: geo_maps_location_search');
+                    
+                    // Initialize location search with our mini map using the alternative ID
+                    locationSearch.initialize({
+                        inputId: 'geo_maps_location_search',
+                        map: this.miniMap,
+                        marker: this.miniMapMarker,
+                        updateTitleCallback: this._updateTitleFromCoordinates.bind(this)
+                    });
+                    
+                    console.log('Location search initialized successfully with alternative ID');
+                    return;
+                }
+                
+                // Look for input within the location search container
+                const container = document.getElementById('geo-maps-location-search-container');
+                if (container) {
+                    const containerInput = container.querySelector('input');
+                    if (containerInput) {
+                        console.log('Found location search input in container:', containerInput);
+                        containerInput.id = 'location_search';
+                        
+                        // Initialize location search with this input
+                        locationSearch.initialize({
+                            inputId: 'location_search',
+                            map: this.miniMap,
+                            marker: this.miniMapMarker,
+                            updateTitleCallback: this._updateTitleFromCoordinates.bind(this)
+                        });
+                        
+                        console.log('Location search initialized with input from container');
+                        return;
+                    }
+                }
+                
+                // If all else fails, create a new input
+                console.log('Creating new location search input');
+                const searchContainer = document.querySelector('#geo-maps-location-search-container, .geo-maps-builder-field');
+                
+                if (searchContainer) {
+                    // Create a new input
+                    const newInput = document.createElement('input');
+                    newInput.id = 'location_search';
+                    newInput.className = 'geo-maps-input';
+                    newInput.placeholder = 'Search for a location';
+                    newInput.type = 'text';
+                    
+                    // Add label
+                    const label = document.createElement('label');
+                    label.htmlFor = 'location_search';
+                    label.className = 'geo-maps-label';
+                    label.textContent = 'Search Location';
+                    
+                    // Clear and add to container
+                    searchContainer.innerHTML = '';
+                    searchContainer.appendChild(label);
+                    searchContainer.appendChild(newInput);
+                    
+                    // Initialize location search
+                    locationSearch.initialize({
+                        inputId: 'location_search',
+                        map: this.miniMap,
+                        marker: this.miniMapMarker,
+                        updateTitleCallback: this._updateTitleFromCoordinates.bind(this)
+                    });
+                    
+                    console.log('Created and initialized new location search input');
+                    return;
+                }
+                
+                console.error('No suitable location search input found or created. Search functionality will not work.');
+                return;
+            }
+            
+            // Standard initialization with the found input
+            console.log('Found location search input with ID: location_search');
             locationSearch.initialize({
                 inputId: 'location_search',
                 map: this.miniMap,
@@ -901,6 +1004,14 @@ const drawerManager = {
     async handleMarkerFormSubmit() {
         console.log('Handling marker form submission');
         
+        // Prevent multiple simultaneous submissions
+        if (this.isSubmitting) {
+            console.log('Form submission already in progress, ignoring duplicate submission');
+            return;
+        }
+        
+        this.isSubmitting = true;
+        
         try {
             // Get form data
             const markerId = document.getElementById('marker_id')?.value;
@@ -914,12 +1025,14 @@ const drawerManager = {
             if (!title) {
                 console.error('Missing title');
                 alert('Please enter a title for the marker');
+                this.isSubmitting = false;
                 return;
             }
             
             if (!lat || !lng || isNaN(parseFloat(lat)) || isNaN(parseFloat(lng))) {
                 console.error('Invalid coordinates:', { lat, lng });
                 alert('Please provide valid latitude and longitude coordinates');
+                this.isSubmitting = false;
                 return;
             }
             
@@ -930,6 +1043,7 @@ const drawerManager = {
             if (!markerManager) {
                 console.error('Marker manager not found');
                 alert('Marker manager not found. Unable to save marker.');
+                this.isSubmitting = false;
                 return;
             }
             
@@ -942,73 +1056,191 @@ const drawerManager = {
                 iconUrl: iconUrl?.trim() || ''
             };
             
-            console.log('Marker data prepared:', markerData);
-            
-            // Edit existing or add new marker
-            let success = false;
-            
+            // For existing markers, include the ID
             if (markerId) {
-                console.log('Updating existing marker with ID:', markerId);
                 markerData.id = markerId;
-                
-                // Try up to 3 times with a slight delay between attempts
-                for (let attempt = 1; attempt <= 3; attempt++) {
-                    console.log(`Update attempt ${attempt}`);
-                    success = markerManager.updateMarker(markerData);
-                    
-                    if (success) {
-                        console.log('Marker updated successfully');
-                        break;
-                    } else if (attempt < 3) {
-                        console.log('Update failed, waiting before retry...');
-                        // Wait 300ms before retrying
-                        await new Promise(resolve => setTimeout(resolve, 300));
-                    }
-                }
             } else {
-                console.log('Adding new marker');
                 // Generate unique ID for new marker
                 markerData.id = 'marker_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+            }
+            
+            console.log('Marker data prepared:', markerData);
+            
+            // Add marker to marker panel rather than directly to database
+            // First check if custom event method exists for adding to panel
+            if (typeof window.GeoMapsBuilder?.addMarkerToPanel === 'function') {
+                console.log('Adding marker to panel via custom method');
+                const success = window.GeoMapsBuilder.addMarkerToPanel(markerData);
                 
-                // Try up to 3 times with a slight delay between attempts
-                for (let attempt = 1; attempt <= 3; attempt++) {
-                    console.log(`Add attempt ${attempt}`);
-                    success = markerManager.addMarker(markerData);
-                    
-                    if (success) {
-                        console.log('Marker added successfully with ID:', markerData.id);
-                        break;
-                    } else if (attempt < 3) {
-                        console.log('Add failed, waiting before retry...');
-                        // Wait 300ms before retrying
-                        await new Promise(resolve => setTimeout(resolve, 300));
+                if (success) {
+                    console.log('Marker added to panel successfully');
+                    if (statusManager) {
+                        statusManager.success(markerId ? 'Marker updated successfully' : 'Marker added successfully');
                     }
+                    
+                    // Close the drawer
+                    this.closeMarkerDrawer();
+                    
+                    // Switch to the Markers tab
+                    this._switchToMarkersTab();
+                    
+                    // Force refresh the marker list in the panel
+                    setTimeout(() => {
+                        markerManager.refreshMarkerList(markerData.id);
+                    }, 100);
+                    
+                    // Show save reminder if available
+                    if (typeof window.GeoMapsBuilder?.showSaveReminder === 'function') {
+                        window.GeoMapsBuilder.showSaveReminder();
+                    }
+                    
+                    this.isSubmitting = false;
+                    return;
                 }
             }
             
+            // Fallback: Use marker manager's methods but with unsaved flag
+            console.log('Using marker manager fallback with unsaved flag');
+            
+            // Flag to indicate markers are unsaved
+            window.GeoMapsBuilder.hasUnsavedChanges = true;
+            
+            let success = false;
+            const isUpdate = Boolean(markerId);
+            
+            if (isUpdate) {
+                console.log('Updating existing marker in panel with ID:', markerId);
+                success = markerManager.updateMarker(markerData, false); // false = don't save to DB
+            } else {
+                console.log('Adding new marker to panel');
+                success = markerManager.addMarker(markerData, false); // false = don't save to DB
+            }
+            
+            // Handle success or failure
             if (success) {
+                // Update UI to indicate unsaved changes
+                if (typeof window.GeoMapsBuilder?.updateUnsavedStatus === 'function') {
+                    window.GeoMapsBuilder.updateUnsavedStatus(true);
+                }
+                
+                // Show success message
                 if (statusManager) {
-                    statusManager.success(markerId ? 'Marker updated successfully' : 'Marker added successfully');
-                } else {
-                    alert(markerId ? 'Marker updated successfully' : 'Marker added successfully');
+                    statusManager.success(isUpdate ? 'Marker updated in panel' : 'Marker added to panel');
                 }
                 
                 // Close drawer
                 this.closeMarkerDrawer();
                 
-                // Refresh marker list
-                markerManager.refreshMarkerList();
+                // Switch to the Markers tab
+                this._switchToMarkersTab();
+                
+                // Force refresh the marker list in the panel
+                setTimeout(() => {
+                    markerManager.refreshMarkerList(markerData.id);
+                }, 100);
             } else {
-                console.error('Failed to', markerId ? 'update' : 'add', 'marker after multiple attempts');
                 if (statusManager) {
-                    statusManager.error(markerId ? 'Error updating marker' : 'Error adding marker');
+                    statusManager.error(isUpdate ? 'Failed to update marker' : 'Failed to add marker');
                 } else {
-                    alert(markerId ? 'Error updating marker' : 'Error adding marker');
+                    alert(isUpdate ? 'Failed to update marker' : 'Failed to add marker');
                 }
             }
         } catch (error) {
             console.error('Error handling marker form submission:', error);
-            alert('An unexpected error occurred while saving the marker. Please try again.');
+            alert('An error occurred when saving the marker. Please try again.');
+        } finally {
+            // Always reset submission flag
+            this.isSubmitting = false;
+        }
+    },
+    
+    /**
+     * Switch to the Markers tab in the settings panel
+     * @private
+     */
+    _switchToMarkersTab() {
+        console.log('Switching to Markers tab');
+        
+        try {
+            // Show the markers tab content
+            const $markersContent = jQuery('#geo-maps-markers-content, .geo-maps-markers-panel, .geo-maps-tab-content[data-tab="markers"]');
+            if ($markersContent.length) {
+                console.log('Found markers content panel, showing it');
+                
+                // Hide all tab content first
+                jQuery('.geo-maps-tab-content, .geo-maps-builder-panel, .geo-maps-panel').hide();
+                
+                // Show markers content
+                $markersContent.show();
+            }
+            
+            // Find and activate the markers tab
+            const $markersTab = jQuery('.geo-maps-builder-tab[data-tab="markers"], .geo-maps-tab[data-tab="markers"]');
+            if ($markersTab.length > 0) {
+                console.log('Found markers tab, clicking it');
+                
+                // Remove active class from all tabs
+                jQuery('.geo-maps-builder-tab, .geo-maps-tab').removeClass('active');
+                
+                // Add active class to markers tab
+                $markersTab.addClass('active');
+                $markersTab.trigger('click');
+            } else {
+                console.warn('Markers tab not found, trying alternative approaches');
+                
+                // Try alternative tab identifiers
+                const altTabs = [
+                    '.geo-maps-builder-tabs li[data-tab="markers"]',
+                    '.geo-maps-tabs-nav li[data-tab="markers"]',
+                    '.geo-maps-builder-tab:contains("Markers")',
+                    '.geo-maps-nav-item:contains("Markers")',
+                    '#geo-maps-markers-tab',
+                    'a[href="#markers"]'
+                ];
+                
+                for (const selector of altTabs) {
+                    const $tab = jQuery(selector);
+                    if ($tab.length > 0) {
+                        console.log(`Found alternative tab with selector: ${selector}`);
+                        
+                        // Remove active class from all tabs
+                        jQuery('.geo-maps-builder-tab, .geo-maps-tab, .geo-maps-nav-item, .geo-maps-tabs-nav li').removeClass('active');
+                        
+                        // Add active class to this tab
+                        $tab.addClass('active');
+                        $tab.trigger('click');
+                        return;
+                    }
+                }
+                
+                // If we can't find a tab, try to directly show the markers panel
+                console.log('Trying to directly show markers panel');
+                const $markersPanel = jQuery('.geo-maps-markers-panel, .geo-maps-builder-marker-panel, #geo-maps-markers-panel');
+                if ($markersPanel.length > 0) {
+                    // Hide all other panels
+                    jQuery('.geo-maps-builder-panel, .geo-maps-panel, .geo-maps-tab-content').hide();
+                    // Show markers panel
+                    $markersPanel.show();
+                } else {
+                    console.warn('Could not find markers panel, cannot switch to it');
+                }
+            }
+            
+            // Additional approach: look for sidebar tabs
+            const sidebarTab = document.querySelector('.geo-maps-sidebar-tab[data-tab="markers"]');
+            if (sidebarTab) {
+                sidebarTab.click();
+            }
+            
+            // Ensure the marker list is visible
+            const $markersList = jQuery('#geo-maps-markers-list');
+            if ($markersList.length > 0 && !$markersList.is(':visible')) {
+                console.log('Marker list was hidden, making it visible');
+                $markersList.show();
+            }
+            
+        } catch (error) {
+            console.error('Error switching to markers tab:', error);
         }
     },
     
@@ -1056,7 +1288,6 @@ const drawerManager = {
         // More robust button selection with helpful error messages
         const closeButton = document.querySelector('.geo-maps-builder-marker-drawer-close');
         const cancelButton = document.getElementById('geo-maps-cancel-marker');
-        const saveButton = document.getElementById('geo-maps-save-marker');
         
         // Set up event handlers for drawer buttons
         if (closeButton) {
@@ -1080,22 +1311,8 @@ const drawerManager = {
             console.warn('Cancel button not found in the DOM');
         }
         
-        if (saveButton) {
-            console.log('Setting up save button event handler');
-            saveButton.addEventListener('click', () => {
-                console.log('Save button clicked');
-                const form = document.getElementById('geo-maps-marker-form');
-                if (form) {
-                    // Execute the form submission handler
-                    this.handleMarkerFormSubmit();
-                } else {
-                    console.error('Marker form not found');
-                    alert('Could not find marker form. Please try again.');
-                }
-            });
-        } else {
-            console.warn('Save button not found in the DOM');
-        }
+        // Set up all other event listeners via the dedicated method
+        this._setupDrawerEventListeners();
         
         // Apply any necessary initial styles to ensure the drawer is properly configured
         if (this.drawerContainer) {

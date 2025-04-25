@@ -5,6 +5,7 @@
 import statusManager from './status-manager';
 import settingsManager from './settings-manager';
 import mapManager from './map-manager';
+import confirmModal from '../confirm-modal';
 
 /**
  * Marker Manager for handling marker operations
@@ -22,6 +23,9 @@ const markerManager = {
         
         // Set up event listeners
         this._setupEventListeners();
+        
+        // Initialize the confirmation modal
+        confirmModal.init();
     },
     
     /**
@@ -56,13 +60,8 @@ const markerManager = {
             }
         });
         
-        jQuery(document).on('click', '.geo-maps-marker-item .delete-marker', function(e) {
-            e.preventDefault();
-            const markerId = jQuery(this).closest('.geo-maps-marker-item').data('marker-id');
-            if (markerId && confirm('Are you sure you want to delete this marker?')) {
-                self.removeMarkerFromMap(markerId);
-            }
-        });
+        // Note: The delete marker functionality is now handled by the confirm-modal.js
+        // We've removed the direct click handler here as it's replaced by event delegation in the modal
     },
     
     /**
@@ -80,9 +79,10 @@ const markerManager = {
     /**
      * Adds a new marker to the map and the global settings
      * @param {Object} markerData - The marker data
+     * @param {boolean} saveToDb - Whether to save to database (default: true)
      * @returns {string|null} - The ID of the new marker or null if failed
      */
-    addMarkerToMap: function(markerData) {
+    addMarkerToMap: function(markerData, saveToDb = true) {
         if (!markerData.latitude || !markerData.longitude) {
             console.error('Marker position is required');
             return null;
@@ -96,15 +96,34 @@ const markerManager = {
                 description: markerData.description || '',
                 latitude: parseFloat(markerData.latitude),
                 longitude: parseFloat(markerData.longitude),
-                iconUrl: markerData.iconUrl || null
+                iconUrl: markerData.iconUrl || null,
+                unsaved: !saveToDb // Flag to track unsaved markers
             };
             
             // Add marker to settings
             settingsManager.addMarker(marker);
             
+            // Track unsaved state if not saving to DB
+            if (!saveToDb && typeof window.GeoMapsBuilder !== 'undefined') {
+                window.GeoMapsBuilder.hasUnsavedChanges = true;
+                
+                // Add to unsaved markers array if it exists
+                if (!window.GeoMapsBuilder.unsavedMarkers) {
+                    window.GeoMapsBuilder.unsavedMarkers = [];
+                }
+                window.GeoMapsBuilder.unsavedMarkers.push(marker.id);
+                
+                console.log(`Marker ${marker.id} added to panel (unsaved)`);
+            }
+            
             // Render the marker on the map if we have an active map
             if (mapManager && mapManager.map) {
                 mapManager.addMarkerToMap(marker);
+            }
+            
+            // Trigger custom event for unsaved marker
+            if (!saveToDb) {
+                jQuery(document).trigger('geoMapsUnsavedMarkerAdded', [marker]);
             }
             
             return marker.id;
@@ -118,10 +137,31 @@ const markerManager = {
      * Updates an existing marker on the map and in the global settings
      * @param {string} markerId - The ID of the marker to update
      * @param {Object} markerData - The new marker data
+     * @param {boolean} saveToDb - Whether to save to database (default: true)
      * @returns {boolean} - Success status
      */
-    updateMarkerOnMap: function(markerId, markerData) {
+    updateMarkerOnMap: function(markerId, markerData, saveToDb = true) {
         try {
+            // Flag the marker as unsaved if not saving to DB
+            if (!saveToDb) {
+                markerData.unsaved = true;
+                
+                // Track unsaved state
+                if (typeof window.GeoMapsBuilder !== 'undefined') {
+                    window.GeoMapsBuilder.hasUnsavedChanges = true;
+                    
+                    // Add to unsaved markers array if it exists
+                    if (!window.GeoMapsBuilder.unsavedMarkers) {
+                        window.GeoMapsBuilder.unsavedMarkers = [];
+                    }
+                    if (!window.GeoMapsBuilder.unsavedMarkers.includes(markerId)) {
+                        window.GeoMapsBuilder.unsavedMarkers.push(markerId);
+                    }
+                    
+                    console.log(`Marker ${markerId} updated in panel (unsaved)`);
+                }
+            }
+            
             // Update marker in settings
             const success = settingsManager.updateMarker(markerId, markerData);
             
@@ -133,6 +173,11 @@ const markerManager = {
             // Re-render all markers to ensure consistency
             this.renderMarkersOnMap();
             
+            // Trigger custom event for unsaved marker
+            if (!saveToDb) {
+                jQuery(document).trigger('geoMapsUnsavedMarkerUpdated', [markerData]);
+            }
+            
             return true;
         } catch (error) {
             console.error('Error updating marker:', error);
@@ -142,21 +187,27 @@ const markerManager = {
     
     /**
      * Simple alias for updateMarkerOnMap to match builder-fullscreen.js expectations
+     * @param {Object} markerData - The marker data with ID included
+     * @param {boolean} saveToDb - Whether to save to database (default: true)
+     * @returns {boolean} - Success status
      */
-    updateMarker: function(markerData) {
+    updateMarker: function(markerData, saveToDb = true) {
         if (!markerData || !markerData.id) {
             console.error('Marker ID is required for updating');
             return false;
         }
         
-        return this.updateMarkerOnMap(markerData.id, markerData);
+        return this.updateMarkerOnMap(markerData.id, markerData, saveToDb);
     },
     
     /**
      * Simple alias for addMarkerToMap to match builder-fullscreen.js expectations
+     * @param {Object} markerData - The marker data
+     * @param {boolean} saveToDb - Whether to save to database (default: true)
+     * @returns {string|null} - The ID of the new marker or null if failed
      */
-    addMarker: function(markerData) {
-        return this.addMarkerToMap(markerData);
+    addMarker: function(markerData, saveToDb = true) {
+        return this.addMarkerToMap(markerData, saveToDb);
     },
     
     /**
@@ -205,9 +256,43 @@ const markerManager = {
     },
     
     /**
-     * Refreshes the markers list in the UI
+     * Highlights a specific marker in the markers list
+     * @param {string} markerId - ID of the marker to highlight
      */
-    refreshMarkerList: function() {
+    highlightMarker: function(markerId) {
+        if (!markerId) return;
+        
+        console.log(`Highlighting marker with ID: ${markerId}`);
+        
+        try {
+            // Find the marker item in the list
+            const $markerItem = jQuery(`.geo-maps-marker-item[data-marker-id="${markerId}"]`);
+            
+            if ($markerItem.length === 0) {
+                console.warn(`Marker with ID ${markerId} not found in the list`);
+                return;
+            }
+            
+            // Add highlight class
+            $markerItem.addClass('geo-maps-marker-highlight');
+            
+            // Scroll the marker into view
+            $markerItem[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Remove highlight after a delay
+            setTimeout(() => {
+                $markerItem.removeClass('geo-maps-marker-highlight');
+            }, 3000);
+        } catch (error) {
+            console.error('Error highlighting marker:', error);
+        }
+    },
+    
+    /**
+     * Refreshes the markers list in the UI
+     * @param {string} [highlightId] - Optional ID of marker to highlight after refresh
+     */
+    refreshMarkerList: function(highlightId) {
         const $markersList = jQuery('#geo-maps-markers-list');
         if (!$markersList.length) {
             return;
@@ -219,19 +304,66 @@ const markerManager = {
         const markers = settingsManager.getMarkers();
         
         if (markers.length === 0) {
-            $markersList.append('<div class="geo-maps-no-markers">No markers added yet</div>');
+            // Create a more descriptive empty state with guidance
+            $markersList.append(`
+                <div class="geo-maps-no-markers-container">
+                    <div class="geo-maps-no-markers">No markers added yet</div>
+                    <p class="geo-maps-no-markers-hint">
+                        <span class="dashicons dashicons-info-outline"></span>
+                        Add markers to highlight specific locations on your map
+                    </p>
+                    <button type="button" class="geo-maps-button geo-maps-button-primary geo-maps-add-first-marker">
+                        <span class="dashicons dashicons-plus"></span> Add Your First Marker
+                    </button>
+                </div>
+            `);
+            
+            // Add click handler for the "Add Your First Marker" button
+            setTimeout(() => {
+                jQuery('.geo-maps-add-first-marker').on('click', function() {
+                    // Try different approaches to add a marker
+                    if (window.GeoMapsBuilder && window.GeoMapsBuilder.drawerManager) {
+                        // Get current map center
+                        let center = null;
+                        if (window.GeoMapsBuilder.mapManager && window.GeoMapsBuilder.mapManager.getMapCenter) {
+                            center = window.GeoMapsBuilder.mapManager.getMapCenter();
+                        }
+                        
+                        // Open the marker drawer
+                        window.GeoMapsBuilder.drawerManager.openMarkerDrawer('Add', null, center);
+                    } else {
+                        // Fallback: try to click the actual add marker button if it exists
+                        const addMarkerBtn = jQuery('#geo-maps-add-marker-btn');
+                        if (addMarkerBtn.length) {
+                            addMarkerBtn.trigger('click');
+                        } else {
+                            alert('Use the "Add Marker" button above the map to add your first marker.');
+                        }
+                    }
+                });
+            }, 100);
+            
             return;
         }
         
         // Add each marker to the list
         markers.forEach(marker => {
+            // Check if this marker is unsaved
+            const isUnsaved = marker.unsaved === true;
+            const unsavedClass = isUnsaved ? 'geo-maps-marker-unsaved' : '';
+            const unsavedIndicator = isUnsaved ? 
+                '<span class="geo-maps-unsaved-indicator" title="Unsaved changes">●</span>' : '';
+            
             const $markerItem = jQuery(`
-                <div class="geo-maps-marker-item" data-marker-id="${marker.id}">
+                <div class="geo-maps-marker-item ${unsavedClass}" data-marker-id="${marker.id}">
                     <div class="geo-maps-marker-item-icon">
                         <span class="dashicons dashicons-location"></span>
                     </div>
                     <div class="geo-maps-marker-item-info">
-                        <h4 class="geo-maps-marker-item-title">${marker.title}</h4>
+                        <h4 class="geo-maps-marker-item-title">
+                            ${marker.title}
+                            ${unsavedIndicator}
+                        </h4>
                         <div class="geo-maps-marker-item-coords">
                             ${marker.latitude.toFixed(4)}, ${marker.longitude.toFixed(4)}
                         </div>
@@ -241,7 +373,7 @@ const markerManager = {
                             <span class="dashicons dashicons-edit"></span>
                         </button>
                         <button type="button" class="geo-maps-button-icon delete-marker" title="Delete marker">
-                            <span class="dashicons dashicons-trash"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="14" height="14" fill="currentColor"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"/></svg>
                         </button>
                     </div>
                 </div>
@@ -249,6 +381,35 @@ const markerManager = {
             
             $markersList.append($markerItem);
         });
+        
+        // Check if we need to show any "unsaved changes" notification
+        const hasUnsavedMarkers = markers.some(marker => marker.unsaved === true);
+        
+        if (hasUnsavedMarkers) {
+            // Check if notification already exists
+            if (!jQuery('.geo-maps-unsaved-markers-notice').length) {
+                const $notice = jQuery(`
+                    <div class="geo-maps-unsaved-markers-notice">
+                        <span class="dashicons dashicons-warning"></span>
+                        You have unsaved marker changes. Click "Save Map" to save all changes.
+                    </div>
+                `);
+                
+                // Add the notice before the marker list
+                $markersList.before($notice);
+            }
+        } else {
+            // Remove any existing notice
+            jQuery('.geo-maps-unsaved-markers-notice').remove();
+        }
+        
+        // Highlight specific marker if requested
+        if (highlightId) {
+            // Small delay to ensure DOM is ready
+            setTimeout(() => {
+                this.highlightMarker(highlightId);
+            }, 100);
+        }
     }
 };
 

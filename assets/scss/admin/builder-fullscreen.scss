@@ -2926,3 +2926,585 @@ body.geo-maps-drawer-open::after {
     overflow-y: auto;
     padding: var(--geo-maps-spacing-md) var(--geo-maps-spacing-md);
 }
+
+/* Unsaved Markers Styling */
+.geo-maps-marker-unsaved {
+    background-color: rgba(255, 220, 40, 0.1);
+    border-left: 3px solid #ffb900;
+}
+
+.geo-maps-unsaved-indicator {
+    display: inline-block;
+    color: #ffb900;
+    font-size: 14px;
+    margin-left: 5px;
+    vertical-align: middle;
+    animation: pulse-warning 2s infinite;
+}
+
+.geo-maps-unsaved-markers-notice {
+    margin: 10px 0;
+    padding: 8px 12px;
+    background-color: #fff8e5;
+    border-left: 4px solid #ffb900;
+    color: #72777c;
+    font-size: 13px;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+}
+
+.geo-maps-unsaved-markers-notice .dashicons {
+    color: #ffb900;
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+@keyframes pulse-warning {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
+
+/* Marker highlight animation for newly added or updated markers */
+.geo-maps-marker-highlight {
+    animation: marker-highlight 3s ease-in-out;
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes marker-highlight {
+    0% {
+        background-color: rgba(46, 204, 113, 0.3);
+        transform: translateY(0);
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5);
+    }
+    10% {
+        background-color: rgba(46, 204, 113, 0.5);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+    }
+    30% {
+        background-color: rgba(46, 204, 113, 0.5);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+    }
+    100% {
+        background-color: transparent;
+        transform: translateY(0);
+        box-shadow: none;
+    }
+}
+
+/* Empty markers state styling */
+.geo-maps-no-markers-container {
+    padding: 30px 20px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px dashed #ddd;
+}
+
+.geo-maps-no-markers {
+    font-size: 18px;
+    font-weight: 600;
+    color: #3c434a;
+    margin-bottom: 10px;
+}
+
+.geo-maps-no-markers-hint {
+    color: #757575;
+    font-size: 14px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.geo-maps-no-markers-hint .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #757575;
+}
+
+.geo-maps-add-first-marker {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+}
+
+.geo-maps-add-first-marker:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Marker List Styling - Enhanced & Consistent with Design */
+.geo-maps-markers-list-container {
+    margin-top: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: var(--geo-maps-radius-md);
+}
+
+.geo-maps-marker-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background-color: white;
+    border-radius: 8px;
+    border: 1px solid rgba(229, 231, 235, 0.7);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    position: relative;
+    gap: 12px;
+}
+
+.geo-maps-marker-item:hover {
+    border-color: rgba(79, 70, 229, 0.2);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.geo-maps-marker-item-icon {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(79, 70, 229, 0.1);
+    color: var(--geo-maps-primary);
+    border-radius: 6px;
+}
+
+.geo-maps-marker-item-icon .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.geo-maps-marker-item-info {
+    flex: 1;
+    min-width: 0; /* Ensures text truncation works properly */
+}
+
+.geo-maps-marker-item-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--geo-maps-text);
+    margin: 0 0 3px 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.geo-maps-marker-item-coords {
+    font-size: 12px;
+    color: var(--geo-maps-text-light);
+}
+
+.geo-maps-marker-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.geo-maps-marker-item-actions .geo-maps-button-icon {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: var(--geo-maps-text-light);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.geo-maps-marker-item-actions .geo-maps-button-icon:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--geo-maps-text);
+}
+
+.geo-maps-marker-item-actions .geo-maps-button-icon.delete-marker:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.geo-maps-marker-item-actions .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+.geo-maps-marker-highlight {
+    animation: geo-maps-highlight 1.5s ease;
+}
+
+.geo-maps-marker-unsaved {
+    border-left: 3px solid var(--geo-maps-primary);
+}
+
+.geo-maps-unsaved-indicator {
+    color: var(--geo-maps-primary);
+    font-size: 10px;
+    margin-left: 4px;
+}
+
+.geo-maps-unsaved-markers-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    background-color: rgba(254, 240, 138, 0.4);
+    border: 1px solid rgba(254, 240, 138, 0.7);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    color: #92400e;
+    font-size: 13px;
+}
+
+.geo-maps-unsaved-markers-notice .dashicons {
+    color: #f59e0b;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+@keyframes geo-maps-highlight {
+    0%, 100% {
+        background-color: white;
+    }
+    20%, 40% {
+        background-color: rgba(79, 70, 229, 0.1);
+    }
+}
+
+/* No Markers state styling - enhanced */
+.geo-maps-no-markers-container {
+    padding: 25px 20px;
+    text-align: center;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    margin: 10px 0;
+    border: 1px dashed #ddd;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.geo-maps-no-markers {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--geo-maps-text);
+}
+
+.geo-maps-no-markers-hint {
+    color: var(--geo-maps-text-light);
+    font-size: 13px;
+    max-width: 240px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.geo-maps-no-markers-hint .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: var(--geo-maps-text-light);
+}
+
+.geo-maps-add-first-marker {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+    margin-top: 5px;
+}
+
+.geo-maps-add-first-marker:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom Confirmation Modal - Modern Version */
+.geo-maps-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 999999;
+    opacity: 0;
+    transition: opacity 0.25s ease-in-out;
+}
+
+.geo-maps-modal-backdrop.active {
+    opacity: 1;
+}
+
+.geo-maps-confirm-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000000;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.geo-maps-confirm-modal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.geo-maps-confirm-modal-content {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.geo-maps-confirm-modal-header {
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+.geo-maps-confirm-modal-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--geo-maps-text);
+}
+
+.geo-maps-confirm-modal-close {
+    background: none;
+    border: none;
+    color: var(--geo-maps-text-light);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.geo-maps-confirm-modal-close:hover {
+    color: var(--geo-maps-text);
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.geo-maps-confirm-modal-body {
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.geo-maps-confirm-modal-icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FEF2F2;
+    color: #EF4444;
+    border-radius: 100%;
+}
+
+.geo-maps-confirm-modal-icon .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.geo-maps-confirm-modal-icon .dashicons-warning {
+    color: #F59E0B;
+    background-color: #FEF3C7;
+}
+
+.geo-maps-confirm-modal-icon .dashicons-info {
+    color: #3B82F6;
+    background-color: #EFF6FF;
+}
+
+.geo-maps-confirm-modal-message {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--geo-maps-text);
+    flex: 1;
+}
+
+.geo-maps-confirm-modal-footer {
+    padding: 16px 24px 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.geo-maps-button-danger {
+    background-color: #EF4444;
+    border-color: #EF4444;
+    color: white;
+}
+
+.geo-maps-button-danger:hover {
+    background-color: #DC2626;
+    border-color: #DC2626;
+}
+
+@media (max-width: 480px) {
+    .geo-maps-confirm-modal-content {
+        margin: 0 16px;
+    }
+    
+    .geo-maps-confirm-modal-body {
+        padding: 16px;
+    }
+    
+    .geo-maps-confirm-modal-footer {
+        padding: 16px;
+    }
+}
+
+/* Modern Delete Button */
+.geo-maps-marker-item-actions .geo-maps-button-icon.delete-marker {
+    color: #9CA3AF;
+    transition: all 0.2s ease;
+}
+
+.geo-maps-marker-item-actions .geo-maps-button-icon.delete-marker:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+}
+
+.geo-maps-marker-item-actions .geo-maps-button-icon.delete-marker .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Enhanced modal icons and animations */
+.geo-maps-confirm-modal-content-wrapper {
+    flex: 1;
+}
+
+.geo-maps-confirm-modal-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.geo-maps-icon-trash,
+.geo-maps-icon-warning,
+.geo-maps-icon-info {
+    display: none;
+}
+
+.geo-maps-confirm-modal-icon.icon-trash {
+    background-color: #FEF2F2;
+    color: #EF4444;
+}
+
+.geo-maps-confirm-modal-icon.icon-warning {
+    background-color: #FEF3C7;
+    color: #F59E0B;
+}
+
+.geo-maps-confirm-modal-icon.icon-info {
+    background-color: #EFF6FF;
+    color: #3B82F6;
+}
+
+.geo-maps-button-content {
+    position: relative;
+    z-index: 2;
+    display: inline-block;
+}
+
+/* Modern Delete Button Enhancements */
+.geo-maps-marker-item-actions .geo-maps-button-icon.delete-marker {
+    color: #9CA3AF;
+    transition: all 0.2s ease;
+    background: transparent;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+}
+
+.geo-maps-marker-item-actions .geo-maps-button-icon.delete-marker:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+    transform: translateY(-1px);
+}
+
+.geo-maps-marker-item-actions .geo-maps-button-icon.delete-marker svg {
+    width: 14px;
+    height: 14px;
+    transition: all 0.2s ease;
+}
+
+.geo-maps-marker-item-actions .geo-maps-button-icon.delete-marker:hover svg {
+    transform: rotate(-4deg) scale(1.1);
+}
+
+/* Enhanced Edit Icon Animations */
+.geo-maps-marker-item-actions .geo-maps-button-icon.edit-marker {
+    color: #9CA3AF;
+    transition: all 0.2s ease;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+}
+
+.geo-maps-marker-item-actions .geo-maps-button-icon.edit-marker:hover {
+    background-color: rgba(79, 70, 229, 0.1);
+    color: var(--geo-maps-primary);
+    transform: translateY(-1px);
+}
+
+.geo-maps-marker-item-actions .geo-maps-button-icon.edit-marker .dashicons {
+    transition: all 0.2s ease;
+}
+
+.geo-maps-marker-item-actions .geo-maps-button-icon.edit-marker:hover .dashicons {
+    transform: rotate(5deg) scale(1.1);
+}

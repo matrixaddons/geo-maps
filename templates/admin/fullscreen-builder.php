@@ -330,39 +330,9 @@ if (!defined('ABSPATH')) exit;
                                 <?php esc_html_e('Your Markers', 'geo-maps'); ?>
                             </h3>
                             
-                            <?php if (!empty($markers)) : ?>
-                                <div class="geo-maps-markers-list" id="geo-maps-markers-list">
-                                    <?php foreach ($markers as $marker_id => $marker) : ?>
-                                        <div class="geo-maps-marker-item" data-marker-id="<?php echo esc_attr($marker_id); ?>">
-                                            <div class="geo-maps-marker-icon">
-                                                <?php if (!empty($marker['icon'])) : ?>
-                                                    <img src="<?php echo esc_url($marker['icon']); ?>" alt="Marker">
-                                                <?php else : ?>
-                                                    <span class="dashicons dashicons-location"></span>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="geo-maps-marker-content">
-                                                <h4 class="geo-maps-marker-title"><?php echo esc_html($marker['title']); ?></h4>
-                                                <p class="geo-maps-marker-coords"><?php echo esc_html(sprintf('Lat: %s, Lng: %s', $marker['lat'], $marker['lng'])); ?></p>
-                                            </div>
-                                            <div class="geo-maps-marker-actions">
-                                                <button type="button" class="geo-maps-marker-btn edit-marker" title="<?php esc_attr_e('Edit Marker', 'geo-maps'); ?>">
-                                                    <span class="dashicons dashicons-edit"></span>
-                                                </button>
-                                                <button type="button" class="geo-maps-marker-btn delete delete-marker" title="<?php esc_attr_e('Delete Marker', 'geo-maps'); ?>">
-                                                    <span class="dashicons dashicons-trash"></span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php else : ?>
-                                <div class="geo-maps-empty-state">
-                                    <span class="dashicons dashicons-location"></span>
-                                    <div class="geo-maps-empty-state-title">No markers added yet</div>
-                                    <div class="geo-maps-empty-state-description">Add markers to highlight specific locations on your map</div>
-                                </div>
-                            <?php endif; ?>
+                            <div id="geo-maps-markers-list" class="geo-maps-markers-list-container">
+                                <!-- Marker list will be dynamically populated by JavaScript -->
+                            </div>
                         </div>
                     </div>
                 </div>

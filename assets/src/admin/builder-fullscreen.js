@@ -10,6 +10,7 @@ import mapManager from './builder/map-manager';
 import markerManager from './builder/marker-manager';
 import drawerManager from './builder/drawer-manager';
 import formManager from './builder/form-manager';
+import confirmModal from './confirm-modal';
 
 // Initialize the Geo Maps Builder when the document is ready
 jQuery(document).ready(function($) {
@@ -24,7 +25,8 @@ jQuery(document).ready(function($) {
         mapManager,
         markerManager,
         drawerManager,
-        formManager
+        formManager,
+        confirmModal
     };
     
     // Check if all modules are loaded
@@ -34,7 +36,8 @@ jQuery(document).ready(function($) {
         { name: 'formManager', module: formManager },
         { name: 'mapManager', module: mapManager },
         { name: 'markerManager', module: markerManager },
-        { name: 'drawerManager', module: drawerManager }
+        { name: 'drawerManager', module: drawerManager },
+        { name: 'confirmModal', module: confirmModal }
     ];
     
     for (const moduleData of requiredModules) {
