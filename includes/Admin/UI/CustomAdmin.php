@@ -245,10 +245,34 @@ class CustomAdmin
 
         // Enqueue our custom CSS
         wp_enqueue_style(
-            'geo-maps-admin-ui',
+            'geo-maps-tailwind-admin-css',
             GEO_MAPS_PLUGIN_URI . 'assets/build/admin/css/tailwind-custom-admin.css',
-            [],
+            ['wp-components'],
             GEO_MAPS_VERSION
+        );
+
+        // Enqueue builder fullscreen CSS
+        wp_enqueue_style(
+            'geo-maps-builder-fullscreen-css',
+            GEO_MAPS_PLUGIN_URI . 'assets/build/admin/css/builder-fullscreen.css',
+            ['geo-maps-tailwind-admin-css'],
+            GEO_MAPS_VERSION
+        );
+
+        // Enqueue autocomplete CSS
+        wp_enqueue_style(
+            'geo-maps-autocomplete-css',
+            GEO_MAPS_PLUGIN_URI . 'assets/build/admin/css/autocomplete.css',
+            ['geo-maps-builder-fullscreen-css'],
+            GEO_MAPS_VERSION
+        );
+
+        // Add the drawer fix CSS with timestamp to prevent caching
+        wp_enqueue_style(
+            'geo-maps-drawer-fix-css',
+            GEO_MAPS_PLUGIN_URI . 'assets/src/admin/drawer-fix.css',
+            ['geo-maps-builder-fullscreen-css'],
+            time()
         );
 
         // For the fullscreen builder, enqueue additional styles & scripts

@@ -655,11 +655,28 @@ var drawerManager = {
         }
       }
 
+      // Ensure mini map container has proper height before initialization
+      var miniMapContainer = document.getElementById('geo-maps-mini-map-container');
+      if (miniMapContainer) {
+        // Ensure the mini map container has a minimum height
+        if (miniMapContainer.clientHeight < 200) {
+          console.log('Setting mini map container height to 250px');
+          miniMapContainer.style.height = '250px';
+        }
+      }
+
       // Initialize mini map and set up event handlers
+      console.log('Starting mini map initialization sequence...');
+
+      // Stagger initialization to ensure proper rendering
       setTimeout(function () {
         _this4.initializeMiniMap(marker);
-        _this4.setupMiniMapLocationSearch();
-        _this4.setupMediaSelection();
+
+        // After mini map initialization, set up other features
+        setTimeout(function () {
+          _this4.setupMiniMapLocationSearch();
+          _this4.setupMediaSelection();
+        }, 200);
       }, 100);
     } catch (error) {
       console.error('Error initializing drawer content:', error);
@@ -777,32 +794,64 @@ var drawerManager = {
       // Get zoom wheel setting
       var enableScrollZoom = (_window$GeoMapsBuilde3 = (_window$GeoMapsBuilde4 = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde4 === void 0 || (_window$GeoMapsBuilde4 = _window$GeoMapsBuilde4.settingsManager) === null || _window$GeoMapsBuilde4 === void 0 ? void 0 : _window$GeoMapsBuilde4.getAppearanceSetting('enableScrollZoom')) !== null && _window$GeoMapsBuilde3 !== void 0 ? _window$GeoMapsBuilde3 : true;
 
-      // Create mini map settings
+      // Create mini map settings following the expected structure
       var miniMapSettings = {
         map_type: mapType,
+        map_zoom: 10,
+        // Use center property with lat/lng in the format expected by the render engine
+        center: {
+          lat: position.lat,
+          lng: position.lng
+        },
         settings: {
           osm_provider: osmProvider,
           scroll_wheel_zoom: enableScrollZoom,
           show_control: true,
-          control_position: 'topright'
+          control_position: 'topright',
+          markers: {
+            default_icon: '',
+            width: '25',
+            height: '40',
+            clustering: false
+          }
         },
-        map_markers: [],
-        center: position,
-        map_zoom: 10
+        // Empty markers array - we'll add the marker manually after map creation
+        map_markers: []
       };
       console.log('Creating mini map with settings:', miniMapSettings);
 
       // Use the render engine to create a mini map
-      if (window.geoMapsRenderEngine && window.geoMapsRenderEngine.renderMap) {
+      if (window.geoMapsRenderEngine && typeof window.geoMapsRenderEngine.renderMap === 'function') {
         // Clear any existing content in the container
         miniMapContainer.innerHTML = '';
 
+        // First check if the container is properly sized - this is critical for maps to render
+        if (miniMapContainer.clientHeight < 10) {
+          console.warn('Mini map container height is too small:', miniMapContainer.clientHeight);
+          miniMapContainer.style.height = '250px'; // Set a minimum height
+        }
+
         // Render the map
-        window.geoMapsRenderEngine.renderMap('geo-maps-mini-map-container', miniMapSettings);
+        var result = window.geoMapsRenderEngine.renderMap('geo-maps-mini-map-container', miniMapSettings);
+        console.log('Render engine result:', result);
 
         // Get a reference to the map
         if (window.Geo_Maps_Rendered && window.Geo_Maps_Rendered['geo-maps-mini-map-container']) {
           this.miniMap = window.Geo_Maps_Rendered['geo-maps-mini-map-container'].map;
+          if (!this.miniMap) {
+            console.error('Mini map not created properly - no map reference found');
+            return;
+          }
+          console.log('Mini map created successfully:', this.miniMap);
+
+          // Force a resize/redraw to ensure the map renders properly
+          setTimeout(function () {
+            if (_this6.miniMap instanceof L.Map) {
+              _this6.miniMap.invalidateSize();
+            } else if (window.google && _this6.miniMap instanceof google.maps.Map) {
+              google.maps.event.trigger(_this6.miniMap, 'resize');
+            }
+          }, 100);
 
           // Handle click events on the map to set marker position
           if (this.miniMap instanceof L.Map) {
@@ -910,10 +959,10 @@ var drawerManager = {
           }
           console.log('Mini map initialized successfully.');
         } else {
-          console.error('Mini map not found in rendered maps.');
+          console.error('Mini map not found in rendered maps. Available maps:', window.Geo_Maps_Rendered);
         }
       } else {
-        console.error('Render engine not available for mini map.');
+        console.error('Render engine not available for mini map:', window.geoMapsRenderEngine);
       }
     } catch (error) {
       console.error('Error initializing mini map:', error);
@@ -961,13 +1010,24 @@ var drawerManager = {
    * Set up location search for mini map with autocomplete
    */
   setupMiniMapLocationSearch: function setupMiniMapLocationSearch() {
-    // Initialize location search with our mini map
-    _location_search__WEBPACK_IMPORTED_MODULE_0__["default"].initialize({
-      inputId: 'location_search',
-      map: this.miniMap,
-      marker: this.miniMapMarker,
-      updateTitleCallback: this._updateTitleFromCoordinates.bind(this)
-    });
+    // Make sure we have the miniMap and miniMapMarker references
+    if (!this.miniMap) {
+      console.error('Cannot set up location search: mini map is not initialized');
+      return;
+    }
+    console.log('Setting up location search with mini map:', this.miniMap);
+    try {
+      // Initialize location search with our mini map
+      _location_search__WEBPACK_IMPORTED_MODULE_0__["default"].initialize({
+        inputId: 'location_search',
+        map: this.miniMap,
+        marker: this.miniMapMarker,
+        updateTitleCallback: this._updateTitleFromCoordinates.bind(this)
+      });
+      console.log('Location search initialized successfully');
+    } catch (error) {
+      console.error('Error initializing location search:', error);
+    }
   },
   /**
    * Set up media selection for marker icon
@@ -3578,40 +3638,69 @@ var locationSearch = function () {
   var updateMiniMapView = function updateMiniMapView(lat, lng) {
     // Check if we have a mini map
     if (!miniMap) {
-      console.warn('Mini map not available for update');
+      console.warn('Location search: Mini map not available for update');
       return;
     }
 
     // Validate coordinates
     if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-      console.warn('Invalid coordinates provided:', lat, lng);
+      console.warn('Location search: Invalid coordinates provided:', lat, lng);
       return;
     }
     try {
-      // Move the map view to the new location
-      if (typeof L !== 'undefined' && miniMap instanceof L.Map) {
+      // Check for Leaflet map (more robust check)
+      if (typeof L !== 'undefined' && miniMap && miniMap instanceof L.Map) {
+        // First check if the map is properly initialized
+        if (!miniMap._loaded) {
+          console.warn('Location search: Leaflet map not fully loaded yet');
+          return;
+        }
+        console.log('Location search: Updating Leaflet map view to', {
+          lat: lat,
+          lng: lng
+        });
+
+        // Update the map view
         miniMap.setView([lat, lng], miniMap.getZoom());
 
-        // Update marker position
-        if (miniMapMarker) {
+        // Update marker position if it exists
+        if (miniMapMarker && typeof miniMapMarker.setLatLng === 'function') {
           miniMapMarker.setLatLng([lat, lng]);
+        } else if (miniMapMarker) {
+          console.warn('Location search: Invalid Leaflet marker object:', miniMapMarker);
+        } else {
+          console.warn('Location search: No Leaflet marker available to update');
         }
-      } else if (typeof google !== 'undefined' && google.maps && miniMap instanceof google.maps.Map) {
+      }
+      // Check for Google Maps
+      else if (typeof google !== 'undefined' && google.maps && miniMap instanceof google.maps.Map) {
+        console.log('Location search: Updating Google map view to', {
+          lat: lat,
+          lng: lng
+        });
+
+        // Update the map center
         miniMap.setCenter({
           lat: lat,
           lng: lng
         });
 
-        // Update marker position
-        if (miniMapMarker) {
+        // Update marker position if it exists
+        if (miniMapMarker && typeof miniMapMarker.setPosition === 'function') {
           miniMapMarker.setPosition({
             lat: lat,
             lng: lng
           });
+        } else if (miniMapMarker) {
+          console.warn('Location search: Invalid Google Maps marker object:', miniMapMarker);
+        } else {
+          console.warn('Location search: No Google Maps marker available to update');
         }
+      } else {
+        console.warn('Location search: Unknown map type or invalid map reference:', miniMap);
       }
     } catch (error) {
-      console.error('Error updating mini map view:', error);
+      console.error('Location search: Error updating mini map view:', error);
     }
   };
 

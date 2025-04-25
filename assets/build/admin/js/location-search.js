@@ -371,40 +371,69 @@ var locationSearch = function () {
   var updateMiniMapView = function updateMiniMapView(lat, lng) {
     // Check if we have a mini map
     if (!miniMap) {
-      console.warn('Mini map not available for update');
+      console.warn('Location search: Mini map not available for update');
       return;
     }
 
     // Validate coordinates
     if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-      console.warn('Invalid coordinates provided:', lat, lng);
+      console.warn('Location search: Invalid coordinates provided:', lat, lng);
       return;
     }
     try {
-      // Move the map view to the new location
-      if (typeof L !== 'undefined' && miniMap instanceof L.Map) {
+      // Check for Leaflet map (more robust check)
+      if (typeof L !== 'undefined' && miniMap && miniMap instanceof L.Map) {
+        // First check if the map is properly initialized
+        if (!miniMap._loaded) {
+          console.warn('Location search: Leaflet map not fully loaded yet');
+          return;
+        }
+        console.log('Location search: Updating Leaflet map view to', {
+          lat: lat,
+          lng: lng
+        });
+
+        // Update the map view
         miniMap.setView([lat, lng], miniMap.getZoom());
 
-        // Update marker position
-        if (miniMapMarker) {
+        // Update marker position if it exists
+        if (miniMapMarker && typeof miniMapMarker.setLatLng === 'function') {
           miniMapMarker.setLatLng([lat, lng]);
+        } else if (miniMapMarker) {
+          console.warn('Location search: Invalid Leaflet marker object:', miniMapMarker);
+        } else {
+          console.warn('Location search: No Leaflet marker available to update');
         }
-      } else if (typeof google !== 'undefined' && google.maps && miniMap instanceof google.maps.Map) {
+      }
+      // Check for Google Maps
+      else if (typeof google !== 'undefined' && google.maps && miniMap instanceof google.maps.Map) {
+        console.log('Location search: Updating Google map view to', {
+          lat: lat,
+          lng: lng
+        });
+
+        // Update the map center
         miniMap.setCenter({
           lat: lat,
           lng: lng
         });
 
-        // Update marker position
-        if (miniMapMarker) {
+        // Update marker position if it exists
+        if (miniMapMarker && typeof miniMapMarker.setPosition === 'function') {
           miniMapMarker.setPosition({
             lat: lat,
             lng: lng
           });
+        } else if (miniMapMarker) {
+          console.warn('Location search: Invalid Google Maps marker object:', miniMapMarker);
+        } else {
+          console.warn('Location search: No Google Maps marker available to update');
         }
+      } else {
+        console.warn('Location search: Unknown map type or invalid map reference:', miniMap);
       }
     } catch (error) {
-      console.error('Error updating mini map view:', error);
+      console.error('Location search: Error updating mini map view:', error);
     }
   };
 
