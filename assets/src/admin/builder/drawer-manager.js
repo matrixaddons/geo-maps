@@ -441,13 +441,34 @@ const drawerManager = {
             }
             
             // Get map type from settings manager if available, otherwise default to OSM
-            const mapType = window.GeoMapsBuilder?.settingsManager?.getMapType() || 'open_street_map';
+            let mapType = 'open_street_map'; // Default
+            let osmProvider = 'default'; // Default
+            let enableScrollZoom = true; // Default
             
-            // Get OSM provider if using OSM
-            const osmProvider = window.GeoMapsBuilder?.settingsManager?.getOSMProvider() || 'default';
-            
-            // Get zoom wheel setting
-            const enableScrollZoom = window.GeoMapsBuilder?.settingsManager?.getAppearanceSetting('enableScrollZoom') ?? true;
+            try {
+                // Try to get settings from the settings manager
+                if (window.GeoMapsBuilder?.settingsManager) {
+                    const settingsManager = window.GeoMapsBuilder.settingsManager;
+                    
+                    // Get map type
+                    if (typeof settingsManager.getMapType === 'function') {
+                        mapType = settingsManager.getMapType() || mapType;
+                    }
+                    
+                    // Get OSM provider
+                    if (typeof settingsManager.getOSMProvider === 'function') {
+                        osmProvider = settingsManager.getOSMProvider() || osmProvider;
+                    }
+                    
+                    // Get zoom wheel setting
+                    if (typeof settingsManager.getAppearanceSetting === 'function') {
+                        enableScrollZoom = settingsManager.getAppearanceSetting('enableScrollZoom', true);
+                    }
+                }
+            } catch (error) {
+                console.warn('Error getting settings from settingsManager:', error);
+                // Continue with defaults
+            }
             
             // Create mini map settings following the expected structure
             const miniMapSettings = {

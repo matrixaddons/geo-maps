@@ -759,7 +759,6 @@ var drawerManager = {
     // Clean up any existing mini map
     this._cleanupMiniMap();
     try {
-      var _window$GeoMapsBuilde, _window$GeoMapsBuilde2, _window$GeoMapsBuilde3, _window$GeoMapsBuilde4;
       // Extract position from marker or use default
       var position;
       if (marker) {
@@ -786,13 +785,35 @@ var drawerManager = {
       }
 
       // Get map type from settings manager if available, otherwise default to OSM
-      var mapType = ((_window$GeoMapsBuilde = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde === void 0 || (_window$GeoMapsBuilde = _window$GeoMapsBuilde.settingsManager) === null || _window$GeoMapsBuilde === void 0 ? void 0 : _window$GeoMapsBuilde.getMapType()) || 'open_street_map';
+      var mapType = 'open_street_map'; // Default
+      var osmProvider = 'default'; // Default
+      var enableScrollZoom = true; // Default
 
-      // Get OSM provider if using OSM
-      var osmProvider = ((_window$GeoMapsBuilde2 = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde2 === void 0 || (_window$GeoMapsBuilde2 = _window$GeoMapsBuilde2.settingsManager) === null || _window$GeoMapsBuilde2 === void 0 ? void 0 : _window$GeoMapsBuilde2.getOSMProvider()) || 'default';
+      try {
+        var _window$GeoMapsBuilde;
+        // Try to get settings from the settings manager
+        if ((_window$GeoMapsBuilde = window.GeoMapsBuilder) !== null && _window$GeoMapsBuilde !== void 0 && _window$GeoMapsBuilde.settingsManager) {
+          var settingsManager = window.GeoMapsBuilder.settingsManager;
 
-      // Get zoom wheel setting
-      var enableScrollZoom = (_window$GeoMapsBuilde3 = (_window$GeoMapsBuilde4 = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde4 === void 0 || (_window$GeoMapsBuilde4 = _window$GeoMapsBuilde4.settingsManager) === null || _window$GeoMapsBuilde4 === void 0 ? void 0 : _window$GeoMapsBuilde4.getAppearanceSetting('enableScrollZoom')) !== null && _window$GeoMapsBuilde3 !== void 0 ? _window$GeoMapsBuilde3 : true;
+          // Get map type
+          if (typeof settingsManager.getMapType === 'function') {
+            mapType = settingsManager.getMapType() || mapType;
+          }
+
+          // Get OSM provider
+          if (typeof settingsManager.getOSMProvider === 'function') {
+            osmProvider = settingsManager.getOSMProvider() || osmProvider;
+          }
+
+          // Get zoom wheel setting
+          if (typeof settingsManager.getAppearanceSetting === 'function') {
+            enableScrollZoom = settingsManager.getAppearanceSetting('enableScrollZoom', true);
+          }
+        }
+      } catch (error) {
+        console.warn('Error getting settings from settingsManager:', error);
+        // Continue with defaults
+      }
 
       // Create mini map settings following the expected structure
       var miniMapSettings = {
@@ -1202,7 +1223,7 @@ var drawerManager = {
   handleMarkerFormSubmit: function handleMarkerFormSubmit() {
     var _this8 = this;
     return _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-      var _document$getElementB, _document$getElementB2, _document$getElementB3, _document$getElementB4, _document$getElementB5, _document$getElementB6, _window$GeoMapsBuilde5, _window$GeoMapsBuilde6, markerId, title, description, lat, lng, iconUrl, markerManager, statusManager, markerData, success, attempt, _attempt;
+      var _document$getElementB, _document$getElementB2, _document$getElementB3, _document$getElementB4, _document$getElementB5, _document$getElementB6, _window$GeoMapsBuilde2, _window$GeoMapsBuilde3, markerId, title, description, lat, lng, iconUrl, markerManager, statusManager, markerData, success, attempt, _attempt;
       return _regeneratorRuntime().wrap(function _callee$(_context) {
         while (1) switch (_context.prev = _context.next) {
           case 0:
@@ -1235,8 +1256,8 @@ var drawerManager = {
             return _context.abrupt("return");
           case 16:
             // Check if we have access to required managers
-            markerManager = (_window$GeoMapsBuilde5 = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde5 === void 0 ? void 0 : _window$GeoMapsBuilde5.markerManager;
-            statusManager = (_window$GeoMapsBuilde6 = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde6 === void 0 ? void 0 : _window$GeoMapsBuilde6.statusManager;
+            markerManager = (_window$GeoMapsBuilde2 = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde2 === void 0 ? void 0 : _window$GeoMapsBuilde2.markerManager;
+            statusManager = (_window$GeoMapsBuilde3 = window.GeoMapsBuilder) === null || _window$GeoMapsBuilde3 === void 0 ? void 0 : _window$GeoMapsBuilde3.statusManager;
             if (markerManager) {
               _context.next = 22;
               break;
@@ -3136,6 +3157,26 @@ var settingsManager = {
       osmProvider: this.osmProvider,
       appearance: _objectSpread({}, this.appearance)
     };
+  },
+  /**
+   * Get the current OSM provider
+   * @returns {string} The OSM provider type
+   */
+  getOSMProvider: function getOSMProvider() {
+    return this.osmProvider || 'default';
+  },
+  /**
+   * Get a specific appearance setting
+   * @param {string} key - The appearance setting key
+   * @param {*} defaultValue - Default value if setting doesn't exist
+   * @returns {*} - The appearance setting value or default
+   */
+  getAppearanceSetting: function getAppearanceSetting(key) {
+    var defaultValue = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    if (!key || !this.appearance || _typeof(this.appearance) !== 'object') {
+      return defaultValue;
+    }
+    return this.appearance[key] === undefined ? defaultValue : this.appearance[key];
   },
   /**
    * Set the map center coordinates

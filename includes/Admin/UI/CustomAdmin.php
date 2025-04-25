@@ -341,7 +341,7 @@ class CustomAdmin
                                     drawer.style.display = "flex";
                                     drawer.style.transform = "translateX(0)";
                                     drawer.classList.add("open");
-                                    document.body.classList.add("drawer-open");
+                                    document.body.classList.add("geo-maps-drawer-open");
                                 }
                             } else {
                                 console.error("Drawer element not found");

@@ -252,6 +252,28 @@ const settingsManager = {
     },
     
     /**
+     * Get the current OSM provider
+     * @returns {string} The OSM provider type
+     */
+    getOSMProvider: function() {
+        return this.osmProvider || 'default';
+    },
+    
+    /**
+     * Get a specific appearance setting
+     * @param {string} key - The appearance setting key
+     * @param {*} defaultValue - Default value if setting doesn't exist
+     * @returns {*} - The appearance setting value or default
+     */
+    getAppearanceSetting: function(key, defaultValue = null) {
+        if (!key || !this.appearance || typeof this.appearance !== 'object') {
+            return defaultValue;
+        }
+        
+        return this.appearance[key] === undefined ? defaultValue : this.appearance[key];
+    },
+    
+    /**
      * Set the map center coordinates
      * @param {Array} centerCoords - [lat, lng] center coordinates
      */
