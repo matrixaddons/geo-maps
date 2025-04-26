@@ -202,7 +202,7 @@ class Maps
 		$self = new self();
 		add_filter('screen_options_show_screen', array($self, 'hide_screen_option'));
 		add_action('add_meta_boxes', array($self, 'metabox'), 11);
-		add_action('save_post', array($self, 'save'));
+		//add_action('save_post', array($self, 'save'));
 		add_action('admin_enqueue_scripts', array($self, 'scripts'), 10);
 		add_action('geo_maps_metabox_postbox_item', array($self, 'render_map'), 10);
 		add_action('geo_maps_meta_tab_content_map_marker_options', array($self, 'marker_template'), 10);

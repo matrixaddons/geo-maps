@@ -36,6 +36,7 @@ class Maps
 			'show_in_admin_bar' => false,
 			'show_ui' => false,
 			'show_in_menu' => false,
+			'rewrite' => array('slug' => 'geo-maps'),
 		);
 		register_post_type($this->slug, $args);
 

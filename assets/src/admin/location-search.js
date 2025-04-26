@@ -38,7 +38,7 @@ const locationSearch = (() => {
             console.warn(`Location search: Input element not found with ID "${inputId}"`);
             
             // Try to find the input by selector or placeholder
-            const alternateInput = document.querySelector(`input[name="${inputId}"], input[placeholder*="location"], input[placeholder*="address"]`);
+            const alternateInput = document.querySelector(`input[name="${inputId}"], input[placeholder*="location"], input[placeholder*="address"], input[placeholder*="search"]`);
             
             if (alternateInput) {
                 console.log('Location search: Found alternative input element:', alternateInput);
@@ -47,8 +47,36 @@ const locationSearch = (() => {
                 // Add the ID to make future lookups easier
                 searchInput.id = inputId;
             } else {
-                console.error('Location search: No suitable input element found. Search functionality disabled.');
-                return false;
+                // Last resort - create the input if it doesn't exist
+                const searchContainers = document.querySelectorAll('.geo-maps-location-search-container, #geo-maps-location-search-container, .geo-maps-builder-field[data-field="location_search"]');
+                
+                if (searchContainers.length > 0) {
+                    const container = searchContainers[0];
+                    console.log('Location search: Creating input in container:', container);
+                    
+                    // Create the input
+                    searchInput = document.createElement('input');
+                    searchInput.id = inputId;
+                    searchInput.type = 'text';
+                    searchInput.className = 'geo-maps-input geo-maps-location-search-input';
+                    searchInput.placeholder = 'Search for a location...';
+                    
+                    // Create label if needed
+                    if (!container.querySelector('label')) {
+                        const label = document.createElement('label');
+                        label.htmlFor = inputId;
+                        label.className = 'geo-maps-label';
+                        label.textContent = 'Search Location';
+                        container.appendChild(label);
+                    }
+                    
+                    // Add to container
+                    container.appendChild(searchInput);
+                    console.log('Location search: Created new input element', searchInput);
+                } else {
+                    console.error('Location search: No suitable input element found and no container to create one. Search functionality disabled.');
+                    return false;
+                }
             }
         }
         
@@ -70,15 +98,29 @@ const locationSearch = (() => {
         autocompleteContainer.id = 'location-search-autocomplete';
         autocompleteContainer.className = 'geo-maps-autocomplete-container';
         
+        // Find the right parent for the autocomplete container
+        let parentContainer = searchInput.closest('.geo-maps-builder-field') || searchInput.parentNode;
+        
         // Append to parent or body if parent not available
-        if (searchInput.parentNode) {
-            searchInput.parentNode.appendChild(autocompleteContainer);
+        if (parentContainer) {
+            // Create a wrapper if needed to ensure proper positioning
+            const wrapper = document.createElement('div');
+            wrapper.className = 'geo-maps-autocomplete-wrapper';
+            wrapper.style.position = 'relative';
+            wrapper.style.width = '100%';
+            
+            // Replace searchInput with wrapper + searchInput + autocompleteContainer
+            if (searchInput.parentNode) {
+                searchInput.parentNode.insertBefore(wrapper, searchInput);
+                wrapper.appendChild(searchInput);
+                wrapper.appendChild(autocompleteContainer);
+            }
         } else {
             document.body.appendChild(autocompleteContainer);
             console.warn('Location search: Input has no parent, appending autocomplete to body instead');
         }
         
-        // Add special styles to make the autocomplete container visible
+        // Add special styles to position the autocomplete container correctly
         autocompleteContainer.style.position = 'absolute';
         autocompleteContainer.style.zIndex = '9999';
         autocompleteContainer.style.background = '#fff';
@@ -89,9 +131,14 @@ const locationSearch = (() => {
         autocompleteContainer.style.maxHeight = '300px';
         autocompleteContainer.style.overflowY = 'auto';
         autocompleteContainer.style.display = 'none';
+        autocompleteContainer.style.top = '100%';
+        autocompleteContainer.style.left = '0';
         
         // Set up event listeners
         setupEventListeners();
+        
+        // Add CSS class to body to indicate location search is active
+        document.body.classList.add('geo-maps-location-search-active');
         
         console.log('Location search: Initialization complete');
         return true;
@@ -122,6 +169,19 @@ const locationSearch = (() => {
             container.remove();
         }
         
+        // Remove wrapper if it exists
+        const wrapper = document.querySelector('.geo-maps-autocomplete-wrapper');
+        if (wrapper && wrapper.parentNode) {
+            const parent = wrapper.parentNode;
+            while (wrapper.firstChild) {
+                parent.insertBefore(wrapper.firstChild, wrapper);
+            }
+            parent.removeChild(wrapper);
+        }
+        
+        // Remove body class
+        document.body.classList.remove('geo-maps-location-search-active');
+        
         // Reset state
         searchInput = null;
         autocompleteContainer = null;
@@ -143,6 +203,9 @@ const locationSearch = (() => {
         // Input event for search as you type
         searchInput.addEventListener('input', handleInputChange);
         
+        // Focus event to show previous results
+        searchInput.addEventListener('focus', handleFocus);
+        
         // Keyboard navigation
         searchInput.addEventListener('keydown', handleKeyDown);
         
@@ -161,6 +224,9 @@ const locationSearch = (() => {
      * @param {Event} e - The input event
      */
     const handleInputChange = (e) => {
+        // Prevent event propagation
+        e.stopPropagation();
+        
         const query = e.target.value.trim();
         currentQuery = query;
         
@@ -176,10 +242,29 @@ const locationSearch = (() => {
     };
     
     /**
+     * Handle focus on search input
+     * @param {Event} e - The focus event
+     */
+    const handleFocus = (e) => {
+        // Prevent event propagation
+        e.stopPropagation();
+        
+        // Show previous results if available
+        if (searchResults.length > 0 && currentQuery) {
+            displayResults(searchResults);
+        }
+    };
+    
+    /**
      * Handle keyboard navigation
      * @param {KeyboardEvent} e - The keyboard event
      */
     const handleKeyDown = (e) => {
+        // Prevent event propagation for modifiers and navigation keys
+        if (e.key === 'Enter' || e.key === 'Escape' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.stopPropagation();
+        }
+        
         if (e.key === 'Enter') {
             e.preventDefault();
             // Select first result if available
@@ -190,8 +275,11 @@ const locationSearch = (() => {
             // Hide autocomplete
             hideAutocomplete();
         } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-            // TODO: Implement keyboard navigation through results
+            // Prevent default to avoid scrolling the page
             e.preventDefault();
+            
+            // TODO: Implement keyboard navigation through results
+            // For now just prevent default behavior
         }
     };
     
@@ -220,14 +308,58 @@ const locationSearch = (() => {
      * Position the autocomplete dropdown properly
      */
     const positionAutocomplete = () => {
+        if (!autocompleteContainer || !searchInput) return;
+        
+        // Make sure the container is positioned correctly relative to the input
+        const wrapper = searchInput.closest('.geo-maps-autocomplete-wrapper');
+        if (wrapper) {
+            // Already in a wrapper with correct positioning
+            autocompleteContainer.style.position = 'absolute';
+            autocompleteContainer.style.width = '100%';
+            autocompleteContainer.style.top = '100%';
+            autocompleteContainer.style.left = '0';
+        } else {
+            // Fallback positioning if not in a wrapper
+            const rect = searchInput.getBoundingClientRect();
+            autocompleteContainer.style.position = 'absolute';
+            autocompleteContainer.style.width = `${rect.width}px`;
+            autocompleteContainer.style.top = `${rect.bottom + window.scrollY}px`;
+            autocompleteContainer.style.left = `${rect.left + window.scrollX}px`;
+        }
+    };
+    
+    /**
+     * Display the autocomplete dropdown with results
+     * @param {Array} results - The search results to display
+     */
+    const displayResults = (results) => {
         if (!autocompleteContainer) return;
         
-        // Position relative to parent container, not absolute on page
-        autocompleteContainer.style.position = 'relative';
-        autocompleteContainer.style.width = '100%';
-        autocompleteContainer.style.top = 'auto';
-        autocompleteContainer.style.left = 'auto';
-        autocompleteContainer.style.right = 'auto';
+        // Clear previous results
+        autocompleteContainer.innerHTML = '';
+        
+        if (results.length === 0) {
+            // No results, add a message
+            const noResults = document.createElement('div');
+            noResults.className = 'geo-maps-autocomplete-info';
+            noResults.textContent = 'No locations found. Try a different search term.';
+            autocompleteContainer.appendChild(noResults);
+        } else {
+            // Add header if there are results
+            const header = document.createElement('div');
+            header.className = 'geo-maps-autocomplete-header';
+            header.textContent = 'Search Results';
+            autocompleteContainer.appendChild(header);
+            
+            // Add each result
+            results.forEach(result => {
+                appendResultItem(result);
+            });
+        }
+        
+        // Show the autocomplete
+        autocompleteContainer.style.display = 'block';
+        positionAutocomplete();
     };
     
     /**
@@ -235,7 +367,6 @@ const locationSearch = (() => {
      */
     const hideAutocomplete = () => {
         if (autocompleteContainer) {
-            autocompleteContainer.innerHTML = '';
             autocompleteContainer.style.display = 'none';
         }
     };
@@ -252,52 +383,41 @@ const locationSearch = (() => {
             return;
         }
         
-        // Position autocomplete every time we show it
-        positionAutocomplete();
-        
-        // Show waiting indicator
-        autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-info">Finding locations...</div>';
-        autocompleteContainer.style.display = 'block';
+        console.log('Location search: Searching for', query);
         
         // Use Nominatim for geocoding
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
-            .then(response => response.json())
-            .then(data => {
-                searchResults = data;
-                
-                if (!autocompleteContainer) return; // Check if container still exists
-                
-                if (data && data.length > 0) {
-                    // Clear previous results
-                    autocompleteContainer.innerHTML = '';
-                    
-                    // Add results count header
-                    const resultsInfo = document.createElement('div');
-                    resultsInfo.className = 'geo-maps-autocomplete-info';
-                    resultsInfo.textContent = `Found ${data.length} location${data.length !== 1 ? 's' : ''}`;
-                    autocompleteContainer.appendChild(resultsInfo);
-                    
-                    // Add results to autocomplete
-                    data.forEach((location) => {
-                        appendResultItem(location);
-                    });
-                    
-                    autocompleteContainer.style.display = 'block';
-                } else {
-                    autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-no-results">No locations found</div>';
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5`;
+        
+        // Show loading indicator
+        autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-info">Searching...</div>';
+        autocompleteContainer.style.display = 'block';
+        positionAutocomplete();
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Location search: Results', data);
+                searchResults = data;
+                displayResults(data);
             })
             .catch(error => {
-                console.error('Error searching for location:', error);
-                if (autocompleteContainer) {
-                    autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-error">Error searching for location</div>';
-                }
+                console.error('Location search: Error fetching results', error);
+                
+                // Show error message
+                autocompleteContainer.innerHTML = `<div class="geo-maps-autocomplete-info">Error: ${error.message}</div>`;
+                autocompleteContainer.style.display = 'block';
+                positionAutocomplete();
             });
     };
     
     /**
-     * Create and append a result item to the autocomplete container
-     * @param {Object} location - The location object
+     * Append a result item to the autocomplete container
+     * @param {Object} location - The location data
      */
     const appendResultItem = (location) => {
         if (!autocompleteContainer) return;
@@ -318,7 +438,12 @@ const locationSearch = (() => {
             </div>
         `;
         
-        resultItem.addEventListener('click', () => {
+        resultItem.addEventListener('click', (e) => {
+            // Prevent event bubbling
+            e.stopPropagation();
+            e.preventDefault();
+            
+            // Select this location
             selectLocation(location);
         });
         
@@ -334,6 +459,8 @@ const locationSearch = (() => {
         
         const lat = parseFloat(location.lat);
         const lng = parseFloat(location.lon);
+        
+        console.log('Location search: Selected location', location);
         
         // Update search input with selection
         searchInput.value = location.display_name;
@@ -364,6 +491,10 @@ const locationSearch = (() => {
         
         // Hide autocomplete
         hideAutocomplete();
+        
+        // Trigger a change event on the search input to notify other scripts
+        const event = new Event('change', { bubbles: true });
+        searchInput.dispatchEvent(event);
     };
     
     /**
@@ -377,85 +508,61 @@ const locationSearch = (() => {
         
         if (latField) {
             latField.value = lat.toFixed(6);
+            // Trigger change event
+            const event = new Event('change', { bubbles: true });
+            latField.dispatchEvent(event);
         }
         
         if (lngField) {
             lngField.value = lng.toFixed(6);
+            // Trigger change event
+            const event = new Event('change', { bubbles: true });
+            lngField.dispatchEvent(event);
         }
     };
     
     /**
-     * Update the mini map view with new coordinates
+     * Update mini map view to show the selected location
      * @param {number} lat - Latitude
      * @param {number} lng - Longitude
      */
     const updateMiniMapView = (lat, lng) => {
-        // Check if we have a mini map
-        if (!miniMap) {
-            console.warn('Location search: Mini map not available for update');
-            return;
-        }
-        
-        // Validate coordinates
-        if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-            console.warn('Location search: Invalid coordinates provided:', lat, lng);
-            return;
-        }
+        if (!miniMap) return;
         
         try {
-            // Check for Leaflet map (more robust check)
-            if (typeof L !== 'undefined' && miniMap && miniMap instanceof L.Map) {
-                // First check if the map is properly initialized
-                if (!miniMap._loaded) {
-                    console.warn('Location search: Leaflet map not fully loaded yet');
-                    return;
-                }
+            console.log('Location search: Updating mini map view to', lat, lng);
+            
+            // For Leaflet maps
+            if (window.L && miniMap instanceof L.Map) {
+                miniMap.setView([lat, lng], 15);
                 
-                console.log('Location search: Updating Leaflet map view to', { lat, lng });
-                
-                // Update the map view
-                miniMap.setView([lat, lng], miniMap.getZoom());
-                
-                // Update marker position if it exists
-                if (miniMapMarker && typeof miniMapMarker.setLatLng === 'function') {
+                if (miniMapMarker && miniMapMarker instanceof L.Marker) {
                     miniMapMarker.setLatLng([lat, lng]);
-                } else if (miniMapMarker) {
-                    console.warn('Location search: Invalid Leaflet marker object:', miniMapMarker);
-                } else {
-                    console.warn('Location search: No Leaflet marker available to update');
                 }
-            } 
-            // Check for Google Maps
-            else if (typeof google !== 'undefined' && google.maps && miniMap instanceof google.maps.Map) {
-                console.log('Location search: Updating Google map view to', { lat, lng });
+            }
+            // For Google Maps
+            else if (window.google && miniMap instanceof google.maps.Map) {
+                const position = new google.maps.LatLng(lat, lng);
+                miniMap.setCenter(position);
+                miniMap.setZoom(15);
                 
-                // Update the map center
-                miniMap.setCenter({ lat, lng });
-                
-                // Update marker position if it exists
-                if (miniMapMarker && typeof miniMapMarker.setPosition === 'function') {
-                    miniMapMarker.setPosition({ lat, lng });
-                } else if (miniMapMarker) {
-                    console.warn('Location search: Invalid Google Maps marker object:', miniMapMarker);
-                } else {
-                    console.warn('Location search: No Google Maps marker available to update');
+                if (miniMapMarker && miniMapMarker instanceof google.maps.Marker) {
+                    miniMapMarker.setPosition(position);
                 }
             } else {
-                console.warn('Location search: Unknown map type or invalid map reference:', miniMap);
+                console.warn('Location search: Unsupported map type or missing map reference');
             }
         } catch (error) {
-            console.error('Location search: Error updating mini map view:', error);
+            console.error('Location search: Error updating mini map view', error);
         }
     };
     
-    // Public API
+    // Expose public API
     return {
         initialize,
-        selectLocation,
-        hideAutocomplete,
-        cleanup
+        cleanup,
+        selectLocation
     };
 })();
 
-// Export the locationSearch module
 export default locationSearch; 

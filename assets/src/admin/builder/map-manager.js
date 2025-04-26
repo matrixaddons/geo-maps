@@ -100,6 +100,26 @@ const mapManager = {
     },
     
     /**
+     * Get the current map zoom level
+     * @returns {number} - Current zoom level or default value from settings
+     */
+    getZoomLevel: function() {
+        // Default to the zoom level in settings
+        let zoom = settingsManager.zoom || 10;
+        
+        // Try to get actual zoom from the map if available
+        this.safeMapOperation(map => {
+            if (map instanceof L.Map) {
+                zoom = map.getZoom();
+            } else if (window.google && map instanceof google.maps.Map) {
+                zoom = map.getZoom();
+            }
+        }, { silent: true });
+        
+        return zoom;
+    },
+    
+    /**
      * Get map instance
      * @returns {Object|null} - The map instance or null if not initialized
      */

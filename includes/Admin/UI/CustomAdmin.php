@@ -17,6 +17,7 @@ class CustomAdmin
         add_action('wp_ajax_geo_maps_delete_map', [$this, 'ajax_delete_map']);
         add_action('wp_ajax_geo_maps_duplicate_map', [$this, 'ajax_duplicate_map']);
         add_action('wp_ajax_geo_maps_save_map', [$this, 'ajax_save_map']);
+        add_action('wp_ajax_geo_maps_refresh_nonce', [$this, 'ajax_refresh_nonce']);
         
         // Enqueue admin scripts and styles
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
@@ -80,6 +81,7 @@ class CustomAdmin
         if ($map_id > 0) {
             // Edit existing map
             $post = get_post($map_id);
+           
             if (!$post || $post->post_type !== 'geo-maps') {
                 wp_die(__('Map not found.', 'geo-maps'));
             }
@@ -367,6 +369,7 @@ class CustomAdmin
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'restUrl' => rest_url(),
             'nonce' => wp_create_nonce('wp_rest'),
+            'save_map_nonce'=>wp_create_nonce('geo_maps_save_map'),
             'pluginUrl' => GEO_MAPS_PLUGIN_URI,
             'messages' => [
                 'confirm_delete' => __('Are you sure you want to delete this map? This action cannot be undone.', 'geo-maps'),
@@ -439,52 +442,153 @@ class CustomAdmin
     }
 
     /**
-     * AJAX handler to save a map
+     * AJAX handler for saving map data
      */
-    public function ajax_save_map() 
+    public function ajax_save_map() {
+        // Check if nonce is set
+        if (empty($_POST['security']) || !wp_verify_nonce($_POST['security'], 'geo_maps_save_map')) {
+            wp_send_json_error([
+                'message' => __('Security verification failed.', 'geo-maps'),
+                'code'    => 'invalid_nonce'
+            ]);
+            return;
+        }
+    
+        // ✅ Check if the user has permission
+        if ( ! current_user_can('edit_posts') ) {
+            wp_send_json_error([
+                'message' => __('You do not have permission to save maps.', 'geo-maps'),
+                'code'    => 'no_permission'
+            ]);
+            return;
+        }
+    
+        $map_id = isset($_POST['map_id']) ? absint($_POST['map_id']) : 0;
+        $map_data = isset($_POST['map_data']) ? $_POST['map_data'] : '';
+    
+        if (empty($map_data)) {
+            wp_send_json_error([
+                'message' => __('No map data provided.', 'geo-maps'),
+                'code'    => 'no_data'
+            ]);
+            return;
+        }
+    
+        $decoded_data = json_decode(stripslashes($map_data), true);
+    
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            wp_send_json_error([
+                'message'    => __('Invalid JSON data.', 'geo-maps'),
+                'code'       => 'invalid_json',
+                'json_error' => json_last_error_msg()
+            ]);
+            return;
+        }
+    
+        $title = sanitize_text_field($decoded_data['title'] ?? 'Untitled Map');
+        $map_type = sanitize_text_field($decoded_data['map_type'] ?? 'leaflet');
+        $settings = $decoded_data['settings'] ?? [];
+        $markers = $decoded_data['markers'] ?? [];
+    
+        // Sanitize settings
+        $sanitized_settings = [];
+        if (is_array($settings)) {
+            foreach ($settings as $key => $value) {
+                $sanitized_settings[$key] = is_array($value) ? $value : sanitize_text_field($value);
+            }
+        }
+    
+        $post_data = [
+            'post_title'  => $title,
+            'post_status' => 'publish',
+            'post_type'   => 'geo-maps',
+            
+        ];
+    
+        if ($map_id > 0) {
+            $existing_post = get_post($map_id);
+    
+            if (!$existing_post || $existing_post->post_type !== 'geo-maps') {
+                wp_send_json_error([
+                    'message' => __('Map not found or incorrect post type.', 'geo-maps'),
+                    'code'    => 'invalid_map_id'
+                ]);
+                return;
+            }
+    
+            $post_data['ID'] = $map_id;
+            $result = wp_update_post($post_data, true);
+        } else {
+            $result = wp_insert_post($post_data, true);
+        }
+    
+        if (is_wp_error($result)) {
+            wp_send_json_error([
+                'message' => $result->get_error_message(),
+                'code'    => $result->get_error_code()
+            ]);
+            return;
+        }
+    
+        $map_id = $result;
+    
+        update_post_meta($map_id, '_geo_maps_settings', $sanitized_settings);
+        update_post_meta($map_id, '_geo_maps_markers', $markers);
+        update_post_meta($map_id, '_geo_maps_type', $map_type);
+    
+        $fresh_nonce = wp_create_nonce('geo_maps_save_map');
+    
+        wp_send_json_success([
+            'message'     => __('Map saved successfully.', 'geo-maps'),
+            'map_id'      => $map_id,
+            'fresh_nonce' => $fresh_nonce
+        ]);
+    }
+
+    /**
+     * AJAX handler for refreshing security nonce
+     */
+    public function ajax_refresh_nonce()
     {
+        // Initialize debug info
+        $debug_info = array();
+        
         check_ajax_referer('geo_maps_nonce', 'security');
         
-        $map_id = isset($_POST['map_id']) ? intval($_POST['map_id']) : 0;
-        $map_data = isset($_POST['map_data']) ? json_decode(stripslashes($_POST['map_data']), true) : [];
-        
-        if (empty($map_data)) {
-            wp_send_json_error(['message' => __('Invalid map data.', 'geo-maps')]);
+        // Check if user is logged in and has appropriate capabilities
+        if (!current_user_can('edit_posts')) {
+            wp_send_json_error(['message' => __('Insufficient permissions.', 'geo-maps')]);
             return;
         }
         
-        $title = isset($map_data['title']) ? sanitize_text_field($map_data['title']) : __('Untitled Map', 'geo-maps');
-        
-        // Create or update the post
-        $post_args = [
-            'post_title' => $title,
-            'post_type' => 'geo-maps',
-            'post_status' => 'publish',
-        ];
-        
-        if ($map_id > 0) {
-            $post_args['ID'] = $map_id;
-            $result = wp_update_post($post_args);
-        } else {
-            $result = wp_insert_post($post_args);
-        }
-        
-        if (is_wp_error($result)) {
-            wp_send_json_error(['message' => $result->get_error_message()]);
-            return;
-        }
-        
-        $map_id = $result;
-        
-        // Save map settings as post meta
-        update_post_meta($map_id, 'geo_maps_map_type', sanitize_text_field($map_data['map_type']));
-        update_post_meta($map_id, 'geo_maps_settings', $map_data['settings']);
-        update_post_meta($map_id, 'geo_maps_style', $map_data['style']);
+        // Generate new nonces
+        $general_nonce = wp_create_nonce('geo_maps_nonce');
+        $save_map_nonce = wp_create_nonce('geo_maps_save_map');
         
         wp_send_json_success([
-            'message' => __('Map saved successfully.', 'geo-maps'),
-            'map_id' => $map_id
+            'nonce' => $general_nonce,
+            'save_map_nonce' => $save_map_nonce
         ]);
+    }
+    
+    /**
+     * Helper function to check nonce age
+     * 
+     * @param string $nonce The nonce to check
+     * @return int|bool The age of the nonce in seconds, or false if invalid
+     */
+    private function get_nonce_age($nonce) {
+        // Extract the timestamp from the nonce
+        $tick = wp_nonce_tick();
+        $nonce_life = apply_filters('nonce_life', DAY_IN_SECONDS / 2);
+        
+        // Try to get the timestamp from the nonce
+        $parts = explode('-', $nonce);
+        if (count($parts) !== 2) {
+            return false;
+        }
+        
+        return time() - intval($parts[1]);
     }
 
     /**
@@ -495,7 +599,8 @@ class CustomAdmin
         $self = new self();
         
         // Register AJAX handlers
-        add_action('wp_ajax_geo_maps_save_map', [$self, 'ajax_save_map']);
+        //add_action('wp_ajax_geo_maps_save_map', [$self, 'ajax_save_map']);
+        //add_action('wp_ajax_geo_maps_refresh_nonce', [$self, 'ajax_refresh_nonce']);
         
         return $self;
     }

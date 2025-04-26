@@ -410,6 +410,28 @@ const markerManager = {
                 this.highlightMarker(highlightId);
             }, 100);
         }
+    },
+    
+    /**
+     * Get all markers from the settings manager
+     * @returns {Array} - Array of marker objects
+     */
+    getAllMarkers: function() {
+        try {
+            const markers = settingsManager.getMarkers();
+            return markers || [];
+        } catch (error) {
+            console.error('Error getting all markers:', error);
+            return [];
+        }
+    },
+    
+    /**
+     * Alias for getAllMarkers to ensure compatibility
+     * @returns {Array} - Array of marker objects
+     */
+    getMarkers: function() {
+        return this.getAllMarkers();
     }
 };
 

@@ -2075,6 +2075,26 @@ var mapManager = {
     return center;
   },
   /**
+   * Get the current map zoom level
+   * @returns {number} - Current zoom level or default value from settings
+   */
+  getZoomLevel: function getZoomLevel() {
+    // Default to the zoom level in settings
+    var zoom = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].zoom || 10;
+
+    // Try to get actual zoom from the map if available
+    this.safeMapOperation(function (map) {
+      if (map instanceof L.Map) {
+        zoom = map.getZoom();
+      } else if (window.google && map instanceof google.maps.Map) {
+        zoom = map.getZoom();
+      }
+    }, {
+      silent: true
+    });
+    return zoom;
+  },
+  /**
    * Get map instance
    * @returns {Object|null} - The map instance or null if not initialized
    */
@@ -3137,6 +3157,26 @@ var markerManager = {
         _this.highlightMarker(highlightId);
       }, 100);
     }
+  },
+  /**
+   * Get all markers from the settings manager
+   * @returns {Array} - Array of marker objects
+   */
+  getAllMarkers: function getAllMarkers() {
+    try {
+      var markers = _settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].getMarkers();
+      return markers || [];
+    } catch (error) {
+      console.error('Error getting all markers:', error);
+      return [];
+    }
+  },
+  /**
+   * Alias for getAllMarkers to ensure compatibility
+   * @returns {Array} - Array of marker objects
+   */
+  getMarkers: function getMarkers() {
+    return this.getAllMarkers();
   }
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (markerManager);
@@ -4158,7 +4198,7 @@ var locationSearch = function () {
       console.warn("Location search: Input element not found with ID \"".concat(inputId, "\""));
 
       // Try to find the input by selector or placeholder
-      var alternateInput = document.querySelector("input[name=\"".concat(inputId, "\"], input[placeholder*=\"location\"], input[placeholder*=\"address\"]"));
+      var alternateInput = document.querySelector("input[name=\"".concat(inputId, "\"], input[placeholder*=\"location\"], input[placeholder*=\"address\"], input[placeholder*=\"search\"]"));
       if (alternateInput) {
         console.log('Location search: Found alternative input element:', alternateInput);
         searchInput = alternateInput;
@@ -4166,8 +4206,35 @@ var locationSearch = function () {
         // Add the ID to make future lookups easier
         searchInput.id = inputId;
       } else {
-        console.error('Location search: No suitable input element found. Search functionality disabled.');
-        return false;
+        // Last resort - create the input if it doesn't exist
+        var searchContainers = document.querySelectorAll('.geo-maps-location-search-container, #geo-maps-location-search-container, .geo-maps-builder-field[data-field="location_search"]');
+        if (searchContainers.length > 0) {
+          var container = searchContainers[0];
+          console.log('Location search: Creating input in container:', container);
+
+          // Create the input
+          searchInput = document.createElement('input');
+          searchInput.id = inputId;
+          searchInput.type = 'text';
+          searchInput.className = 'geo-maps-input geo-maps-location-search-input';
+          searchInput.placeholder = 'Search for a location...';
+
+          // Create label if needed
+          if (!container.querySelector('label')) {
+            var label = document.createElement('label');
+            label.htmlFor = inputId;
+            label.className = 'geo-maps-label';
+            label.textContent = 'Search Location';
+            container.appendChild(label);
+          }
+
+          // Add to container
+          container.appendChild(searchInput);
+          console.log('Location search: Created new input element', searchInput);
+        } else {
+          console.error('Location search: No suitable input element found and no container to create one. Search functionality disabled.');
+          return false;
+        }
       }
     }
     console.log('Location search: Using input element:', searchInput);
@@ -4188,15 +4255,29 @@ var locationSearch = function () {
     autocompleteContainer.id = 'location-search-autocomplete';
     autocompleteContainer.className = 'geo-maps-autocomplete-container';
 
+    // Find the right parent for the autocomplete container
+    var parentContainer = searchInput.closest('.geo-maps-builder-field') || searchInput.parentNode;
+
     // Append to parent or body if parent not available
-    if (searchInput.parentNode) {
-      searchInput.parentNode.appendChild(autocompleteContainer);
+    if (parentContainer) {
+      // Create a wrapper if needed to ensure proper positioning
+      var wrapper = document.createElement('div');
+      wrapper.className = 'geo-maps-autocomplete-wrapper';
+      wrapper.style.position = 'relative';
+      wrapper.style.width = '100%';
+
+      // Replace searchInput with wrapper + searchInput + autocompleteContainer
+      if (searchInput.parentNode) {
+        searchInput.parentNode.insertBefore(wrapper, searchInput);
+        wrapper.appendChild(searchInput);
+        wrapper.appendChild(autocompleteContainer);
+      }
     } else {
       document.body.appendChild(autocompleteContainer);
       console.warn('Location search: Input has no parent, appending autocomplete to body instead');
     }
 
-    // Add special styles to make the autocomplete container visible
+    // Add special styles to position the autocomplete container correctly
     autocompleteContainer.style.position = 'absolute';
     autocompleteContainer.style.zIndex = '9999';
     autocompleteContainer.style.background = '#fff';
@@ -4207,9 +4288,14 @@ var locationSearch = function () {
     autocompleteContainer.style.maxHeight = '300px';
     autocompleteContainer.style.overflowY = 'auto';
     autocompleteContainer.style.display = 'none';
+    autocompleteContainer.style.top = '100%';
+    autocompleteContainer.style.left = '0';
 
     // Set up event listeners
     setupEventListeners();
+
+    // Add CSS class to body to indicate location search is active
+    document.body.classList.add('geo-maps-location-search-active');
     console.log('Location search: Initialization complete');
     return true;
   };
@@ -4239,6 +4325,19 @@ var locationSearch = function () {
       container.remove();
     }
 
+    // Remove wrapper if it exists
+    var wrapper = document.querySelector('.geo-maps-autocomplete-wrapper');
+    if (wrapper && wrapper.parentNode) {
+      var _parent = wrapper.parentNode;
+      while (wrapper.firstChild) {
+        _parent.insertBefore(wrapper.firstChild, wrapper);
+      }
+      _parent.removeChild(wrapper);
+    }
+
+    // Remove body class
+    document.body.classList.remove('geo-maps-location-search-active');
+
     // Reset state
     searchInput = null;
     autocompleteContainer = null;
@@ -4260,6 +4359,9 @@ var locationSearch = function () {
     // Input event for search as you type
     searchInput.addEventListener('input', handleInputChange);
 
+    // Focus event to show previous results
+    searchInput.addEventListener('focus', handleFocus);
+
     // Keyboard navigation
     searchInput.addEventListener('keydown', handleKeyDown);
 
@@ -4277,6 +4379,8 @@ var locationSearch = function () {
    * @param {Event} e - The input event
    */
   var handleInputChange = function handleInputChange(e) {
+    // Prevent event propagation
+    e.stopPropagation();
     var query = e.target.value.trim();
     currentQuery = query;
 
@@ -4292,10 +4396,28 @@ var locationSearch = function () {
   };
 
   /**
+   * Handle focus on search input
+   * @param {Event} e - The focus event
+   */
+  var handleFocus = function handleFocus(e) {
+    // Prevent event propagation
+    e.stopPropagation();
+
+    // Show previous results if available
+    if (searchResults.length > 0 && currentQuery) {
+      displayResults(searchResults);
+    }
+  };
+
+  /**
    * Handle keyboard navigation
    * @param {KeyboardEvent} e - The keyboard event
    */
   var handleKeyDown = function handleKeyDown(e) {
+    // Prevent event propagation for modifiers and navigation keys
+    if (e.key === 'Enter' || e.key === 'Escape' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.stopPropagation();
+    }
     if (e.key === 'Enter') {
       e.preventDefault();
       // Select first result if available
@@ -4306,8 +4428,11 @@ var locationSearch = function () {
       // Hide autocomplete
       hideAutocomplete();
     } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      // TODO: Implement keyboard navigation through results
+      // Prevent default to avoid scrolling the page
       e.preventDefault();
+
+      // TODO: Implement keyboard navigation through results
+      // For now just prevent default behavior
     }
   };
 
@@ -4334,14 +4459,57 @@ var locationSearch = function () {
    * Position the autocomplete dropdown properly
    */
   var positionAutocomplete = function positionAutocomplete() {
+    if (!autocompleteContainer || !searchInput) return;
+
+    // Make sure the container is positioned correctly relative to the input
+    var wrapper = searchInput.closest('.geo-maps-autocomplete-wrapper');
+    if (wrapper) {
+      // Already in a wrapper with correct positioning
+      autocompleteContainer.style.position = 'absolute';
+      autocompleteContainer.style.width = '100%';
+      autocompleteContainer.style.top = '100%';
+      autocompleteContainer.style.left = '0';
+    } else {
+      // Fallback positioning if not in a wrapper
+      var rect = searchInput.getBoundingClientRect();
+      autocompleteContainer.style.position = 'absolute';
+      autocompleteContainer.style.width = "".concat(rect.width, "px");
+      autocompleteContainer.style.top = "".concat(rect.bottom + window.scrollY, "px");
+      autocompleteContainer.style.left = "".concat(rect.left + window.scrollX, "px");
+    }
+  };
+
+  /**
+   * Display the autocomplete dropdown with results
+   * @param {Array} results - The search results to display
+   */
+  var displayResults = function displayResults(results) {
     if (!autocompleteContainer) return;
 
-    // Position relative to parent container, not absolute on page
-    autocompleteContainer.style.position = 'relative';
-    autocompleteContainer.style.width = '100%';
-    autocompleteContainer.style.top = 'auto';
-    autocompleteContainer.style.left = 'auto';
-    autocompleteContainer.style.right = 'auto';
+    // Clear previous results
+    autocompleteContainer.innerHTML = '';
+    if (results.length === 0) {
+      // No results, add a message
+      var noResults = document.createElement('div');
+      noResults.className = 'geo-maps-autocomplete-info';
+      noResults.textContent = 'No locations found. Try a different search term.';
+      autocompleteContainer.appendChild(noResults);
+    } else {
+      // Add header if there are results
+      var header = document.createElement('div');
+      header.className = 'geo-maps-autocomplete-header';
+      header.textContent = 'Search Results';
+      autocompleteContainer.appendChild(header);
+
+      // Add each result
+      results.forEach(function (result) {
+        appendResultItem(result);
+      });
+    }
+
+    // Show the autocomplete
+    autocompleteContainer.style.display = 'block';
+    positionAutocomplete();
   };
 
   /**
@@ -4349,7 +4517,6 @@ var locationSearch = function () {
    */
   var hideAutocomplete = function hideAutocomplete() {
     if (autocompleteContainer) {
-      autocompleteContainer.innerHTML = '';
       autocompleteContainer.style.display = 'none';
     }
   };
@@ -4364,50 +4531,37 @@ var locationSearch = function () {
       hideAutocomplete();
       return;
     }
-
-    // Position autocomplete every time we show it
-    positionAutocomplete();
-
-    // Show waiting indicator
-    autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-info">Finding locations...</div>';
-    autocompleteContainer.style.display = 'block';
+    console.log('Location search: Searching for', query);
 
     // Use Nominatim for geocoding
-    fetch("https://nominatim.openstreetmap.org/search?format=json&q=".concat(encodeURIComponent(query), "&limit=5")).then(function (response) {
+    var url = "https://nominatim.openstreetmap.org/search?q=".concat(encodeURIComponent(query), "&format=json&addressdetails=1&limit=5");
+
+    // Show loading indicator
+    autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-info">Searching...</div>';
+    autocompleteContainer.style.display = 'block';
+    positionAutocomplete();
+    fetch(url).then(function (response) {
+      if (!response.ok) {
+        throw new Error("HTTP error! Status: ".concat(response.status));
+      }
       return response.json();
     }).then(function (data) {
+      console.log('Location search: Results', data);
       searchResults = data;
-      if (!autocompleteContainer) return; // Check if container still exists
-
-      if (data && data.length > 0) {
-        // Clear previous results
-        autocompleteContainer.innerHTML = '';
-
-        // Add results count header
-        var resultsInfo = document.createElement('div');
-        resultsInfo.className = 'geo-maps-autocomplete-info';
-        resultsInfo.textContent = "Found ".concat(data.length, " location").concat(data.length !== 1 ? 's' : '');
-        autocompleteContainer.appendChild(resultsInfo);
-
-        // Add results to autocomplete
-        data.forEach(function (location) {
-          appendResultItem(location);
-        });
-        autocompleteContainer.style.display = 'block';
-      } else {
-        autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-no-results">No locations found</div>';
-      }
+      displayResults(data);
     })["catch"](function (error) {
-      console.error('Error searching for location:', error);
-      if (autocompleteContainer) {
-        autocompleteContainer.innerHTML = '<div class="geo-maps-autocomplete-error">Error searching for location</div>';
-      }
+      console.error('Location search: Error fetching results', error);
+
+      // Show error message
+      autocompleteContainer.innerHTML = "<div class=\"geo-maps-autocomplete-info\">Error: ".concat(error.message, "</div>");
+      autocompleteContainer.style.display = 'block';
+      positionAutocomplete();
     });
   };
 
   /**
-   * Create and append a result item to the autocomplete container
-   * @param {Object} location - The location object
+   * Append a result item to the autocomplete container
+   * @param {Object} location - The location data
    */
   var appendResultItem = function appendResultItem(location) {
     if (!autocompleteContainer) return;
@@ -4417,7 +4571,12 @@ var locationSearch = function () {
     // Get the first part of the address as the primary text
     var primaryText = location.display_name.split(',')[0].trim();
     resultItem.innerHTML = "\n            <div class=\"geo-maps-autocomplete-icon\">\n                <span class=\"dashicons dashicons-location\"></span>\n            </div>\n            <div class=\"geo-maps-autocomplete-content\">\n                <div class=\"geo-maps-autocomplete-primary\">".concat(primaryText, "</div>\n                <div class=\"geo-maps-autocomplete-secondary\">").concat(location.display_name, "</div>\n            </div>\n        ");
-    resultItem.addEventListener('click', function () {
+    resultItem.addEventListener('click', function (e) {
+      // Prevent event bubbling
+      e.stopPropagation();
+      e.preventDefault();
+
+      // Select this location
       selectLocation(location);
     });
     autocompleteContainer.appendChild(resultItem);
@@ -4431,6 +4590,7 @@ var locationSearch = function () {
     if (!location || !searchInput) return;
     var lat = parseFloat(location.lat);
     var lng = parseFloat(location.lon);
+    console.log('Location search: Selected location', location);
 
     // Update search input with selection
     searchInput.value = location.display_name;
@@ -4461,6 +4621,12 @@ var locationSearch = function () {
 
     // Hide autocomplete
     hideAutocomplete();
+
+    // Trigger a change event on the search input to notify other scripts
+    var event = new Event('change', {
+      bubbles: true
+    });
+    searchInput.dispatchEvent(event);
   };
 
   /**
@@ -4473,96 +4639,62 @@ var locationSearch = function () {
     var lngField = document.getElementById('marker_lng');
     if (latField) {
       latField.value = lat.toFixed(6);
+      // Trigger change event
+      var event = new Event('change', {
+        bubbles: true
+      });
+      latField.dispatchEvent(event);
     }
     if (lngField) {
       lngField.value = lng.toFixed(6);
+      // Trigger change event
+      var _event = new Event('change', {
+        bubbles: true
+      });
+      lngField.dispatchEvent(_event);
     }
   };
 
   /**
-   * Update the mini map view with new coordinates
+   * Update mini map view to show the selected location
    * @param {number} lat - Latitude
    * @param {number} lng - Longitude
    */
   var updateMiniMapView = function updateMiniMapView(lat, lng) {
-    // Check if we have a mini map
-    if (!miniMap) {
-      console.warn('Location search: Mini map not available for update');
-      return;
-    }
-
-    // Validate coordinates
-    if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-      console.warn('Location search: Invalid coordinates provided:', lat, lng);
-      return;
-    }
+    if (!miniMap) return;
     try {
-      // Check for Leaflet map (more robust check)
-      if (typeof L !== 'undefined' && miniMap && miniMap instanceof L.Map) {
-        // First check if the map is properly initialized
-        if (!miniMap._loaded) {
-          console.warn('Location search: Leaflet map not fully loaded yet');
-          return;
-        }
-        console.log('Location search: Updating Leaflet map view to', {
-          lat: lat,
-          lng: lng
-        });
+      console.log('Location search: Updating mini map view to', lat, lng);
 
-        // Update the map view
-        miniMap.setView([lat, lng], miniMap.getZoom());
-
-        // Update marker position if it exists
-        if (miniMapMarker && typeof miniMapMarker.setLatLng === 'function') {
+      // For Leaflet maps
+      if (window.L && miniMap instanceof L.Map) {
+        miniMap.setView([lat, lng], 15);
+        if (miniMapMarker && miniMapMarker instanceof L.Marker) {
           miniMapMarker.setLatLng([lat, lng]);
-        } else if (miniMapMarker) {
-          console.warn('Location search: Invalid Leaflet marker object:', miniMapMarker);
-        } else {
-          console.warn('Location search: No Leaflet marker available to update');
         }
       }
-      // Check for Google Maps
-      else if (typeof google !== 'undefined' && google.maps && miniMap instanceof google.maps.Map) {
-        console.log('Location search: Updating Google map view to', {
-          lat: lat,
-          lng: lng
-        });
-
-        // Update the map center
-        miniMap.setCenter({
-          lat: lat,
-          lng: lng
-        });
-
-        // Update marker position if it exists
-        if (miniMapMarker && typeof miniMapMarker.setPosition === 'function') {
-          miniMapMarker.setPosition({
-            lat: lat,
-            lng: lng
-          });
-        } else if (miniMapMarker) {
-          console.warn('Location search: Invalid Google Maps marker object:', miniMapMarker);
-        } else {
-          console.warn('Location search: No Google Maps marker available to update');
+      // For Google Maps
+      else if (window.google && miniMap instanceof google.maps.Map) {
+        var position = new google.maps.LatLng(lat, lng);
+        miniMap.setCenter(position);
+        miniMap.setZoom(15);
+        if (miniMapMarker && miniMapMarker instanceof google.maps.Marker) {
+          miniMapMarker.setPosition(position);
         }
       } else {
-        console.warn('Location search: Unknown map type or invalid map reference:', miniMap);
+        console.warn('Location search: Unsupported map type or missing map reference');
       }
     } catch (error) {
-      console.error('Location search: Error updating mini map view:', error);
+      console.error('Location search: Error updating mini map view', error);
     }
   };
 
-  // Public API
+  // Expose public API
   return {
     initialize: initialize,
-    selectLocation: selectLocation,
-    hideAutocomplete: hideAutocomplete,
-    cleanup: cleanup
+    cleanup: cleanup,
+    selectLocation: selectLocation
   };
 }();
-
-// Export the locationSearch module
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (locationSearch);
 
 /***/ })
@@ -4637,6 +4769,58 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _builder_drawer_manager__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./builder/drawer-manager */ "./assets/src/admin/builder/drawer-manager.js");
 /* harmony import */ var _builder_form_manager__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./builder/form-manager */ "./assets/src/admin/builder/form-manager.js");
 /* harmony import */ var _confirm_modal__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./confirm-modal */ "./assets/src/admin/confirm-modal.js");
+function _typeof(o) {
+  "@babel/helpers - typeof";
+
+  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) {
+    return typeof o;
+  } : function (o) {
+    return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+  }, _typeof(o);
+}
+function ownKeys(e, r) {
+  var t = Object.keys(e);
+  if (Object.getOwnPropertySymbols) {
+    var o = Object.getOwnPropertySymbols(e);
+    r && (o = o.filter(function (r) {
+      return Object.getOwnPropertyDescriptor(e, r).enumerable;
+    })), t.push.apply(t, o);
+  }
+  return t;
+}
+function _objectSpread(e) {
+  for (var r = 1; r < arguments.length; r++) {
+    var t = null != arguments[r] ? arguments[r] : {};
+    r % 2 ? ownKeys(Object(t), !0).forEach(function (r) {
+      _defineProperty(e, r, t[r]);
+    }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) {
+      Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
+    });
+  }
+  return e;
+}
+function _defineProperty(e, r, t) {
+  return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+    value: t,
+    enumerable: !0,
+    configurable: !0,
+    writable: !0
+  }) : e[r] = t, e;
+}
+function _toPropertyKey(t) {
+  var i = _toPrimitive(t, "string");
+  return "symbol" == _typeof(i) ? i : i + "";
+}
+function _toPrimitive(t, r) {
+  if ("object" != _typeof(t) || !t) return t;
+  var e = t[Symbol.toPrimitive];
+  if (void 0 !== e) {
+    var i = e.call(t, r || "default");
+    if ("object" != _typeof(i)) return i;
+    throw new TypeError("@@toPrimitive must return a primitive value.");
+  }
+  return ("string" === r ? String : Number)(t);
+}
 /**
  * Geo Maps Builder Fullscreen
  * Main entry point for the map builder interface
@@ -4967,6 +5151,542 @@ jQuery(document).ready(function ($) {
   // Log successful initialization
   console.log('Geo Maps Builder initialized successfully');
 });
+
+/**
+ * Save Map functionality
+ */
+function setupSaveMapButton() {
+  var saveButton = document.getElementById('geo-maps-save-map');
+  if (!saveButton) {
+    console.error('Save button not found');
+    return;
+  }
+
+  // Remove any existing event listeners to prevent duplicates
+  saveButton.removeEventListener('click', handleSaveButtonClick);
+
+  // Add single event listener
+  saveButton.addEventListener('click', handleSaveButtonClick);
+  console.log('Save map button initialized with event listener');
+}
+
+/**
+ * Handle save button click
+ * @param {Event} event - The click event
+ */
+function handleSaveButtonClick(event) {
+  event.preventDefault();
+
+  // Check if this is a new map by looking at the map_id input value
+  // Try different ID formats (with dash and with underscore)
+  var mapIdInput = document.getElementById('geo-maps-id');
+
+  // If not found, try alternate format with underscore
+  if (!mapIdInput) {
+    mapIdInput = document.getElementById('geo_maps_id');
+    console.log('Using alternate map ID input format with underscore');
+  }
+  var isNewMap = !mapIdInput || mapIdInput.value === '0' || mapIdInput.value === '';
+
+  // For new maps, use redirect=true
+  saveMap(isNewMap);
+}
+
+/**
+ * Save the current map
+ * @param {boolean} redirect - Whether to redirect after successful save
+ */
+function saveMap() {
+  var redirect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+  // Get save button element
+  var saveButton = document.getElementById('geo-maps-save-map');
+  if (!saveButton) {
+    console.error('Save button element not found');
+    return;
+  }
+
+  // Disable button and show loading state
+  saveButton.disabled = true;
+  saveButton.classList.add('is-busy');
+  try {
+    // Get map data
+    var mapData = collectMapData();
+
+    // Send data to server
+    sendMapData(mapData, redirect, saveButton);
+  } catch (error) {
+    console.error('Error preparing map data:', error);
+    showToast('Error preparing map data: ' + error.message, 'error');
+
+    // Re-enable button
+    saveButton.disabled = false;
+    saveButton.classList.remove('is-busy');
+  }
+}
+
+/**
+ * Collect all map data from various sources
+ * @returns {Object} The collected map data
+ */
+function collectMapData() {
+  // Get map title
+  var titleInput = document.getElementById('geo-maps-title');
+
+  // If not found, try alternate format with underscore
+  if (!titleInput) {
+    titleInput = document.getElementById('geo_maps_title');
+    console.log('Using alternate title input format with underscore');
+  }
+  var mapTitle = titleInput ? titleInput.value.trim() || 'Untitled Map' : 'Untitled Map';
+
+  // Get map ID
+  var mapIdInput = document.getElementById('geo-maps-id');
+
+  // If not found, try alternate format with underscore
+  if (!mapIdInput) {
+    mapIdInput = document.getElementById('geo_maps_id');
+    console.log('Using alternate map ID input format with underscore');
+  }
+  var mapId = mapIdInput ? mapIdInput.value : '0';
+
+  // Get map type
+  var mapTypeInput = document.getElementById('geo-maps-map-type');
+
+  // If not found, try alternate format with underscore
+  if (!mapTypeInput) {
+    mapTypeInput = document.getElementById('geo_maps_map_type');
+    console.log('Using alternate map type input format with underscore');
+  }
+  var mapType = mapTypeInput ? mapTypeInput.value : 'leaflet';
+
+  // Get map center coordinates
+  var mapCenter = {
+    lat: 0,
+    lng: 0
+  };
+  try {
+    mapCenter = _builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].getMapCenter();
+  } catch (error) {
+    console.warn('Error getting map center, using default:', error);
+  }
+
+  // Get map zoom level
+  var zoomLevel = 10;
+  try {
+    var map = _builder_map_manager__WEBPACK_IMPORTED_MODULE_2__["default"].getMap();
+    if (map && typeof map.getZoom === 'function') {
+      zoomLevel = map.getZoom();
+    } else if (map && map._zoom) {
+      zoomLevel = map._zoom;
+    } else if (_builder_settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"] && _builder_settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].zoom) {
+      zoomLevel = _builder_settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].zoom;
+    }
+  } catch (error) {
+    console.warn('Error getting zoom level, using default:', error);
+  }
+
+  // Get map settings
+  var settings = {};
+  try {
+    settings = _builder_settings_manager__WEBPACK_IMPORTED_MODULE_1__["default"].getSettings() || {};
+  } catch (error) {
+    console.warn('Error getting map settings, using empty object:', error);
+  }
+
+  // Get map markers
+  var markers = [];
+  try {
+    markers = _builder_marker_manager__WEBPACK_IMPORTED_MODULE_3__["default"].getAllMarkers() || [];
+  } catch (error) {
+    console.warn('Error getting markers, using empty array:', error);
+  }
+
+  // Build complete map data object with updated structure
+  // Only markers should be in an array, everything else is in settings
+  var mapData = {
+    title: mapTitle,
+    map_id: mapId,
+    map_type: mapType,
+    settings: _objectSpread({
+      center: mapCenter,
+      zoom: zoomLevel
+    }, settings),
+    markers: markers
+  };
+  console.log('Collected map data:', mapData);
+  return mapData;
+}
+
+/**
+ * Send map data to the server
+ * @param {Object} mapData - The map data to send
+ * @param {boolean} redirect - Whether to redirect after successful save
+ * @param {HTMLElement} saveButton - The save button element
+ */
+function sendMapData(mapData, redirect, saveButton) {
+  // Create form data
+  var formData = new FormData();
+
+  // Add action and security token
+  formData.append('action', 'geo_maps_save_map');
+  formData.append('security', GeoMapsAdmin.save_map_nonce);
+
+  // Add map ID separately
+  formData.append('map_id', mapData.map_id);
+
+  // Remove map_id from the data object to avoid duplication
+  var dataToSend = _objectSpread({}, mapData);
+  delete dataToSend.map_id;
+
+  // Stringify the map data and add it to form data
+  formData.append('map_data', JSON.stringify(dataToSend));
+
+  // Log what we're sending
+  console.log('Sending map data:', {
+    map_id: mapData.map_id,
+    data: dataToSend
+  });
+
+  // Use fetch API for the AJAX request
+  fetch(GeoMapsAdmin.ajaxUrl, {
+    method: 'POST',
+    body: formData,
+    credentials: 'same-origin'
+  }).then(function (response) {
+    if (!response.ok) {
+      throw new Error("HTTP error! Status: ".concat(response.status));
+    }
+    return response.json();
+  }).then(function (response) {
+    // Log the complete response for debugging
+    console.log('Server response:', response);
+
+    // Handle the response
+    handleSaveResponse(response, mapData.map_id, redirect);
+  })["catch"](function (error) {
+    console.error('Error saving map:', error);
+    showToast('Error saving map: ' + error.message, 'error');
+  })["finally"](function () {
+    // Always re-enable the button
+    if (saveButton) {
+      saveButton.disabled = false;
+      saveButton.classList.remove('is-busy');
+    }
+  });
+}
+
+/**
+ * Handle the save response from the server
+ * @param {Object} response - The server response
+ * @param {string} currentMapId - The current map ID
+ * @param {boolean} redirect - Whether to redirect after successful save
+ */
+function handleSaveResponse(response, currentMapId, redirect) {
+  console.log('Save response received:', response);
+  if (response.success) {
+    var _response$data, _response$data2, _response$data3;
+    // Get the new map ID
+    var newMapId = (_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.map_id;
+
+    // Update security token if provided
+    if ((_response$data2 = response.data) !== null && _response$data2 !== void 0 && _response$data2.fresh_nonce) {
+      GeoMapsAdmin.save_map_nonce = response.data.fresh_nonce;
+      console.log('Updated security token');
+    }
+
+    // Show success message
+    var message = ((_response$data3 = response.data) === null || _response$data3 === void 0 ? void 0 : _response$data3.message) || 'Map saved successfully!';
+    showToast(message, 'success');
+
+    // Update button text for existing maps (from Save to Update)
+    if (newMapId && currentMapId === '0') {
+      var saveButton = document.getElementById('geo-maps-save-map');
+      if (saveButton) {
+        saveButton.innerHTML = '<span class="dashicons dashicons-saved"></span> ' + 'Update Map';
+      }
+    }
+
+    // Update map ID if it's a new map
+    if (currentMapId === '0' || currentMapId === '') {
+      var mapIdInput = document.getElementById('geo-maps-id');
+      var mapIdInputUnderscore = document.getElementById('geo_maps_id');
+      if (newMapId) {
+        // Update both ID fields
+        if (mapIdInput) mapIdInput.value = newMapId;
+        if (mapIdInputUnderscore) mapIdInputUnderscore.value = newMapId;
+        if (redirect) {
+          // For new maps, redirect to the edit page with the new map ID
+          var editUrl = new URL(window.location.href);
+          editUrl.searchParams.set('map_id', newMapId);
+          console.log('Redirecting to:', editUrl.toString());
+
+          // Redirect after a delay to allow the toast to be seen
+          setTimeout(function () {
+            window.location.href = editUrl.toString();
+          }, 1000);
+        } else {
+          // Just update the URL without redirecting
+          var newUrl = new URL(window.location.href);
+          newUrl.searchParams.set('map_id', newMapId);
+          window.history.pushState({}, '', newUrl);
+
+          // Update shortcode display
+          updateShortcodeDisplay(newMapId);
+        }
+      }
+    }
+  } else {
+    // Handle error response
+    handleSaveError(response);
+  }
+}
+
+/**
+ * Handle save error response
+ * @param {Object} response - The error response
+ */
+function handleSaveError(response) {
+  console.error('Error saving map:', response);
+
+  // Try to get detailed error information
+  var errorMessage = 'Failed to save map.';
+  if (response && response.data) {
+    if (response.data.message) {
+      errorMessage = response.data.message;
+    }
+
+    // Log additional debug information if available
+    if (response.data.debug) {
+      console.log('Debug information:', response.data.debug);
+    }
+    if (response.data.code) {
+      console.log('Error code:', response.data.code);
+
+      // Add specific handling for certain error codes
+      switch (response.data.code) {
+        case 'invalid_map_id':
+          errorMessage += ' The map ID appears to be invalid or the post type is incorrect.';
+          break;
+        case 'invalid_json':
+          errorMessage += ' The map data could not be processed correctly.';
+          break;
+        case 'missing_nonce':
+        case 'invalid_nonce':
+          errorMessage += ' Try refreshing the page and trying again.';
+          // Attempt to refresh the security token automatically
+          refreshSecurityToken().then(function () {
+            console.log('Security token refreshed after error');
+          });
+          break;
+      }
+    }
+  }
+  showToast(errorMessage, 'error');
+}
+
+/**
+ * Refresh the security token
+ * @returns {Promise<boolean>} Promise resolving to success status
+ */
+function refreshSecurityToken() {
+  return new Promise(function (resolve, reject) {
+    // Get AJAX URL from various possible sources
+    var ajaxUrl = GeoMapsAdmin.ajaxUrl || window.ajaxurl || window.GeoMapsBuilder && window.GeoMapsBuilder.ajaxurl || '/wp-admin/admin-ajax.php';
+
+    // Create form data
+    var formData = new FormData();
+    formData.append('action', 'geo_maps_refresh_nonce');
+
+    // Add any existing security token
+    var existingToken = document.getElementById('geo_maps_security');
+    if (existingToken) {
+      formData.append('security', existingToken.value);
+    } else if (GeoMapsAdmin && GeoMapsAdmin.nonce) {
+      formData.append('security', GeoMapsAdmin.nonce);
+    }
+
+    // Send request
+    fetch(ajaxUrl, {
+      method: 'POST',
+      body: formData,
+      credentials: 'same-origin'
+    }).then(function (response) {
+      return response.json();
+    }).then(function (response) {
+      if (response.success && response.data) {
+        // Update general nonce if available
+        if (response.data.nonce) {
+          if (window.GeoMapsBuilder) {
+            window.GeoMapsBuilder.nonce = response.data.nonce;
+          }
+          GeoMapsAdmin.nonce = response.data.nonce;
+
+          // Update hidden field if it exists
+          var securityField = document.getElementById('geo_maps_security');
+          if (securityField) {
+            securityField.value = response.data.nonce;
+          }
+        }
+
+        // Update save_map_nonce if available
+        if (response.data.save_map_nonce) {
+          GeoMapsAdmin.save_map_nonce = response.data.save_map_nonce;
+          console.log('Updated save_map_nonce to:', response.data.save_map_nonce);
+        }
+        resolve(true);
+        showToast('Security tokens refreshed', 'info');
+      } else {
+        console.warn('Nonce refresh unsuccessful:', response);
+        resolve(false);
+      }
+    })["catch"](function (error) {
+      console.error('Error in refresh token request:', error);
+      reject(error);
+    });
+  });
+}
+
+/**
+ * Update the shortcode display with the new map ID
+ * @param {string} mapId - The map ID to use in the shortcode
+ */
+function updateShortcodeDisplay(mapId) {
+  // Try different ID formats for shortcode element (with dash and with underscore)
+  var shortcodeElement = document.getElementById('geo-maps-shortcode');
+
+  // If not found, try alternate format with underscore
+  if (!shortcodeElement) {
+    shortcodeElement = document.getElementById('geo_maps_shortcode');
+    console.log('Using alternate shortcode element format with underscore');
+  }
+
+  // Try different formats for copy button (with dash and with underscore)
+  var copyButton = document.querySelector('.geo-maps-copy-shortcode');
+
+  // If not found, try alternate format with underscore
+  if (!copyButton) {
+    copyButton = document.querySelector('.geo_maps_copy_shortcode');
+    console.log('Using alternate copy button format with underscore');
+  }
+  if (shortcodeElement) {
+    shortcodeElement.textContent = "[geo_maps id=\"".concat(mapId, "\"]");
+  } else {
+    console.warn('Shortcode element not found with either ID format');
+  }
+  if (copyButton && copyButton.hasAttribute('disabled')) {
+    copyButton.removeAttribute('disabled');
+  }
+}
+
+/**
+ * Show a toast notification
+ * @param {string} message - The message to display
+ * @param {string} type - The type of toast: success, error, warning, info
+ */
+function showToast(message) {
+  var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'info';
+  console.log('Showing toast notification:', message, type);
+
+  // Create toast container if it doesn't exist
+  var toastContainer = document.getElementById('geo-maps-toast-container');
+  if (!toastContainer) {
+    // Create the container
+    toastContainer = document.createElement('div');
+    toastContainer.id = 'geo-maps-toast-container';
+    toastContainer.className = 'geo-maps-toast-container';
+    document.body.appendChild(toastContainer);
+
+    // Make sure it's added to the DOM
+    console.log('Created toast container:', toastContainer);
+
+    // Add styles for the toast container
+    var style = document.createElement('style');
+    style.textContent = "\n            .geo-maps-toast-container {\n                position: fixed;\n                top: 60px;\n                right: 30px;\n                z-index: 999999;\n                display: flex;\n                flex-direction: column;\n                align-items: flex-end;\n                pointer-events: none;\n            }\n            .geo-maps-toast {\n                margin-bottom: 15px;\n                padding: 18px 22px;\n                border-radius: 4px;\n                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);\n                color: white;\n                max-width: 400px;\n                opacity: 0;\n                transform: translateX(20px);\n                transition: opacity 0.3s, transform 0.3s;\n                font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif;\n                font-size: 17px;\n                line-height: 1.5;\n                font-weight: 500;\n                display: flex;\n                align-items: center;\n                pointer-events: all;\n                word-break: break-word;\n            }\n            .geo-maps-toast::before {\n                content: '';\n                display: inline-block;\n                width: 24px;\n                height: 24px;\n                margin-right: 12px;\n                background-position: center;\n                background-repeat: no-repeat;\n                background-size: contain;\n                flex-shrink: 0;\n            }\n            .geo-maps-toast.success::before {\n                background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"white\"><path d=\"M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z\"/></svg>');\n            }\n            .geo-maps-toast.error::before {\n                background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"white\"><path d=\"M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z\"/></svg>');\n            }\n            .geo-maps-toast.info::before {\n                background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"white\"><path d=\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z\"/></svg>');\n            }\n            .geo-maps-toast.warning::before {\n                background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"white\"><path d=\"M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z\"/></svg>');\n            }\n            .geo-maps-toast.show {\n                opacity: 1;\n                transform: translateX(0);\n            }\n            .geo-maps-toast.success { background-color: #4CAF50; }\n            .geo-maps-toast.error { background-color: #F44336; }\n            .geo-maps-toast.warning { background-color: #FF9800; }\n            .geo-maps-toast.info { background-color: #2196F3; }\n        ";
+    document.head.appendChild(style);
+    console.log('Added toast styles');
+  }
+
+  // Create toast element
+  var toast = document.createElement('div');
+  toast.className = "geo-maps-toast ".concat(type);
+  toast.textContent = message;
+
+  // Ensure toast is visible
+  toast.style.display = 'flex';
+
+  // Add to container
+  toastContainer.appendChild(toast);
+  console.log('Added toast to container:', toast);
+
+  // Show toast with animation after a short delay to ensure proper rendering
+  setTimeout(function () {
+    toast.classList.add('show');
+    console.log('Toast shown with animation');
+  }, 10);
+
+  // Remove after 5 seconds (longer duration for better visibility)
+  setTimeout(function () {
+    toast.classList.remove('show');
+    setTimeout(function () {
+      toast.remove();
+      console.log('Toast removed');
+    }, 300);
+  }, 5000);
+}
+
+// Initialize save map functionality only once when the document is fully loaded
+jQuery(document).ready(function () {
+  // Log GeoMapsAdmin for debugging
+  console.log('GeoMapsAdmin:', GeoMapsAdmin);
+
+  // Only set up once
+  if (!window.saveMapInitialized) {
+    setupSaveMapButton();
+    window.saveMapInitialized = true;
+    console.log('Save map functionality initialized');
+
+    // Handle copy shortcode button - try different formats
+    var copyButton = document.querySelector('.geo-maps-copy-shortcode');
+
+    // If not found, try alternate format with underscore
+    if (!copyButton) {
+      copyButton = document.querySelector('.geo_maps_copy_shortcode');
+      console.log('Using alternate copy button selector format with underscore');
+    }
+    if (copyButton) {
+      copyButton.removeEventListener('click', copyShortcode);
+      copyButton.addEventListener('click', copyShortcode);
+      console.log('Copy shortcode button initialized');
+    } else {
+      console.warn('Copy shortcode button not found with either selector');
+    }
+  }
+});
+
+/**
+ * Copy shortcode to clipboard
+ */
+function copyShortcode() {
+  // Try different ID formats for shortcode element (with dash and with underscore)
+  var shortcodeElement = document.getElementById('geo-maps-shortcode');
+
+  // If not found, try alternate format with underscore
+  if (!shortcodeElement) {
+    shortcodeElement = document.getElementById('geo_maps_shortcode');
+    console.log('Using alternate shortcode element format with underscore for copying');
+  }
+  if (shortcodeElement) {
+    navigator.clipboard.writeText(shortcodeElement.textContent).then(function () {
+      return showToast('✅ Shortcode copied', 'success');
+    })["catch"](function (err) {
+      console.error('Could not copy shortcode', err);
+      showToast('Error copying shortcode: ' + err.message, 'error');
+    });
+  } else {
+    console.error('Shortcode element not found for copying');
+    showToast('Error: Shortcode element not found', 'error');
+  }
+}
 })();
 
 /******/ })()
