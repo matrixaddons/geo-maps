@@ -188,7 +188,11 @@ jQuery(document).ready(function($) {
         
         // Initialize the rest after map is ready
         console.log('Initializing marker manager...');
+        
+        // Set initialization flag to prevent redundant calls
+        window.markerManagerInitializing = true;
         markerManager.init();
+        window.markerManagerInitializing = false;
         
         console.log('Initializing drawer manager...');
         drawerManager.init();
@@ -327,11 +331,34 @@ jQuery(document).ready(function($) {
  * Save Map functionality
  */
 function setupSaveMapButton() {
-    const saveButton = document.getElementById('geo-maps-save-map');
+    // Look for the save button with multiple possible selectors
+    let saveButton = document.getElementById('geo-maps-save-map');
+    
+    // If not found with ID, try by class
     if (!saveButton) {
-        console.error('Save button not found');
+        saveButton = document.querySelector('.geo-maps-save-map');
+    }
+    
+    // If still not found, try alternative formats
+    if (!saveButton) {
+        saveButton = document.getElementById('geo_maps_save_map');
+    }
+    
+    if (!saveButton) {
+        saveButton = document.querySelector('.geo_maps_save_map');
+    }
+    
+    // Try a more generic query as a last resort
+    if (!saveButton) {
+        saveButton = document.querySelector('button[data-action="save-map"]');
+    }
+    
+    if (!saveButton) {
+        console.error('Save button not found with any selector. Save functionality will not work.');
         return;
     }
+
+    console.log('Found save button:', saveButton);
 
     // Remove any existing event listeners to prevent duplicates
     saveButton.removeEventListener('click', handleSaveButtonClick);
@@ -366,167 +393,262 @@ function handleSaveButtonClick(event) {
 }
 
 /**
- * Save the current map
- * @param {boolean} redirect - Whether to redirect after successful save
+ * Refreshes the security nonce and retries the provided action
+ * 
+ * @param {Function} retryCallback - The function to retry after refreshing the nonce
+ * @returns {Promise} - Promise that resolves with the result of the retry callback
  */
-function saveMap(redirect = false) {
-    // Get save button element
-    const saveButton = document.getElementById('geo-maps-save-map');
-    if (!saveButton) {
-        console.error('Save button element not found');
-        return;
-    }
+function refreshNonceAndRetry(retryCallback) {
+    console.log('Security token expired, attempting to refresh...');
+    showToast('Security token expired. Refreshing...', 'info');
     
-    // Disable button and show loading state
-    saveButton.disabled = true;
-    saveButton.classList.add('is-busy');
-    
-    try {
-        // Get map data
-        const mapData = collectMapData();
+    return new Promise((resolve, reject) => {
+        // Check if necessary variables exist
+        const ajaxUrl = (typeof geoMapsVars !== 'undefined' && geoMapsVars.ajaxUrl) ? 
+            geoMapsVars.ajaxUrl : 
+            (typeof GeoMapsAdmin !== 'undefined' && GeoMapsAdmin.ajaxUrl) ? 
+                GeoMapsAdmin.ajaxUrl : 
+                (typeof ajaxurl !== 'undefined') ? ajaxurl : '/wp-admin/admin-ajax.php';
+                
+        if (!ajaxUrl) {
+            console.error('Cannot refresh nonce: Ajax URL not available');
+            showToast('Error refreshing security token. Please reload the page.', 'error');
+            reject(new Error('Ajax URL not available'));
+            return;
+        }
         
-        // Send data to server
-        sendMapData(mapData, redirect, saveButton);
-    } catch (error) {
-        console.error('Error preparing map data:', error);
-        showToast('Error preparing map data: ' + error.message, 'error');
+        // Create form data for the nonce refresh request
+        const formData = new FormData();
+        formData.append('action', 'geo_maps_refresh_nonce');
         
-        // Re-enable button
-        saveButton.disabled = false;
-        saveButton.classList.remove('is-busy');
-    }
+        // Try to get an existing nonce to authenticate this request
+        let securityToken = null;
+        const existingNonce = document.getElementById('geo-maps-nonce');
+        
+        if (existingNonce) {
+            securityToken = existingNonce.value;
+        } else if (typeof GeoMapsAdmin !== 'undefined' && GeoMapsAdmin.nonce) {
+            securityToken = GeoMapsAdmin.nonce;
+        }
+        
+        if (!securityToken) {
+            console.error('Cannot refresh nonce: No existing nonce found');
+            showToast('Security validation failed. Please reload the page.', 'error');
+            reject(new Error('No existing nonce found'));
+            return;
+        }
+        
+        formData.append('security', securityToken);
+        
+        // Send the request to refresh the nonce
+        fetch(ajaxUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Nonce refresh response:', data);
+            
+            if (data.success) {
+                // Update the nonce in the form
+                const nonceField = document.getElementById('geo-maps-nonce');
+                if (nonceField) {
+                    nonceField.value = data.data.save_map_nonce;
+                    console.log('Updated nonce field with fresh value');
+                } else {
+                    console.warn('Nonce field not found in form, creating a new one');
+                    // If the field doesn't exist, create it
+                    const hiddenField = document.createElement('input');
+                    hiddenField.type = 'hidden';
+                    hiddenField.id = 'geo-maps-nonce';
+                    hiddenField.name = 'security';
+                    hiddenField.value = data.data.save_map_nonce;
+                    document.querySelector('form') ? 
+                        document.querySelector('form').appendChild(hiddenField) : 
+                        document.body.appendChild(hiddenField);
+                }
+                
+                // Update in global variable if available
+                if (typeof GeoMapsAdmin !== 'undefined') {
+                    GeoMapsAdmin.save_map_nonce = data.data.save_map_nonce;
+                    GeoMapsAdmin.nonce = data.data.nonce;
+                }
+                
+                showToast('Security token refreshed', 'success');
+                
+                // Retry the original action
+                console.log('Retrying original action with fresh token');
+                resolve(retryCallback());
+            } else {
+                console.error('Failed to refresh nonce:', data.data?.message || 'Unknown error');
+                showToast('Failed to refresh security token. Please reload the page.', 'error');
+                reject(new Error('Failed to refresh nonce'));
+            }
+        })
+        .catch(error => {
+            console.error('Error refreshing nonce:', error);
+            showToast('Error refreshing security token. Please reload the page.', 'error');
+            reject(error);
+        });
+    });
 }
 
 /**
- * Collect all map data from various sources
- * @returns {Object} The collected map data
+ * Saves the map data to the server
+ * 
+ * @param {boolean} redirect - Whether to redirect after successful save
+ * @returns {Promise<boolean>} - Promise resolving to true if save was successful
  */
-function collectMapData() {
-    // Get map title
-    let titleInput = document.getElementById('geo-maps-title');
+function saveMap(redirect = true) {
+    // Show loading indicator
+    showToast('Saving map...', 'info');
     
-    // If not found, try alternate format with underscore
-    if (!titleInput) {
-        titleInput = document.getElementById('geo_maps_title');
-        console.log('Using alternate title input format with underscore');
-    }
+    // Get map data from the form and managers
+    const mapData = collectMapData();
     
-    const mapTitle = titleInput ? (titleInput.value.trim() || 'Untitled Map') : 'Untitled Map';
-    
-    // Get map ID
-    let mapIdInput = document.getElementById('geo-maps-id');
-    
-    // If not found, try alternate format with underscore
-    if (!mapIdInput) {
-        mapIdInput = document.getElementById('geo_maps_id');
-        console.log('Using alternate map ID input format with underscore');
-    }
-    
-    const mapId = mapIdInput ? mapIdInput.value : '0';
-    
-    // Get map type
-    let mapTypeInput = document.getElementById('geo-maps-map-type');
-    
-    // If not found, try alternate format with underscore
-    if (!mapTypeInput) {
-        mapTypeInput = document.getElementById('geo_maps_map_type');
-        console.log('Using alternate map type input format with underscore');
-    }
-    
-    const mapType = mapTypeInput ? mapTypeInput.value : 'leaflet';
-    
-    // Get map center coordinates
-    let mapCenter = { lat: 0, lng: 0 };
-    try {
-        mapCenter = mapManager.getMapCenter();
-    } catch (error) {
-        console.warn('Error getting map center, using default:', error);
-    }
-    
-    // Get map zoom level
-    let zoomLevel = 10;
-    try {
-        const map = mapManager.getMap();
-        if (map && typeof map.getZoom === 'function') {
-            zoomLevel = map.getZoom();
-        } else if (map && map._zoom) {
-            zoomLevel = map._zoom;
-        } else if (settingsManager && settingsManager.zoom) {
-            zoomLevel = settingsManager.zoom;
+    // Make sure we have markers in the map data
+    if (mapData.markers && mapData.markers.length === 0) {
+        // Try to get markers directly from GeoMapsBuilder if available
+        if (window.GeoMapsBuilder && 
+            window.GeoMapsBuilder.settingsManager && 
+            Array.isArray(window.GeoMapsBuilder.settingsManager.markers) && 
+            window.GeoMapsBuilder.settingsManager.markers.length > 0) {
+            
+            console.log('No markers in mapData, but found markers in GeoMapsBuilder.settingsManager');
+            mapData.markers = [...window.GeoMapsBuilder.settingsManager.markers];
         }
-    } catch (error) {
-        console.warn('Error getting zoom level, using default:', error);
     }
     
-    // Get map settings
-    let settings = {};
-    try {
-        settings = settingsManager.getSettings() || {};
-    } catch (error) {
-        console.warn('Error getting map settings, using empty object:', error);
+    // Log the data we're about to send
+    console.log('Map data to save:', mapData);
+    
+    // Format the data for the server
+    const formData = new FormData();
+    formData.append('action', 'geo_maps_save_map');
+    
+    // Get the nonce element and check if it exists
+    let nonceElement = document.getElementById('geo-maps-nonce');
+    
+    // Try alternative formats if not found
+    if (!nonceElement) {
+        nonceElement = document.getElementById('geo_maps_nonce');
     }
     
-    // Get map markers
-    let markers = [];
-    try {
-        markers = markerManager.getAllMarkers() || [];
-    } catch (error) {
-        console.warn('Error getting markers, using empty array:', error);
+    // Try global variables as a last resort
+    if (!nonceElement) {
+        if (typeof GeoMapsAdmin !== 'undefined' && GeoMapsAdmin.save_map_nonce) {
+            // Create a virtual element with the nonce value
+            const nonceValue = GeoMapsAdmin.save_map_nonce;
+            formData.append('security', nonceValue);
+            console.log('Using nonce from GeoMapsAdmin global variable');
+        } else {
+            console.error('Security nonce element not found and no fallback available');
+            showToast('Error: Security token missing. Please reload the page.', 'error');
+            return Promise.reject(new Error('Security nonce element not found'));
+        }
+    } else {
+        // Element exists, check if it has a value
+        if (!nonceElement.value) {
+            console.error('Security nonce element has no value');
+            showToast('Error: Security token is empty. Please reload the page.', 'error');
+            return Promise.reject(new Error('Security nonce has no value'));
+        }
+        
+        formData.append('security', nonceElement.value);
     }
     
-    // Build complete map data object with updated structure
-    // Only markers should be in an array, everything else is in settings
-    const mapData = {
-        title: mapTitle,
-        map_id: mapId,
-        map_type: mapType,
-        settings: {
-            center: mapCenter,
-            zoom: zoomLevel,
-            ...settings
-        },
-        markers: markers
+    formData.append('map_id', mapData.id);
+    formData.append('map_title', mapData.title);
+    formData.append('map_type', mapData.type);
+    
+    // The map data is already structured correctly by collectMapData
+    // We'll ensure markers are included by explicitly structuring the JSON
+    const mapDataToSave = {
+        settings: mapData.settings,
+        markers: mapData.markers || []
     };
     
-    console.log('Collected map data:', mapData);
-    return mapData;
-}
+    // Log exactly what we're sending to the server
+    console.log('Final map data structure being sent to server:', mapDataToSave);
+    
+    formData.append('map_data', JSON.stringify(mapDataToSave));
+    
+    // Check if necessary variables exist
+    if (typeof geoMapsVars === 'undefined' || !geoMapsVars.ajaxUrl) {
+        // Try to get ajaxurl from global JavaScript variable
+        const ajaxUrl = (typeof ajaxurl !== 'undefined') ? 
+                          ajaxurl : 
+                         (typeof GeoMapsAdmin !== 'undefined' && GeoMapsAdmin.ajaxUrl) ? 
+                          GeoMapsAdmin.ajaxUrl : 
+                          '/wp-admin/admin-ajax.php'; // WordPress default
 
-/**
- * Send map data to the server
- * @param {Object} mapData - The map data to send
- * @param {boolean} redirect - Whether to redirect after successful save
- * @param {HTMLElement} saveButton - The save button element
- */
-function sendMapData(mapData, redirect, saveButton) {
-    // Create form data
-    const formData = new FormData();
+        console.log('geoMapsVars not available, using fallback Ajax URL:', ajaxUrl);
+        
+        // Send the data to the server
+        return fetch(ajaxUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Save response:', data);
+            
+            if (data.success) {
+                showToast(data.data.message, 'success');
+                
+                // Update page URL if new map was created
+                if (data.data.map_id && mapData.id === '0') {
+                    const newUrl = window.location.href.replace('map_id=0', `map_id=${data.data.map_id}`);
+                    window.history.replaceState({}, '', newUrl);
+                    
+                    // Safely update the hidden input
+                    const mapIdElement = document.getElementById('geo-maps-id');
+                    if (mapIdElement) {
+                        mapIdElement.value = data.data.map_id;
+                        console.log('Updated map ID input with new ID:', data.data.map_id);
+                    } else {
+                        console.warn('Map ID input element not found, unable to update value');
+                    }
+                }
+                
+                if (redirect && data.data.redirect) {
+                    window.location.href = data.data.redirect;
+                }
+                
+                return true;
+            } else {
+                // Handle nonce expiration
+                if (data.data && data.data.code === 'invalid_nonce') {
+                    return refreshNonceAndRetry(() => saveMap(redirect));
+                }
+                
+                showToast(data.data.message || 'Error saving map', 'error');
+                return false;
+            }
+        })
+        .catch(error => {
+            console.error('Error saving map:', error);
+            showToast('Error saving map. Please try again.', 'error');
+            return false;
+        });
+    }
     
-    // Add action and security token
-    formData.append('action', 'geo_maps_save_map');
-    formData.append('security', GeoMapsAdmin.save_map_nonce);
-    
-    // Add map ID separately
-    formData.append('map_id', mapData.map_id);
-    
-    // Remove map_id from the data object to avoid duplication
-    const dataToSend = { ...mapData };
-    delete dataToSend.map_id;
-    
-    // Stringify the map data and add it to form data
-    formData.append('map_data', JSON.stringify(dataToSend));
-    
-    // Log what we're sending
-    console.log('Sending map data:', {
-        map_id: mapData.map_id,
-        data: dataToSend
-    });
-    
-    // Use fetch API for the AJAX request
-    fetch(GeoMapsAdmin.ajaxUrl, {
+    return fetch(geoMapsVars.ajaxUrl, {
         method: 'POST',
-        body: formData,
-        credentials: 'same-origin'
+        credentials: 'same-origin',
+        body: formData
     })
     .then(response => {
         if (!response.ok) {
@@ -534,239 +656,184 @@ function sendMapData(mapData, redirect, saveButton) {
         }
         return response.json();
     })
-    .then(response => {
-        // Log the complete response for debugging
-        console.log('Server response:', response);
+    .then(data => {
+        console.log('Save response:', data);
         
-        // Handle the response
-        handleSaveResponse(response, mapData.map_id, redirect);
+        if (data.success) {
+            showToast(data.data.message, 'success');
+            
+            // Update page URL if new map was created
+            if (data.data.map_id && mapData.id === '0') {
+                const newUrl = window.location.href.replace('map_id=0', `map_id=${data.data.map_id}`);
+                window.history.replaceState({}, '', newUrl);
+                
+                // Safely update the hidden input
+                const mapIdElement = document.getElementById('geo-maps-id');
+                if (mapIdElement) {
+                    mapIdElement.value = data.data.map_id;
+                    console.log('Updated map ID input with new ID:', data.data.map_id);
+                } else {
+                    console.warn('Map ID input element not found, unable to update value');
+                }
+            }
+            
+            if (redirect && data.data.redirect) {
+                window.location.href = data.data.redirect;
+            }
+            
+            return true;
+        } else {
+            // Handle nonce expiration
+            if (data.data && data.data.code === 'invalid_nonce') {
+                return refreshNonceAndRetry(() => saveMap(redirect));
+            }
+            
+            showToast(data.data.message || 'Error saving map', 'error');
+            return false;
+        }
     })
     .catch(error => {
         console.error('Error saving map:', error);
-        showToast('Error saving map: ' + error.message, 'error');
-    })
-    .finally(() => {
-        // Always re-enable the button
-        if (saveButton) {
-            saveButton.disabled = false;
-            saveButton.classList.remove('is-busy');
-        }
+        showToast('Error saving map. Please try again.', 'error');
+        return false;
     });
 }
 
 /**
- * Handle the save response from the server
- * @param {Object} response - The server response
- * @param {string} currentMapId - The current map ID
- * @param {boolean} redirect - Whether to redirect after successful save
+ * Collects all map data from the form and managers
+ * @returns {Object} Map data object with settings and markers
  */
-function handleSaveResponse(response, currentMapId, redirect) {
-    console.log('Save response received:', response);
-    
-    if (response.success) {
-        // Get the new map ID
-        const newMapId = response.data?.map_id;
+function collectMapData() {
+    try {
+        // Get required form field values
+        const titleInput = document.getElementById('geo_maps_title') || document.getElementById('geo-maps-title');
+        const mapIdInput = document.getElementById('geo_maps_id') || document.getElementById('geo-maps-id');
+        const mapTypeInput = document.getElementById('geo_maps_map_type') || document.getElementById('geo-maps-map-type');
         
-        // Update security token if provided
-        if (response.data?.fresh_nonce) {
-            GeoMapsAdmin.save_map_nonce = response.data.fresh_nonce;
-            console.log('Updated security token');
-        }
+        const title = titleInput ? titleInput.value : 'Untitled Map';
+        const mapId = mapIdInput ? mapIdInput.value : '0';
+        const mapType = mapTypeInput ? mapTypeInput.value : 'open_street_map';
         
-        // Show success message
-        const message = response.data?.message || 'Map saved successfully!';
-        showToast(message, 'success');
+        // Default center and zoom if map is not available
+        let mapCenter = { lat: 40.7128, lng: -74.0060 }; // New York as default
+        let zoom = 5; // Default zoom level
         
-        // Update button text for existing maps (from Save to Update)
-        if (newMapId && currentMapId === '0') {
-            const saveButton = document.getElementById('geo-maps-save-map');
-            if (saveButton) {
-                saveButton.innerHTML = '<span class="dashicons dashicons-saved"></span> ' + 'Update Map';
-            }
-        }
-        
-        // Update map ID if it's a new map
-        if (currentMapId === '0' || currentMapId === '') {
-            const mapIdInput = document.getElementById('geo-maps-id');
-            const mapIdInputUnderscore = document.getElementById('geo_maps_id');
-            
-            if (newMapId) {
-                // Update both ID fields
-                if (mapIdInput) mapIdInput.value = newMapId;
-                if (mapIdInputUnderscore) mapIdInputUnderscore.value = newMapId;
+        // Safely try to get map center and zoom
+        try {
+            if (mapManager && mapManager.getMap) {
+                const map = mapManager.getMap();
                 
-                if (redirect) {
-                    // For new maps, redirect to the edit page with the new map ID
-                    const editUrl = new URL(window.location.href);
-                    editUrl.searchParams.set('map_id', newMapId);
-                    
-                    console.log('Redirecting to:', editUrl.toString());
-                    
-                    // Redirect after a delay to allow the toast to be seen
-                    setTimeout(() => {
-                        window.location.href = editUrl.toString();
-                    }, 1000);
-                } else {
-                    // Just update the URL without redirecting
-                    const newUrl = new URL(window.location.href);
-                    newUrl.searchParams.set('map_id', newMapId);
-                    window.history.pushState({}, '', newUrl);
-                    
-                    // Update shortcode display
-                    updateShortcodeDisplay(newMapId);
-                }
-            }
-        }
-    } else {
-        // Handle error response
-        handleSaveError(response);
-    }
-}
-
-/**
- * Handle save error response
- * @param {Object} response - The error response
- */
-function handleSaveError(response) {
-    console.error('Error saving map:', response);
-    
-    // Try to get detailed error information
-    let errorMessage = 'Failed to save map.';
-    
-    if (response && response.data) {
-        if (response.data.message) {
-            errorMessage = response.data.message;
-        }
-        
-        // Log additional debug information if available
-        if (response.data.debug) {
-            console.log('Debug information:', response.data.debug);
-        }
-        
-        if (response.data.code) {
-            console.log('Error code:', response.data.code);
-            
-            // Add specific handling for certain error codes
-            switch(response.data.code) {
-                case 'invalid_map_id':
-                    errorMessage += ' The map ID appears to be invalid or the post type is incorrect.';
-                    break;
-                case 'invalid_json':
-                    errorMessage += ' The map data could not be processed correctly.';
-                    break;
-                case 'missing_nonce':
-                case 'invalid_nonce':
-                    errorMessage += ' Try refreshing the page and trying again.';
-                    // Attempt to refresh the security token automatically
-                    refreshSecurityToken().then(() => {
-                        console.log('Security token refreshed after error');
-                    });
-                    break;
-            }
-        }
-    }
-    
-    showToast(errorMessage, 'error');
-}
-
-/**
- * Refresh the security token
- * @returns {Promise<boolean>} Promise resolving to success status
- */
-function refreshSecurityToken() {
-    return new Promise((resolve, reject) => {
-        // Get AJAX URL from various possible sources
-        const ajaxUrl = GeoMapsAdmin.ajaxUrl || 
-            window.ajaxurl || 
-            (window.GeoMapsBuilder && window.GeoMapsBuilder.ajaxurl) ||
-            '/wp-admin/admin-ajax.php';
-        
-        // Create form data
-        const formData = new FormData();
-        formData.append('action', 'geo_maps_refresh_nonce');
-        
-        // Add any existing security token
-        const existingToken = document.getElementById('geo_maps_security');
-        if (existingToken) {
-            formData.append('security', existingToken.value);
-        } else if (GeoMapsAdmin && GeoMapsAdmin.nonce) {
-            formData.append('security', GeoMapsAdmin.nonce);
-        }
-        
-        // Send request
-        fetch(ajaxUrl, {
-            method: 'POST',
-            body: formData,
-            credentials: 'same-origin'
-        })
-        .then(response => response.json())
-        .then(response => {
-            if (response.success && response.data) {
-                // Update general nonce if available
-                if (response.data.nonce) {
-                    if (window.GeoMapsBuilder) {
-                        window.GeoMapsBuilder.nonce = response.data.nonce;
-                    }
-                    GeoMapsAdmin.nonce = response.data.nonce;
-                    
-                    // Update hidden field if it exists
-                    const securityField = document.getElementById('geo_maps_security');
-                    if (securityField) {
-                        securityField.value = response.data.nonce;
+                if (map && map.getCenter && typeof map.getCenter === 'function') {
+                    const center = map.getCenter();
+                    if (center && typeof center.lat === 'number' && typeof center.lng === 'number') {
+                        mapCenter = { lat: center.lat, lng: center.lng };
                     }
                 }
                 
-                // Update save_map_nonce if available
-                if (response.data.save_map_nonce) {
-                    GeoMapsAdmin.save_map_nonce = response.data.save_map_nonce;
-                    console.log('Updated save_map_nonce to:', response.data.save_map_nonce);
+                if (map && map.getZoom && typeof map.getZoom === 'function') {
+                    zoom = map.getZoom();
+                }
+            } else if (window.geoMapsRenderEngine && window.geoMapsRenderEngine.map_settings) {
+                // Fall back to initial settings if available
+                const initialSettings = window.geoMapsRenderEngine.map_settings;
+                if (initialSettings.settings && initialSettings.settings.center) {
+                    mapCenter = initialSettings.settings.center;
+                } else if (initialSettings.center) {
+                    mapCenter = initialSettings.center;
                 }
                 
-                resolve(true);
-                showToast('Security tokens refreshed', 'info');
-            } else {
-                console.warn('Nonce refresh unsuccessful:', response);
-                resolve(false);
+                if (initialSettings.settings && initialSettings.settings.zoom) {
+                    zoom = initialSettings.settings.zoom;
+                } else if (initialSettings.map_zoom) {
+                    zoom = initialSettings.map_zoom;
+                }
             }
-        })
-        .catch(error => {
-            console.error('Error in refresh token request:', error);
-            reject(error);
+        } catch (mapError) {
+            console.warn('Error getting map data, using defaults:', mapError);
+        }
+        
+        // Safely try to get markers
+        let markers = [];
+        
+        // Debug: Check if settingsManager is accessible and has markers
+        if (window.GeoMapsBuilder && window.GeoMapsBuilder.settingsManager) {
+            console.log('DEBUG - settingsManager markers directly:', 
+                window.GeoMapsBuilder.settingsManager.markers);
+        }
+        
+        try {
+            if (markerManager && typeof markerManager.getMarkers === 'function') {
+                markers = markerManager.getMarkers() || [];
+                console.log('DEBUG - markers from markerManager.getMarkers():', markers);
+            } else if (markerManager && typeof markerManager.getAllMarkers === 'function') {
+                markers = markerManager.getAllMarkers() || [];
+                console.log('DEBUG - markers from markerManager.getAllMarkers():', markers);
+            } else if (window.geoMapsRenderEngine && 
+                      window.geoMapsRenderEngine.map_settings && 
+                      window.geoMapsRenderEngine.map_settings.map_marker) {
+                markers = window.geoMapsRenderEngine.map_settings.map_marker;
+                console.log('DEBUG - markers from geoMapsRenderEngine:', markers);
+            }
+            
+            // If markers is empty but we know we should have markers, try to get them directly
+            if (markers.length === 0 && window.GeoMapsBuilder && window.GeoMapsBuilder.settingsManager) {
+                markers = window.GeoMapsBuilder.settingsManager.markers || [];
+                console.log('DEBUG - Fallback: getting markers directly from settingsManager:', markers);
+            }
+        } catch (markersError) {
+            console.warn('Error getting markers, using empty array:', markersError);
+        }
+        
+        // Get settings from managers
+        const appearanceSettings = settingsManager && settingsManager.getAppearanceSettings ? 
+            settingsManager.getAppearanceSettings() : {};
+        const controlsSettings = settingsManager && settingsManager.getControlsSettings ?
+            settingsManager.getControlsSettings() : {};
+        const interactionsSettings = settingsManager && settingsManager.getInteractionsSettings ?
+            settingsManager.getInteractionsSettings() : {};
+        
+        // Log data for debugging
+        console.log('Collected map data:', {
+            title,
+            id: mapId,
+            type: mapType,
+            settings: {
+                center: mapCenter,
+                zoom: zoom
+            },
+            markers: markers.length
         });
-    });
-}
-
-/**
- * Update the shortcode display with the new map ID
- * @param {string} mapId - The map ID to use in the shortcode
- */
-function updateShortcodeDisplay(mapId) {
-    // Try different ID formats for shortcode element (with dash and with underscore)
-    let shortcodeElement = document.getElementById('geo-maps-shortcode');
-    
-    // If not found, try alternate format with underscore
-    if (!shortcodeElement) {
-        shortcodeElement = document.getElementById('geo_maps_shortcode');
-        console.log('Using alternate shortcode element format with underscore');
-    }
-    
-    // Try different formats for copy button (with dash and with underscore)
-    let copyButton = document.querySelector('.geo-maps-copy-shortcode');
-    
-    // If not found, try alternate format with underscore
-    if (!copyButton) {
-        copyButton = document.querySelector('.geo_maps_copy_shortcode');
-        console.log('Using alternate copy button format with underscore');
-    }
-    
-    if (shortcodeElement) {
-        shortcodeElement.textContent = `[geo_maps id="${mapId}"]`;
-    } else {
-        console.warn('Shortcode element not found with either ID format');
-    }
-    
-    if (copyButton && copyButton.hasAttribute('disabled')) {
-        copyButton.removeAttribute('disabled');
+        
+        // Build the map data object with correct structure
+        return {
+            title: title,
+            id: mapId,
+            type: mapType,
+            settings: {
+                center: mapCenter,
+                zoom: zoom,
+                appearance: appearanceSettings,
+                controls: controlsSettings,
+                interactions: interactionsSettings
+            },
+            markers: markers
+        };
+    } catch (error) {
+        console.error('Error collecting map data:', error);
+        // Return a minimal valid object that can be saved
+        return {
+            title: 'Untitled Map (Error Recovery)',
+            id: document.getElementById('geo_maps_id')?.value || document.getElementById('geo-maps-id')?.value || '0',
+            type: 'open_street_map',
+            settings: {
+                center: { lat: 40.7128, lng: -74.0060 },
+                zoom: 5,
+                appearance: {},
+                controls: {},
+                interactions: {}
+            },
+            markers: []
+        };
     }
 }
 
@@ -940,4 +1007,557 @@ function copyShortcode() {
         console.error('Shortcode element not found for copying');
         showToast('Error: Shortcode element not found', 'error');
     }
+}
+
+/**
+ * Initialize the map when the page is ready
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Document ready, initializing map and form fields...');
+    
+    // Initialize global GeoMapsBuilder object
+    window.GeoMapsBuilder = window.GeoMapsBuilder || {};
+    
+    // Initialize settings manager if not already initialized
+    if (settingsManager && !window.GeoMapsBuilder.settingsManager) {
+        window.GeoMapsBuilder.settingsManager = settingsManager;
+        console.log('Settings manager initialized in GeoMapsBuilder');
+        
+        // Initialize markers from server data if available
+        if (window.geoMapsRenderEngine && 
+            window.geoMapsRenderEngine.map_settings && 
+            window.geoMapsRenderEngine.map_settings.map_marker && 
+            Array.isArray(window.geoMapsRenderEngine.map_settings.map_marker)) {
+            
+            const serverMarkers = window.geoMapsRenderEngine.map_settings.map_marker;
+            console.log('Found server markers data:', serverMarkers);
+            
+            // Initialize markers array if needed
+            window.GeoMapsBuilder.settingsManager.markers = window.GeoMapsBuilder.settingsManager.markers || [];
+            
+            // Add each marker to settings manager
+            serverMarkers.forEach(marker => {
+                const markerObj = {
+                    id: marker.id || 'marker_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                    title: marker.title || '',
+                    description: marker.content || '',
+                    latitude: parseFloat(marker.lat),
+                    longitude: parseFloat(marker.lng),
+                    iconUrl: marker.iconUrl || ''
+                };
+                
+                // Add to settingsManager if not already there
+                const exists = window.GeoMapsBuilder.settingsManager.markers.some(m => m.id === markerObj.id);
+                if (!exists) {
+                    console.log('Adding marker to settings manager:', markerObj);
+                    window.GeoMapsBuilder.settingsManager.markers.push(markerObj);
+                    
+                    // Also call the addMarker method to ensure events are triggered
+                    if (typeof window.GeoMapsBuilder.settingsManager.addMarker === 'function') {
+                        window.GeoMapsBuilder.settingsManager.addMarker(markerObj);
+                    }
+                }
+            });
+            
+            console.log('Markers initialized in settings manager:', 
+                window.GeoMapsBuilder.settingsManager.markers.length, 'markers');
+        }
+    }
+    
+    // Initialize map with default settings
+    initializeMap();
+    
+    // If we have saved settings, populate the form fields
+    populateFormFields();
+    
+    // Ensure markers are populated after a short delay to allow all initializations to complete
+    setTimeout(() => {
+        // Try different methods to get markers, in order of preference
+        let markers = [];
+        
+        // Method 1: Direct access from window.geoMapsRenderEngine.map_settings.map_marker
+        if (window.GeoMapsAdmin && 
+            window.GeoMapsAdmin.map_settings && 
+            window.GeoMapsAdmin.map_settings.map_marker && 
+            Array.isArray(window.GeoMapsAdmin.map_settings.map_marker) &&
+            window.GeoMapsAdmin.map_settings.map_marker.length > 0) {
+            markers = window.GeoMapsAdmin.map_settings.map_marker;
+            console.log('Populating markers ( UMESH ) from GeoMapsAdmin.map_settings.map_marker:', markers.length);
+        }
+        
+        debugger;
+        // If we found markers, populate the list
+        if (markers && markers.length > 0) {
+            console.log('Found markers to populate:', markers.length);
+            populateMarkersList(markers);
+        } else {
+            console.log('No markers found to populate after checking all sources, initializing default markers');
+            // In production, you might want to remove this block to avoid creating unnecessary default markers
+            /*
+            // Create a default marker as fallback
+            const defaultMarker = {
+                id: 'marker_default_' + Date.now(),
+                title: 'Default Marker',
+                description: 'This is a sample marker.',
+                latitude: 40.7128,
+                longitude: -74.0060
+            };
+            
+            // Add it to the settings manager
+            if (window.GeoMapsBuilder && window.GeoMapsBuilder.settingsManager) {
+                window.GeoMapsBuilder.settingsManager.markers = [defaultMarker];
+                if (typeof window.GeoMapsBuilder.settingsManager.addMarker === 'function') {
+                    window.GeoMapsBuilder.settingsManager.addMarker(defaultMarker);
+                }
+                populateMarkersList([defaultMarker]);
+            }
+            */
+        }
+    }, 1500); // Increase timeout to ensure everything is initialized
+});
+
+/**
+ * Populate form fields with data from the map settings
+ */
+function populateFormFields() {
+    console.log('Populating form fields from map settings...');
+    
+    // Check if geoMapsRenderEngine and map settings are available
+    if (!window.geoMapsRenderEngine || !window.geoMapsRenderEngine.map_settings) {
+        console.log('No map settings found, skipping form population');
+        return;
+    }
+    
+    try {
+        const mapSettings = window.geoMapsRenderEngine.map_settings;
+        console.log('Map settings to load:', mapSettings);
+        
+        // Map type (Google Map or OpenStreetMap)
+        const mapTypeSelect = document.getElementById('geo_maps_map_type');
+        if (mapTypeSelect && mapSettings.map_type) {
+            mapTypeSelect.value = mapSettings.map_type;
+            
+            // Show/hide OSM provider field based on map type
+            const osmProviderField = document.querySelector('.geo-maps-osm-provider-field');
+            if (osmProviderField) {
+                osmProviderField.style.display = mapSettings.map_type === 'open_street_map' ? 'block' : 'none';
+            }
+        }
+        
+        // OSM Provider (if using OpenStreetMap)
+        if (mapSettings.map_type === 'open_street_map' && mapSettings.settings && mapSettings.settings.osm_provider) {
+            const osmProviderSelect = document.getElementById('geo_maps_osm_provider');
+            if (osmProviderSelect) {
+                osmProviderSelect.value = mapSettings.settings.osm_provider;
+            }
+        }
+        
+        // Popup settings
+        if (mapSettings.settings && mapSettings.settings.popup_show_on) {
+            const popupShowOnSelect = document.getElementById('geo_maps_popup_show_on');
+            if (popupShowOnSelect) {
+                popupShowOnSelect.value = mapSettings.settings.popup_show_on;
+            }
+        }
+        
+        // Marker settings
+        if (mapSettings.settings && mapSettings.settings.markers) {
+            // Default marker icon
+            const defaultMarkerIconInput = document.getElementById('geo_maps_default_marker_icon');
+            const markerPreviewContainer = document.getElementById('geo-maps-marker-preview-container');
+            
+            if (defaultMarkerIconInput && mapSettings.settings.markers.default_icon) {
+                defaultMarkerIconInput.value = mapSettings.settings.markers.default_icon;
+                
+                // Update preview
+                if (markerPreviewContainer) {
+                    markerPreviewContainer.classList.remove('empty');
+                    
+                    // Find or create img element
+                    let img = markerPreviewContainer.querySelector('img');
+                    if (!img) {
+                        // Remove placeholder if it exists
+                        const placeholder = markerPreviewContainer.querySelector('.geo-maps-media-placeholder');
+                        if (placeholder) {
+                            placeholder.remove();
+                        }
+                        
+                        // Create img element
+                        img = document.createElement('img');
+                        img.alt = 'Marker icon';
+                        markerPreviewContainer.appendChild(img);
+                    }
+                    
+                    img.src = mapSettings.settings.markers.default_icon;
+                    
+                    // Show remove button
+                    const removeButton = document.querySelector('.geo-maps-media-clear');
+                    if (removeButton) {
+                        removeButton.style.display = 'block';
+                    }
+                }
+            }
+            
+            // Marker dimensions
+            const markerWidthInput = document.getElementById('geo_maps_marker_image_width');
+            const markerHeightInput = document.getElementById('geo_maps_marker_image_height');
+            
+            if (markerWidthInput && mapSettings.settings.markers.width) {
+                markerWidthInput.value = mapSettings.settings.markers.width;
+            }
+            
+            if (markerHeightInput && mapSettings.settings.markers.height) {
+                markerHeightInput.value = mapSettings.settings.markers.height;
+            }
+            
+            // Marker clustering
+            const markerClusteringCheckbox = document.getElementById('geo_maps_marker_clustering');
+            if (markerClusteringCheckbox && mapSettings.settings.markers.clustering) {
+                markerClusteringCheckbox.checked = !!mapSettings.settings.markers.clustering;
+            }
+        }
+        
+        // Draw line setting
+        const drawLineCheckbox = document.getElementById('geo_maps_map_draw_marker_line');
+        if (drawLineCheckbox && mapSettings.settings && mapSettings.settings.draw_marker_line) {
+            drawLineCheckbox.checked = !!mapSettings.settings.draw_marker_line;
+        }
+        
+        // Map control position
+        if (mapSettings.settings && mapSettings.settings.control_position) {
+            const controlPositionSelect = document.getElementById('geo_maps_map_control_position');
+            if (controlPositionSelect) {
+                controlPositionSelect.value = mapSettings.settings.control_position;
+            }
+        }
+        
+        // Scroll wheel zoom
+        const scrollWheelZoomCheckbox = document.getElementById('geo_maps_map_scroll_wheel_zoom');
+        if (scrollWheelZoomCheckbox && mapSettings.settings && mapSettings.settings.scroll_wheel_zoom !== undefined) {
+            scrollWheelZoomCheckbox.checked = !!mapSettings.settings.scroll_wheel_zoom;
+        }
+        
+        // Populate markers list if available
+        if (mapSettings.map_marker && mapSettings.map_marker.length > 0) {
+            console.log('Populating markers list from mapSettings.map_marker:', mapSettings.map_marker);
+            populateMarkersList(mapSettings.map_marker);
+        } else {
+            console.log('No markers found in mapSettings.map_marker');
+            
+            // Try to get markers from settingsManager as fallback
+            if (window.GeoMapsBuilder && 
+                window.GeoMapsBuilder.settingsManager && 
+                window.GeoMapsBuilder.settingsManager.markers && 
+                window.GeoMapsBuilder.settingsManager.markers.length > 0) {
+                
+                console.log('Using markers from settingsManager as fallback:', 
+                    window.GeoMapsBuilder.settingsManager.markers);
+                populateMarkersList(window.GeoMapsBuilder.settingsManager.markers);
+            }
+        }
+        console.log('Form fields populated successfully');
+    } catch (error) {
+        console.error('Error populating form fields:', error);
+    }
+}
+
+/**
+ * Populate the markers list with saved markers
+ * @param {Array} markers - Array of marker objects
+ */
+function populateMarkersList(markers) {
+    if (!markers || !Array.isArray(markers) || markers.length === 0) {
+        console.log('No markers to populate');
+        return;
+    }
+    
+    const markersListContainer = document.getElementById('geo-maps-markers-list');
+    if (!markersListContainer) {
+        console.error('Markers list container not found');
+        return;
+    }
+    
+    // Clear existing markers
+    markersListContainer.innerHTML = '';
+    
+    console.log('Populating markers list with:', markers);
+    
+    // Add each marker to the list
+    markers.forEach((marker, index) => {
+        const markerItem = document.createElement('div');
+        markerItem.className = 'geo-maps-marker-list-item';
+        markerItem.dataset.markerId = marker.id || index; // Use marker.id if available
+        
+        const markerTitle = marker.title || 'Unnamed Marker';
+        
+        // Get coordinates - check for both property formats (lat/lng and latitude/longitude)
+        const lat = marker.latitude !== undefined ? marker.latitude : marker.lat;
+        const lng = marker.longitude !== undefined ? marker.longitude : marker.lng;
+        
+        // Format the coordinates for display
+        const markerLocation = `${parseFloat(lat).toFixed(4)}, ${parseFloat(lng).toFixed(4)}`;
+        
+        markerItem.innerHTML = `
+            <div class="geo-maps-marker-list-icon">
+                ${marker.iconUrl ? `<img src="${marker.iconUrl}" alt="${markerTitle}">` : '<span class="dashicons dashicons-location"></span>'}
+            </div>
+            <div class="geo-maps-marker-list-info">
+                <div class="geo-maps-marker-list-title">${markerTitle}</div>
+                <div class="geo-maps-marker-list-location">${markerLocation}</div>
+            </div>
+            <div class="geo-maps-marker-list-actions">
+                <button type="button" class="geo-maps-button geo-maps-button-icon geo-maps-edit-marker" data-marker-id="${marker.id || index}" title="Edit Marker">
+                    <span class="dashicons dashicons-edit"></span>
+                </button>
+                <button type="button" class="geo-maps-button geo-maps-button-icon geo-maps-delete-marker" data-marker-id="${marker.id || index}" title="Delete Marker">
+                    <span class="dashicons dashicons-trash"></span>
+                </button>
+            </div>
+        `;
+        
+        markersListContainer.appendChild(markerItem);
+    });
+    
+    // Add event listeners for edit and delete buttons
+    const editButtons = markersListContainer.querySelectorAll('.geo-maps-edit-marker');
+    const deleteButtons = markersListContainer.querySelectorAll('.geo-maps-delete-marker');
+    
+    editButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const markerId = this.dataset.markerId;
+            // Find the marker by ID or index
+            const marker = markers.find(m => (m.id === markerId)) || markers[markerId];
+            editMarker(marker, markerId);
+        });
+    });
+    
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const markerId = this.dataset.markerId;
+            deleteMarker(markerId);
+        });
+    });
+    
+    console.log(`${markers.length} markers populated in the list`);
+}
+
+/**
+ * Edit a marker
+ * @param {Object} marker - The marker object to edit
+ * @param {number|string} markerId - The ID of the marker
+ */
+function editMarker(marker, markerId) {
+    console.log('Editing marker:', marker, 'ID:', markerId);
+    
+    if (!marker) {
+        console.error('No marker data provided for editing');
+        return;
+    }
+    
+    try {
+        // Get the drawer element
+        const drawer = document.getElementById('geo-maps-marker-drawer');
+        if (!drawer) {
+            console.error('Marker drawer element not found');
+            return;
+        }
+        
+        // Update the drawer action text
+        const actionText = document.getElementById('geo-maps-marker-drawer-action');
+        if (actionText) {
+            actionText.textContent = 'Edit';
+        }
+        
+        // Set form values
+        // ID
+        const markerIdInput = document.getElementById('marker_id');
+        if (markerIdInput) {
+            markerIdInput.value = markerId;
+        }
+        
+        // Title
+        const titleInput = document.getElementById('marker_title');
+        if (titleInput) {
+            titleInput.value = marker.title || '';
+        }
+        
+        // Description/Content - check for both content and description fields
+        const descriptionInput = document.getElementById('marker_description');
+        if (descriptionInput) {
+            descriptionInput.value = marker.description || marker.content || '';
+        }
+        
+        // Coordinates - check for both property formats (lat/lng and latitude/longitude)
+        const latInput = document.getElementById('marker_lat');
+        const lngInput = document.getElementById('marker_lng');
+        
+        // Get correct coordinate values
+        const lat = marker.latitude !== undefined ? marker.latitude : marker.lat;
+        const lng = marker.longitude !== undefined ? marker.longitude : marker.lng;
+        
+        if (latInput && lat !== undefined) {
+            latInput.value = lat;
+        }
+        
+        if (lngInput && lng !== undefined) {
+            lngInput.value = lng;
+        }
+        
+        // Custom icon
+        const iconInput = document.getElementById('geo_maps_marker_icon');
+        const iconPreview = document.getElementById('geo-maps-marker-icon-preview');
+        const iconPreviewContainer = document.getElementById('geo-maps-marker-icon-preview-container');
+        const clearIconButton = document.getElementById('geo_maps_clear_marker_icon');
+        
+        if (iconInput && marker.iconUrl) {
+            iconInput.value = marker.iconUrl;
+            
+            if (iconPreview) {
+                iconPreview.src = marker.iconUrl;
+                iconPreview.style.display = 'block';
+            }
+            
+            if (iconPreviewContainer) {
+                iconPreviewContainer.classList.remove('empty');
+            }
+            
+            if (clearIconButton) {
+                clearIconButton.style.display = 'block';
+            }
+        } else {
+            // Clear icon
+            if (iconInput) {
+                iconInput.value = '';
+            }
+            
+            if (iconPreview) {
+                iconPreview.src = '';
+                iconPreview.style.display = 'none';
+            }
+            
+            if (iconPreviewContainer) {
+                iconPreviewContainer.classList.add('empty');
+            }
+            
+            if (clearIconButton) {
+                clearIconButton.style.display = 'none';
+            }
+        }
+        
+        // Update mini map if available
+        if (window.geoMapsMiniMap && lat !== undefined && lng !== undefined) {
+            const latLng = [parseFloat(lat), parseFloat(lng)];
+            // Set view and update marker
+            window.geoMapsMiniMap.setView(latLng, 13);
+            
+            // Update or create marker
+            if (window.geoMapsMiniMapMarker) {
+                window.geoMapsMiniMapMarker.setLatLng(latLng);
+            } else {
+                window.geoMapsMiniMapMarker = L.marker(latLng).addTo(window.geoMapsMiniMap);
+            }
+        }
+        
+        // Open the drawer
+        drawer.classList.add('open');
+        document.body.classList.add('geo-maps-drawer-open');
+        
+        console.log('Marker form populated for editing');
+    } catch (error) {
+        console.error('Error editing marker:', error);
+        showToast('Error opening marker editor', 'error');
+    }
+}
+
+/**
+ * Delete a marker
+ * @param {number|string} markerId - The ID of the marker to delete
+ */
+function deleteMarker(markerId) {
+    console.log('Deleting marker with ID:', markerId);
+    
+    // Confirm deletion
+    if (!confirm('Are you sure you want to delete this marker? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        // Get all markers from the marker manager
+        const markers = markerManager.getAllMarkers();
+        
+        if (!markers || !Array.isArray(markers)) {
+            console.error('No markers found in marker manager');
+            return;
+        }
+        
+        // Find the marker by ID or index
+        let markerToRemove;
+        let markerIndex = -1;
+        
+        // First try to find by ID
+        if (typeof markerId === 'string' && markerId.includes('marker_')) {
+            markerIndex = markers.findIndex(m => m.id === markerId);
+            if (markerIndex !== -1) {
+                markerToRemove = markers[markerIndex];
+            }
+        }
+        
+        // If not found by ID, try as index
+        if (markerIndex === -1 && !isNaN(parseInt(markerId))) {
+            markerIndex = parseInt(markerId);
+            if (markerIndex >= 0 && markerIndex < markers.length) {
+                markerToRemove = markers[markerIndex];
+            }
+        }
+        
+        // Check if we found a marker to remove
+        if (!markerToRemove) {
+            console.error('Marker not found for deletion with ID/index:', markerId);
+            showToast('Marker not found', 'error');
+            return;
+        }
+        
+        console.log('Found marker to remove:', markerToRemove);
+        
+        // Remove the marker using the marker manager
+        if (typeof markerToRemove.id === 'string') {
+            // Remove by ID if available
+            markerManager.removeMarker(markerToRemove.id);
+        } else {
+            // Fallback to index
+            markerManager.removeMarker(markerIndex);
+        }
+        
+        // Remove the marker from the list
+        const markerItem = document.querySelector(`.geo-maps-marker-list-item[data-marker-id="${markerId}"]`);
+        if (markerItem) {
+            markerItem.remove();
+        }
+        
+        // Refresh the markers list to update IDs
+        populateMarkersList(markerManager.getAllMarkers());
+        
+        console.log('Marker deleted successfully');
+        showToast('Marker deleted successfully', 'success');
+    } catch (error) {
+        console.error('Error deleting marker:', error);
+        showToast('Error deleting marker', 'error');
+    }
+}
+
+// Add a function to load markers directly from the server data
+function loadMarkersFromServer() {
+    if (window.geoMapsRenderEngine && 
+        window.geoMapsRenderEngine.map_settings && 
+        window.geoMapsRenderEngine.map_settings.map_marker) {
+        
+        const serverMarkers = window.geoMapsRenderEngine.map_settings.map_marker;
+        console.log('Loading markers from server:', serverMarkers);
+        
+        if (serverMarkers && serverMarkers.length > 0) {
+            populateMarkersList(serverMarkers);
+            return true;
+        }
+    }
+    return false;
 }

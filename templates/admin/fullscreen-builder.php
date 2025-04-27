@@ -23,44 +23,6 @@ if (!defined('ABSPATH')) exit;
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <!-- Load Google Maps API without API key -->
     <script src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
-    
-    <?php
-    
-    // Localize the map data for JavaScript
-    $map_settings_data = isset($map_settings) ? $map_settings : array(
-        'map_type' => 'open_street_map',
-        'settings' => array(
-            'osm_provider' => 'default',
-            'scroll_wheel_zoom' => true,
-            'show_control' => true,
-            'control_position' => 'topright',
-            'popup_show_on' => 'click',
-            'draw_line' => false,
-            'markers' => array(
-                'default_icon' => '',
-                'width' => '25',
-                'height' => '40',
-                'clustering' => false
-            )
-        ),
-        'map_marker' => array(
-            array(
-                'lat' => 40.7128,
-                'lng' => -74.0060,
-                'title' => 'New York',
-                'content' => 'A sample marker',
-                'iconType' => 'default'
-            )
-        ),
-        'center_index' => 0,
-        'map_zoom' => 5
-    );
-    
-    wp_localize_script('geo-maps-render-engine-js', 'geoMapsRenderEngine', array(
-        'osm_providers' => geo_maps_get_osm_providers(),
-        'google_map_providers' => geo_maps_get_google_map_providers(),
-        'map_settings' => $map_settings_data
-    ));
     ?>
     <!-- Include the main builder stylesheet -->
     <?php 
@@ -77,125 +39,8 @@ if (!defined('ABSPATH')) exit;
     <input type="hidden" id="geo_maps_security" name="geo_maps_nonce" value="<?php echo wp_create_nonce('geo_maps_nonce'); ?>">
 
     <!-- Hidden map ID fields in both formats -->
-    <input type="hidden" id="geo-maps-id" name="geo-maps-id" value="<?php echo esc_attr($map_id); ?>">
     <input type="hidden" id="geo_maps_id" name="geo_maps_id" value="<?php echo esc_attr($map_id); ?>">
 
-    <!-- Add nonce and AJAX URL to a global variable with more detailed security info -->
-    <script type="text/javascript">
-        /* <![CDATA[ */
-        // Create the builder main object if it doesn't exist
-        window.GeoMapsBuilder = window.GeoMapsBuilder || {};
-        
-        // Add security information
-        window.GeoMapsBuilder.nonce = '<?php echo wp_create_nonce('geo_maps_nonce'); ?>';
-        window.GeoMapsBuilder.ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
-        window.GeoMapsBuilder.security = {
-            nonceTime: <?php echo time(); ?>,
-            nonceLifetime: <?php echo apply_filters('nonce_life', DAY_IN_SECONDS / 2); ?>,
-            homeUrl: '<?php echo home_url(); ?>',
-            adminUrl: '<?php echo admin_url(); ?>',
-            refreshNonceEndpoint: '<?php echo admin_url('admin-ajax.php'); ?>?action=geo_maps_refresh_nonce'
-        };
-        
-        // Add additional WordPress AJAX security vars
-        window.ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
-        window._wpnonce = '<?php echo wp_create_nonce('geo_maps_nonce'); ?>';
-        
-        // Also add alternate formats that might be expected
-        window.geo_maps_ajax = {
-            ajaxurl: '<?php echo admin_url('admin-ajax.php'); ?>',
-            nonce: '<?php echo wp_create_nonce('geo_maps_nonce'); ?>'
-        };
-        /* ]]> */
-    </script>
-    
-    <!-- Add global error handler to capture AJAX issues -->
-    <script type="text/javascript">
-        /* <![CDATA[ */
-        // Capture all AJAX errors globally to log them
-        jQuery(document).ajaxError(function(event, jqXHR, ajaxSettings, thrownError) {
-            console.error('AJAX Error:', thrownError);
-            console.error('Status: ' + jqXHR.status + ' ' + jqXHR.statusText);
-            console.error('Response:', jqXHR.responseText);
-            console.error('Request URL:', ajaxSettings.url);
-            console.error('Request data:', ajaxSettings.data);
-            
-            // Log all headers for debugging
-            console.groupCollapsed('Request headers');
-            console.log(ajaxSettings.headers);
-            console.groupEnd();
-            
-            // If it's a 403 error, check if we need to refresh the nonce
-            if (jqXHR.status === 403 && jqXHR.responseText.includes('expired')) {
-                console.warn('Security token appears to have expired. Will attempt refresh on next action.');
-            }
-        });
-        /* ]]> */
-    </script>
-    
-    <!-- Add AJAX request interceptor to ensure nonces are properly included -->
-    <script type="text/javascript">
-        /* <![CDATA[ */
-        // Pre-process all AJAX requests to ensure proper nonce is included
-        jQuery(document).ready(function($) {
-            // Add prefilter to all AJAX requests
-            $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
-                // Skip for non-WordPress AJAX calls or if origin doesn't match
-                if (!options.url || !options.url.includes('admin-ajax.php')) {
-                    return;
-                }
-                
-                // Check if this is a FormData object
-                if (originalOptions.data instanceof FormData) {
-                    // For FormData, we need a different approach
-                    if (!originalOptions.data.has('security') && !originalOptions.data.has('_wpnonce')) {
-                        // Add the security nonce if not present
-                        if (window.GeoMapsBuilder && window.GeoMapsBuilder.nonce) {
-                            originalOptions.data.append('security', window.GeoMapsBuilder.nonce);
-                            console.log('FormData: Added security nonce to AJAX request');
-                        }
-                    }
-                } else {
-                    // Convert data to object if it's a string
-                    let data = originalOptions.data;
-                    if (typeof data === 'string') {
-                        // Parse the query string
-                        const searchParams = new URLSearchParams(data);
-                        data = {};
-                        for (const [key, value] of searchParams.entries()) {
-                            data[key] = value;
-                        }
-                    }
-                    
-                    // Ensure data is an object
-                    data = data || {};
-                    
-                    // Add security nonce if it's missing
-                    if (!data.security && !data._wpnonce) {
-                        if (window.GeoMapsBuilder && window.GeoMapsBuilder.nonce) {
-                            data.security = window.GeoMapsBuilder.nonce;
-                            console.log('Added security nonce to AJAX request');
-                        }
-                    }
-                    
-                    // Convert back to the original format
-                    if (typeof originalOptions.data === 'string') {
-                        const params = new URLSearchParams();
-                        for (const key in data) {
-                            params.append(key, data[key]);
-                        }
-                        options.data = params.toString();
-                    } else {
-                        options.data = data;
-                    }
-                }
-            });
-            
-            console.log('AJAX security interceptor initialized');
-        });
-        /* ]]> */
-    </script>
-    
     <!-- Decorative pattern overlay -->
     <div class="geo-maps-pattern-dot"></div>
     
@@ -636,7 +481,7 @@ if (!defined('ABSPATH')) exit;
             }
             
             // Get map settings with fallback to default settings if null
-            let mapSettings = <?php echo isset($map_settings) ? json_encode($map_settings) : 'null'; ?>;
+            let mapSettings = <?php echo isset($map_settings) && !empty($map_settings) ? json_encode($map_settings) : 'null'; ?>;
             
             // Create default settings if mapSettings is null
             if (!mapSettings) {
@@ -677,6 +522,12 @@ if (!defined('ABSPATH')) exit;
             
             // Store reference to the map for later use
             window.geoMapsCurrentMap = window.Geo_Maps_Rendered['geo-maps-builder-map'];
+            
+            // Expose markers to the marker manager
+            if (mapSettings.map_marker && mapSettings.map_marker.length > 0 && window.markerManager) {
+                console.log('Setting markers in marker manager:', mapSettings.map_marker);
+                window.markerManager.setAllMarkers(mapSettings.map_marker);
+            }
             
             console.log('Map initialized successfully');
         } catch (e) {

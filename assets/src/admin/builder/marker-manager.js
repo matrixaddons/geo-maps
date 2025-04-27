@@ -18,14 +18,22 @@ const markerManager = {
     init: function(options = {}) {
         console.log('Marker manager initializing');
         
+        // Initialize state for tracking initialization
+        this.initialized = false;
+        
+        // Setup event listeners first
+        this._setupEventListeners();
+        
         // Initialize marker list if the container exists
         this.refreshMarkerList();
         
-        // Set up event listeners
-        this._setupEventListeners();
-        
         // Initialize the confirmation modal
         confirmModal.init();
+        
+        // Mark as initialized to prevent duplicate work
+        this.initialized = true;
+        
+        console.log('Marker manager initialized');
     },
     
     /**
@@ -101,7 +109,26 @@ const markerManager = {
             };
             
             // Add marker to settings
-            settingsManager.addMarker(marker);
+            if (settingsManager && typeof settingsManager.addMarker === 'function') {
+                console.log('Adding marker to settingsManager:', marker);
+                settingsManager.addMarker(marker);
+                
+                // Also ensure it's in the global GeoMapsBuilder object if available
+                if (window.GeoMapsBuilder && window.GeoMapsBuilder.settingsManager) {
+                    if (!Array.isArray(window.GeoMapsBuilder.settingsManager.markers)) {
+                        window.GeoMapsBuilder.settingsManager.markers = [];
+                    }
+                    // Avoid duplicates by checking ID
+                    const exists = window.GeoMapsBuilder.settingsManager.markers.findIndex(m => m.id === marker.id) !== -1;
+                    if (!exists) {
+                        window.GeoMapsBuilder.settingsManager.markers.push(marker);
+                        console.log('Marker also added to global settingsManager:', 
+                            window.GeoMapsBuilder.settingsManager.markers);
+                    }
+                }
+            } else {
+                console.error('settingsManager or addMarker method not available');
+            }
             
             // Track unsaved state if not saving to DB
             if (!saveToDb && typeof window.GeoMapsBuilder !== 'undefined') {
@@ -212,22 +239,62 @@ const markerManager = {
     
     /**
      * Removes a marker from the map and the global settings
-     * @param {string} markerId - The ID of the marker to remove
+     * @param {string|number} markerId - The ID of the marker to remove
      * @returns {boolean} - Success status
      */
     removeMarkerFromMap: function(markerId) {
         try {
-            // Remove marker from settings
-            const success = settingsManager.removeMarker(markerId);
+            console.log('Removing marker with ID:', markerId);
+            
+            // Get current markers
+            const currentMarkers = settingsManager.getMarkers();
+            
+            // If markerId is a string that looks like a generated ID, find the marker by ID
+            let markerToRemove = null;
+            let success = false;
+            
+            if (typeof markerId === 'string' && markerId.includes('marker_')) {
+                // Find the marker in the current markers array
+                const markerIndex = currentMarkers.findIndex(m => m.id === markerId);
+                if (markerIndex !== -1) {
+                    markerToRemove = currentMarkers[markerIndex];
+                    // Remove marker from settings
+                    success = settingsManager.removeMarker(markerId);
+                }
+            } else {
+                // Try as numeric index
+                const index = parseInt(markerId);
+                if (!isNaN(index) && index >= 0 && index < currentMarkers.length) {
+                    markerToRemove = currentMarkers[index];
+                    
+                    // If marker has an ID, use that
+                    if (markerToRemove && markerToRemove.id) {
+                        success = settingsManager.removeMarker(markerToRemove.id);
+                    } else {
+                        // Otherwise use index-based removal (legacy)
+                        success = settingsManager.removeMarker(index);
+                    }
+                }
+            }
             
             if (!success) {
-                console.error('Marker not found:', markerId);
+                console.error('Marker not found for removal:', markerId);
                 return false;
             }
             
-            // Remove marker from map
-            if (mapManager && mapManager.map) {
-                mapManager.removeMarkerFromMap(markerId);
+            // Remove marker from map if it was found
+            if (markerToRemove && mapManager && mapManager.map) {
+                // For Leaflet map, we need to find the marker by ID in the map's internal layers
+                if (mapManager.map instanceof L.Map) {
+                    mapManager.map.eachLayer(layer => {
+                        if (layer instanceof L.Marker && layer.options.markerId === markerId) {
+                            mapManager.map.removeLayer(layer);
+                        }
+                    });
+                } else {
+                    // For Google Maps or other providers
+                    mapManager.removeMarkerFromMap(markerId);
+                }
             }
             
             return true;
@@ -301,7 +368,13 @@ const markerManager = {
         // Clear current list
         $markersList.empty();
         
-        const markers = settingsManager.getMarkers();
+        // Get markers - use direct property access during initialization to avoid triggering debugger
+        let markers;
+        if (!this.initialized || window.markerManagerInitializing) {
+            markers = settingsManager.markers ? [...settingsManager.markers] : [];
+        } else {
+            markers = settingsManager.getMarkers();
+        }
         
         if (markers.length === 0) {
             // Create a more descriptive empty state with guidance
@@ -418,8 +491,30 @@ const markerManager = {
      */
     getAllMarkers: function() {
         try {
-            const markers = settingsManager.getMarkers();
-            return markers || [];
+            console.log('Getting all markers from marker-manager getAllMarkers');
+            
+            // First try to get markers from the global GeoMapsBuilder object
+            if (window.GeoMapsBuilder && 
+                window.GeoMapsBuilder.settingsManager && 
+                Array.isArray(window.GeoMapsBuilder.settingsManager.markers)) {
+                
+                const globalMarkers = window.GeoMapsBuilder.settingsManager.markers;
+                console.log('Retrieved markers from global settingsManager:', globalMarkers);
+                
+                if (globalMarkers.length > 0) {
+                    return [...globalMarkers]; // Return a copy to prevent modification
+                }
+            }
+            
+            // For normal operation, use the getter
+            if (settingsManager && typeof settingsManager.getMarkers === 'function') {
+                const markers = settingsManager.getMarkers();
+                console.log('Retrieved markers from local settingsManager:', markers);
+                return markers;
+            } else {
+                console.warn('settingsManager or getMarkers method not available');
+                return [];
+            }
         } catch (error) {
             console.error('Error getting all markers:', error);
             return [];

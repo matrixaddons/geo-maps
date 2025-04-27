@@ -299,6 +299,7 @@ const settingsManager = {
      * @returns {Array} Array of marker objects
      */
     getMarkers: function() {
+        // Return a copy of the markers array to prevent direct modification
         return [...this.markers];
     },
     
@@ -337,17 +338,32 @@ const settingsManager = {
     
     /**
      * Removes a marker from the collection
-     * @param {string} markerId - The ID of the marker to remove
+     * @param {string|number} markerId - The ID or index of the marker to remove
      * @returns {boolean} - Success status
      */
     removeMarker: function(markerId) {
         const initialLength = this.markers.length;
-        this.markers = this.markers.filter(marker => marker.id !== markerId);
         
-        if (this.markers.length < initialLength) {
-            jQuery(document).trigger('geoMapsMarkerRemoved', [markerId]);
+        // If markerId is a string (ID-based), filter by ID
+        if (typeof markerId === 'string') {
+            const markerToRemoveIndex = this.markers.findIndex(marker => marker.id === markerId);
+            
+            if (markerToRemoveIndex !== -1) {
+                const removedMarker = this.markers[markerToRemoveIndex];
+                this.markers.splice(markerToRemoveIndex, 1);
+                jQuery(document).trigger('geoMapsMarkerRemoved', [markerId]);
+                return true;
+            }
+        } 
+        // If markerId is a number (index-based), remove by index
+        else if (typeof markerId === 'number' && markerId >= 0 && markerId < this.markers.length) {
+            const removedMarker = this.markers[markerId];
+            const removedMarkerId = removedMarker.id || markerId.toString();
+            this.markers.splice(markerId, 1);
+            jQuery(document).trigger('geoMapsMarkerRemoved', [removedMarkerId]);
             return true;
         }
+        
         return false;
     }
 };

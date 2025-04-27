@@ -78,17 +78,10 @@ class CustomAdmin
     {
         $map_id = isset($_GET['map_id']) ? intval($_GET['map_id']) : 0;
         
-        if ($map_id > 0) {
-            // Edit existing map
-            $post = get_post($map_id);
-           
-            if (!$post || $post->post_type !== 'geo-maps') {
-                wp_die(__('Map not found.', 'geo-maps'));
-            }
-        }
-        $map_id = isset($_GET['map_id']) ? intval($_GET['map_id']) : 0;
-		$is_new = $map_id === 0;
-		$title = $is_new ? __('Add New Map', 'geo-maps') : get_the_title($map_id);
+        
+        $is_new = $map_id === 0;
+
+        $title = $is_new ? __('Add New Map', 'geo-maps') : get_the_title($map_id);
         
         // Make sure WordPress media scripts are available on this page
         wp_enqueue_media();
@@ -364,6 +357,45 @@ class CustomAdmin
             );
         }
 
+        $map_id = isset($_GET['map_id']) ? intval($_GET['map_id']) : 0;
+        $map_settings = [];
+        
+        if ($map_id > 0) {
+            // Edit existing map
+            $post = get_post($map_id);
+           
+            if (!$post || $post->post_type !== 'geo-maps') {
+                wp_die(__('Map not found.', 'geo-maps'));
+            }
+            
+            // Get map settings and markers from post meta
+            $map_type = get_post_meta($map_id, '_geo_maps_type', true) ?: 'open_street_map';
+            $settings = get_post_meta($map_id, '_geo_maps_settings', true) ?: [];
+            $markers = get_post_meta($map_id, '_geo_maps_markers', true) ?: [];
+            
+            // Build the map settings array
+            $map_settings = [
+                'map_type' => $map_type,
+                'settings' => $settings,
+                'map_marker' => $markers,
+                'center_index' => 0, // Default to first marker
+                'map_zoom' => isset($settings['zoom']) ? (int)$settings['zoom'] : 5
+            ];
+            
+            // If we have markers and center coordinates in settings, use those
+            if (!empty($settings['center']) && isset($settings['center']['lat']) && isset($settings['center']['lng'])) {
+                $map_settings['center'] = $settings['center'];
+            } elseif (!empty($markers)) {
+                // Otherwise use the first marker as the center
+                $map_settings['center'] = [
+                    'lat' => $markers[0]['lat'] ?? 40.7128,
+                    'lng' => $markers[0]['lng'] ?? -74.0060
+                ];
+            }
+            
+            // Log loaded data for debugging
+            error_log('Loaded map data for ID ' . $map_id . ': ' . json_encode($map_settings));
+        }
         // Pass data to JS
         wp_localize_script(strpos($hook, 'geo-maps-new') !== false ? 'geo-maps-builder-fullscreen-js' : 'geo-maps-admin-ui', 'GeoMapsAdmin', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
@@ -371,6 +403,7 @@ class CustomAdmin
             'nonce' => wp_create_nonce('wp_rest'),
             'save_map_nonce'=>wp_create_nonce('geo_maps_save_map'),
             'pluginUrl' => GEO_MAPS_PLUGIN_URI,
+            'map_settings' => $map_settings,
             'messages' => [
                 'confirm_delete' => __('Are you sure you want to delete this map? This action cannot be undone.', 'geo-maps'),
                 'error' => __('An error occurred. Please try again.', 'geo-maps'),
@@ -445,104 +478,104 @@ class CustomAdmin
      * AJAX handler for saving map data
      */
     public function ajax_save_map() {
-        // Check if nonce is set
-        if (empty($_POST['security']) || !wp_verify_nonce($_POST['security'], 'geo_maps_save_map')) {
-            wp_send_json_error([
-                'message' => __('Security verification failed.', 'geo-maps'),
+        // Check if security nonce exists
+        if ( ! isset( $_POST['security'] ) ) {
+            wp_send_json_error( array(
+                'message' => __( 'Security check failed: Missing security token.', 'geo-maps' ),
+                'code'    => 'missing_nonce'
+            ) );
+            return;
+        }
+
+        // Verify nonce
+        if ( ! wp_verify_nonce( $_POST['security'], 'geo_maps_save_map' ) ) {
+            wp_send_json_error( array(
+                'message' => __( 'Security check failed: Invalid security token.', 'geo-maps' ),
                 'code'    => 'invalid_nonce'
-            ]);
+            ) );
             return;
         }
-    
-        // ✅ Check if the user has permission
-        if ( ! current_user_can('edit_posts') ) {
-            wp_send_json_error([
-                'message' => __('You do not have permission to save maps.', 'geo-maps'),
-                'code'    => 'no_permission'
-            ]);
+
+        // Check for map ID
+        $map_id = isset( $_POST['map_id'] ) ? intval( $_POST['map_id'] ) : 0;
+        
+        // Process map data
+        $map_title = isset( $_POST['map_title'] ) ? sanitize_text_field( $_POST['map_title'] ) : '';
+        $map_type = isset( $_POST['map_type'] ) ? sanitize_text_field( $_POST['map_type'] ) : 'google';
+        
+        // Get and validate map data
+        $map_data_json = isset( $_POST['map_data'] ) ? stripslashes( $_POST['map_data'] ) : '';
+        
+        if ( empty( $map_data_json ) ) {
+            wp_send_json_error( array(
+                'message' => __( 'No map data provided.', 'geo-maps' ),
+                'code'    => 'missing_data'
+            ) );
             return;
         }
-    
-        $map_id = isset($_POST['map_id']) ? absint($_POST['map_id']) : 0;
-        $map_data = isset($_POST['map_data']) ? $_POST['map_data'] : '';
-    
-        if (empty($map_data)) {
-            wp_send_json_error([
-                'message' => __('No map data provided.', 'geo-maps'),
-                'code'    => 'no_data'
-            ]);
+        
+        // Decode the JSON data
+        $map_data = json_decode( $map_data_json, true );
+        
+        if ( json_last_error() !== JSON_ERROR_NONE || ! is_array( $map_data ) ) {
+            wp_send_json_error( array(
+                'message' => __( 'Invalid map data format.', 'geo-maps' ),
+                'code'    => 'invalid_json',
+                'debug'   => json_last_error_msg()
+            ) );
             return;
         }
-    
-        $decoded_data = json_decode(stripslashes($map_data), true);
-    
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            wp_send_json_error([
-                'message'    => __('Invalid JSON data.', 'geo-maps'),
-                'code'       => 'invalid_json',
-                'json_error' => json_last_error_msg()
-            ]);
-            return;
-        }
-    
-        $title = sanitize_text_field($decoded_data['title'] ?? 'Untitled Map');
-        $map_type = sanitize_text_field($decoded_data['map_type'] ?? 'leaflet');
-        $settings = $decoded_data['settings'] ?? [];
-        $markers = $decoded_data['markers'] ?? [];
-    
-        // Sanitize settings
-        $sanitized_settings = [];
-        if (is_array($settings)) {
-            foreach ($settings as $key => $value) {
-                $sanitized_settings[$key] = is_array($value) ? $value : sanitize_text_field($value);
-            }
-        }
-    
-        $post_data = [
-            'post_title'  => $title,
-            'post_status' => 'publish',
-            'post_type'   => 'geo-maps',
-            
-        ];
-    
-        if ($map_id > 0) {
-            $existing_post = get_post($map_id);
-    
-            if (!$existing_post || $existing_post->post_type !== 'geo-maps') {
-                wp_send_json_error([
-                    'message' => __('Map not found or incorrect post type.', 'geo-maps'),
-                    'code'    => 'invalid_map_id'
-                ]);
-                return;
-            }
-    
+        
+        // Log the structure of the received data for debugging
+        error_log( 'Map data structure: ' . print_r( array_keys( $map_data ), true ) );
+        
+        // Create or update post
+        $post_data = array(
+            'post_title'   => ! empty( $map_title ) ? $map_title : __( 'Untitled Map', 'geo-maps' ),
+            'post_status'  => 'publish',
+            'post_type'    => 'geo-maps',
+            'post_content' => '',
+        );
+        
+        if ( $map_id > 0 ) {
+            // Update existing post
             $post_data['ID'] = $map_id;
-            $result = wp_update_post($post_data, true);
+            $post_id = wp_update_post( $post_data );
         } else {
-            $result = wp_insert_post($post_data, true);
+            // Create new post
+            $post_id = wp_insert_post( $post_data );
         }
-    
-        if (is_wp_error($result)) {
-            wp_send_json_error([
-                'message' => $result->get_error_message(),
-                'code'    => $result->get_error_code()
-            ]);
+        
+        if ( is_wp_error( $post_id ) ) {
+            wp_send_json_error( array(
+                'message' => $post_id->get_error_message(),
+                'code'    => 'post_error'
+            ) );
             return;
         }
-    
-        $map_id = $result;
-    
-        update_post_meta($map_id, '_geo_maps_settings', $sanitized_settings);
-        update_post_meta($map_id, '_geo_maps_markers', $markers);
-        update_post_meta($map_id, '_geo_maps_type', $map_type);
-    
-        $fresh_nonce = wp_create_nonce('geo_maps_save_map');
-    
-        wp_send_json_success([
-            'message'     => __('Map saved successfully.', 'geo-maps'),
-            'map_id'      => $map_id,
+        
+        // Save map settings and markers
+        if ( isset( $map_data['settings'] ) && is_array( $map_data['settings'] ) ) {
+            update_post_meta( $post_id, '_geo_maps_settings', $map_data['settings'] );
+        }
+        
+        if ( isset( $map_data['markers'] ) && is_array( $map_data['markers'] ) ) {
+            update_post_meta( $post_id, '_geo_maps_markers', $map_data['markers'] );
+        }
+        
+        // Save map type
+        update_post_meta( $post_id, '_geo_maps_type', $map_type );
+        
+        // Generate a fresh nonce for continued editing
+        $fresh_nonce = wp_create_nonce( 'geo_maps_save_map' );
+        
+        // Return success response with new map ID
+        wp_send_json_success( array(
+            'message'     => __( 'Map saved successfully!', 'geo-maps' ),
+            'map_id'      => $post_id,
+            'redirect'    => admin_url( 'admin.php?page=geo-maps-new&map_id=' . $post_id ),
             'fresh_nonce' => $fresh_nonce
-        ]);
+        ) );
     }
 
     /**

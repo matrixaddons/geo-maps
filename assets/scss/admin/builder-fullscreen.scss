@@ -837,19 +837,19 @@ select.geo-maps-select:-moz-focusring {
 .geo-maps-builder-marker-drawer {
     position: fixed;
     top: 64px; /* Match header height exactly */
-    left: 0;
+    right: auto;
+    left: 0; 
     bottom: 48px; /* Match footer height exactly */
-    width: 500px;
-    max-width: 90vw;
-    transform: translateX(-500px); /* Move off-screen by drawer width */
-    background-color: #f3f4f6;
-    border-right: 1px solid var(--geo-maps-color-border);
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.03);
-    z-index: 999; /* Significantly increased z-index to ensure it's above all other elements */
+    width: 499px;
+    background-color: #f8f9fa;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateX(-400px); /* Hide off-screen by default */
+    transition: transform 0.3s ease-in-out;
+    z-index: 9999; /* Higher than overlay and all other elements */
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .geo-maps-builder-marker-drawer.open {
@@ -908,7 +908,7 @@ select.geo-maps-select:-moz-focusring {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 18px 24px;
+    padding: 16px 24px;
     background-color: #ffffff;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -1004,7 +1004,7 @@ body.geo-maps-drawer-open::after {
     right: 0;
     bottom: 48px; /* Match footer height exactly */
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 998; /* Just below the marker drawer z-index */
+    z-index: 9998; /* Just below the marker drawer z-index */
     animation: fadeIn 0.3s ease-in-out;
 }
 
