@@ -5,7 +5,7 @@
  * Description: Create interactive maps with Google Maps and OpenStreetMap. Includes custom markers, tooltips, Gutenberg block, and shortcode support.
  * Author: MatrixAddons
  * Author URI: https://profiles.wordpress.org/matrixaddons
- * Version: 1.2
+ * Version: 1.2.1
  * License: GPL2+
  * License URI: https://www.gnu.org/licenses/gpl-2.0.txt
  *
@@ -27,7 +27,7 @@ if (!defined('GEO_MAPS_FILE')) {
 
 // Define GEO_MAPS_VERSION.
 if (!defined('GEO_MAPS_VERSION')) {
-	define('GEO_MAPS_VERSION', '1.2');
+	define('GEO_MAPS_VERSION', '1.2.1');
 }
 
 // Define GEO_MAPS_PLUGIN_URI.

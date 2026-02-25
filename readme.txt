@@ -4,7 +4,7 @@ Tags: maps, google maps, openstreet map, map block, custom markers
 Requires at least: 5.4
 Tested up to: 6.9
 Requires PHP: 5.6
-Stable tag: 1.2
+Stable tag: 1.2.1
 License: GPLv3
 License URI: https://opensource.org/licenses/GPL-3.0
 
@@ -205,8 +205,10 @@ MatrixMaps connects to external mapping services to display map tiles and provid
 **Important**: No personal user data, location information, or tracking data is collected or transmitted by this plugin. Only anonymous map tile requests are made to display maps.
 
 == Changelog ==
+= 1.2.1 - 2026-02-25 =
+- **Fixed**: Src directory was excluded previously,  now its included
 
-= 1.2 - 2025-02-25 =
+= 1.2 - 2026-02-25 =
 - **Enhanced**: Complete plugin rebranding to MatrixMaps
 - **Fixed**: WordPress.org guideline compliance issues
 - **Improved**: SEO-optimized documentation and descriptions
