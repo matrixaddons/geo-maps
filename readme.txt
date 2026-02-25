@@ -14,6 +14,8 @@ Create beautiful, interactive maps for your WordPress website with MatrixMaps. T
 
 MatrixMaps is the most intuitive WordPress mapping plugin that lets you create stunning interactive maps without any coding knowledge. Whether you need a simple location map, a complex travel map with multiple destinations, or a business directory map, MatrixMaps has you covered.
 
+**Plugin URL:** [Download MatrixMaps](https://matrixaddons.com/downloads/matrixmaps/)
+
 **Why Choose MatrixMaps?**
 
 🗺️ **Dual Map Support**: Choose between Google Maps and OpenStreetMap with multiple tile providers
