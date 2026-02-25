@@ -1,8 +1,8 @@
-=== MatrixMaps - Interactive Maps for WordPress ===
+=== MatrixMaps - Interactive Maps Plugin ===
 Contributors: MatrixAddons
 Tags: maps, google maps, openstreet map, map block, custom markers
 Requires at least: 5.4
-Tested up to: 6.6
+Tested up to: 6.9
 Requires PHP: 5.6
 Stable tag: 1.2
 License: GPLv3

@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: MatrixMaps - Interactive Maps for WordPress
+ * Plugin Name: MatrixMaps - Interactive Maps Plugin
  * Plugin URI: https://matrixaddons.com/downloads/geo-maps-wordpress-map-plugin/
  * Description: Create interactive maps with Google Maps and OpenStreetMap. Includes custom markers, tooltips, Gutenberg block, and shortcode support.
  * Author: MatrixAddons
