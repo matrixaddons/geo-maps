@@ -1,10 +1,10 @@
-=== MatrixMaps - Interactive Maps Plugin ===
+=== MatrixMaps - Interactive Maps, Map Blocks ===
 Contributors: MatrixAddons
 Tags: maps, google maps, openstreet map, map block, custom markers
 Requires at least: 5.4
 Tested up to: 6.9
 Requires PHP: 5.6
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv3
 License URI: https://opensource.org/licenses/GPL-3.0
 
@@ -190,21 +190,41 @@ MatrixMaps connects to external mapping services to display map tiles and provid
 - **Terms**: [Google Maps Terms of Service](https://developers.google.com/maps/terms)
 - **Policy**: [Google Privacy Policy](https://policies.google.com/privacy)
 
-=== OpenStreetMap Services ===
-- **Purpose**: Display open-source map tiles
-- **Data Transmitted**: HTTP requests for map tiles based on coordinates
+=== OpenStreetMap Providers ===
+- **Service**: Various OpenStreetMap tile providers
+- **Purpose**: Display map tiles from OpenStreetMap ecosystem
+- **Data Transmitted**: HTTP requests for map tiles based on coordinates and zoom
 - **Activation**: Only when OpenStreetMap is selected as provider
-- **Privacy**: No personal user data collected
 - **Available Providers**:
-  - OpenStreetMap (default)
-  - OpenTopoMap (terrain)
-  - Esri World Imagery (satellite)
-  - Stamen Design (artistic)
-  - CyclOSM (cycling)
+  - OpenStreetMap (default): https://www.openstreetmap.org/copyright
+  - OpenTopoMap (terrain): https://opentopomap.org/about
+  - Esri World Imagery (satellite): https://www.esri.com/en-us/legal/terms
+  - Stamen Design (artistic): http://stamen.com
+  - CyclOSM (cycling): https://github.com/cyclosm/cyclosm-cartocss-style/releases
+
+=== ArcGIS World Imagery ===
+- **Service**: Esri ArcGIS World Imagery
+- **Purpose**: Display high-resolution satellite imagery tiles
+- **Data Transmitted**: HTTP requests for satellite image tiles based on coordinates and zoom
+- **Activation**: Only when Esri World Imagery is selected as map provider
+- **Terms of Service**: https://www.esri.com/en-us/legal/terms
+- **Privacy Policy**: https://www.esri.com/en-us/privacy/overview
 
 **Important**: No personal user data, location information, or tracking data is collected or transmitted by this plugin. Only anonymous map tile requests are made to display maps.
 
 == Changelog ==
+
+= 1.2.2 - 2026-02-25 =
+- **Fixed**: Removed "Plugin" from plugin name to comply with WordPress.org guidelines
+- **Fixed**: License mismatch between readme.txt and plugin headers (now both GPLv3)
+- **Fixed**: Added comprehensive ArcGIS World Imagery service documentation
+- **Fixed**: Security issues - replaced esc_url_raw with esc_url for proper escaping
+- **Fixed**: Security issues - wrapped __() functions with proper escaping (esc_html__)
+- **Fixed**: Security issues - secured all echoed variables and data with appropriate escaping functions
+- **Fixed**: Security issues - replaced htmlspecialchars with esc_attr for JSON data
+- **Fixed**: Security issues - additional variable escaping in Image.php and Maps.php
+- **Enhanced**: Overall security hardening and WordPress coding standards compliance
+
 = 1.2.1 - 2026-02-25 =
 - **Fixed**: Src directory was excluded previously,  now its included
 

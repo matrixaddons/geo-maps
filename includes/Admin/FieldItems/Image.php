@@ -30,7 +30,7 @@ class Image
 				<a class="matrixaddons-image-field-add <?php echo $image_id > 1 ? 'matrixaddons-hide' : ''; ?>" href="#"
 				   data-uploader-title="Add new image"
 				   data-uploader-button-text="Add new image">
-					<img src="<?php echo esc_url(GEO_MAPS_ASSETS_URI) ?>images/upload-image.png">
+					<img src="<?php echo esc_url(GEO_MAPS_ASSETS_URI); ?>images/upload-image.png">
 					<h3>Drop your file here, or <span>browse</span></h3>
 					<p>Supports: JPG, JPEG, PNG</p>
 				</a>
@@ -41,9 +41,9 @@ class Image
 						$image_src = wp_get_attachment_image_url($image_id, 'full');
 
 						?>
-						<div class="image-wrapper" data-url="<?php echo esc_url_raw($image_src) ?>">
+						<div class="image-wrapper" data-url="<?php echo esc_url($image_src) ?>">
 							<div class="image-content"><img
-										src="<?php echo esc_url_raw($image_src) ?>"
+										src="<?php echo esc_url($image_src) ?>"
 										alt="">
 								<div class="image-overlay"><a
 											class="matrixaddons-image-delete remove dashicons dashicons-trash"></a>

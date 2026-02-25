@@ -1,13 +1,13 @@
 <?php
 /**
- * Plugin Name: MatrixMaps - Interactive Maps Plugin
+ * Plugin Name: MatrixMaps - Interactive Maps
  * Plugin URI: https://matrixaddons.com/downloads/geo-maps-wordpress-map-plugin/
  * Description: Create interactive maps with Google Maps and OpenStreetMap. Includes custom markers, tooltips, Gutenberg block, and shortcode support.
  * Author: MatrixAddons
  * Author URI: https://profiles.wordpress.org/matrixaddons
- * Version: 1.2.1
- * License: GPL2+
- * License URI: https://www.gnu.org/licenses/gpl-2.0.txt
+ * Version: 1.2.2
+ * License: GPLv3
+ * License URI: https://opensource.org/licenses/GPL-3.0
  *
  */
 
@@ -27,7 +27,7 @@ if (!defined('GEO_MAPS_FILE')) {
 
 // Define GEO_MAPS_VERSION.
 if (!defined('GEO_MAPS_VERSION')) {
-	define('GEO_MAPS_VERSION', '1.2.1');
+	define('GEO_MAPS_VERSION', '1.2.2');
 }
 
 // Define GEO_MAPS_PLUGIN_URI.

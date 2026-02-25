@@ -21,7 +21,7 @@ if (!function_exists('geo_maps_render_map')) {
 		?>
 		<div class="geo-maps-map-render-element-wrap">
 			<div id="<?php echo('' != $map_args['map_id'] ? esc_attr($map_args['map_id']) : ''); ?>"
-				 data-settings='<?php echo htmlspecialchars(json_encode($default_map_args['settings']), ENT_QUOTES, 'UTF-8'); ?>'
+				 data-settings='<?php echo esc_attr(json_encode($default_map_args['settings'])); ?>'
 				 class="geo_maps_map_render_element" style="<?php echo esc_attr($inline_style); ?>"></div>
 		</div>
 		<?php

@@ -1,7 +1,7 @@
 {
   "name": "matrixaddons/matrixmaps",
   "description": "Interactive Maps for WordPress with Google Maps and OpenStreetMap support",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "type": "wordpress-plugin",
   "authors": [
 	{

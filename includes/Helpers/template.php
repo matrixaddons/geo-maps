@@ -44,7 +44,7 @@ if (!function_exists('geo_maps_get_admin_template')) {
 
 			echo '<div class="geo_maps-notice-warning"> ' . sprintf(
 				/* translators: %s: Template file path */
-				__('The file you are trying to load does not exist in your theme or geo-maps plugin location. If you are a developer and extending geo-maps plugin, please create a PHP file at location %s', 'geo-maps'),
+				esc_html__('The file you are trying to load does not exist in your theme or geo-maps plugin location. If you are a developer and extending geo-maps plugin, please create a PHP file at location %s', 'geo-maps'),
 				'<code>' . esc_html($template_location) . '</code>'
 			) . ' </div>';
 		}

@@ -85,13 +85,13 @@ class Maps
 		if ($post->post_type !== 'geo-maps') {
 			return;
 		}
-		echo __('You can place this shortcode where you want to display the map.', 'geo-maps');
+		echo esc_html__('You can place this shortcode where you want to display the map.', 'geo-maps');
 
 		$map_id = get_the_ID();
 
 		echo '<br/>';
 
-		echo "<textarea class='geo-maps-shortcode-copy' disabled>[geo_maps id=\"{$map_id}\"]</textarea>";
+		echo '<textarea class="geo-maps-shortcode-copy" disabled>[geo_maps id="' . esc_attr($map_id) . '"]</textarea>';
 	}
 
 	public function map_type_template($post)

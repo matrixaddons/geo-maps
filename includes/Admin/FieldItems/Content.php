@@ -10,7 +10,7 @@ class Content
 		$content = $field['content'] ?? '';
 
 		echo '<div class="geo-maps-map-render-element-wrap">';
-		echo "<div id='{$group_id}' class='geo-maps-marker-content-wrap'>";
+		echo '<div id="' . esc_attr($group_id) . '" class="geo-maps-marker-content-wrap">';
 		echo wp_kses($content, array(
 			'a' => array('href' => array(), 'class' => array(), 'target' => array()),
 			'h2' => array('class' => array()),
