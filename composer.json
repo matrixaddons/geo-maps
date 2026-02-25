@@ -1,14 +1,24 @@
 {
-  "name": "matrixaddons/geomaps",
-  "description": "Google Maps & OpenStreetMap Block For Gutenberg Editor – Geo Maps",
+  "name": "matrixaddons/matrixmaps",
+  "description": "Interactive Maps for WordPress with Google Maps and OpenStreetMap support",
+  "version": "1.2.0",
+  "type": "wordpress-plugin",
   "authors": [
 	{
-	  "name": "matrixaddons"
+	  "name": "MatrixAddons",
+	  "email": "wpmatrixaddons@gmail.com"
 	}
   ],
+  "license": "GPL-3.0-or-later",
+  "require": {
+	"php": ">=5.6"
+  },
   "autoload": {
 	"psr-4": {
 	  "MatrixAddons\\GeoMaps\\": "./includes"
 	}
+  },
+  "config": {
+	"sort-packages": true
   }
 }

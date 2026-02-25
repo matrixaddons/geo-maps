@@ -10,7 +10,6 @@
 /.github export-ignore
 /.wordpress-org export-ignore
 /package-lock.json  export-ignore
-/composer.json  export-ignore
 /composer.lock  export-ignore
 /.editorconfig	export-ignore
 /.distignore	export-ignore
@@ -21,9 +20,7 @@
 /tsconfig.json  export-ignore
 /entryPoints.js  export-ignore
 /webpack.config.js  export-ignore
-/assets/admin/src  export-ignore
 /assets/package-lock.json  export-ignore
-/assets/src  export-ignore
 /assets/node_modules  export-ignore
 /node_modules  export-ignore
 /pax_global_header  export-ignore

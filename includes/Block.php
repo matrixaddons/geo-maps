@@ -19,7 +19,7 @@ class Block
 	public function register_block()
 	{
 		register_block_type(
-			'geo-maps/map',
+			'matrixmaps/map',
 			array(
 				'api_version' => 2,
 

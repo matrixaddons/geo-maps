@@ -1,5 +1,5 @@
 /* jshint node:true */
-const sass = require('node-sass');
+const sass = require('sass');
 
 module.exports = function (grunt) {
 	'use strict';
@@ -68,11 +68,8 @@ module.exports = function (grunt) {
 		sass: {
 			options: {
 				implementation: sass,
-
 				sourceMap: true,
-				// check:false,
-				// unix_newlines: true,
-				// sourceMapFileInline: true,
+				outputStyle: 'expanded',
 			},
 			dist: {
 				files: [{
@@ -298,7 +295,7 @@ module.exports = function (grunt) {
 	});
 
 	// Load NPM tasks to be used here
-	grunt.loadNpmTasks('grunt-sass');
+	grunt.loadNpmTasks('grunt-dart-sass');
 	grunt.loadNpmTasks('grunt-phpcs');
 	grunt.loadNpmTasks('grunt-rtlcss');
 	grunt.loadNpmTasks('grunt-postcss');

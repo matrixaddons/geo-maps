@@ -32,7 +32,7 @@ const Edit = (props) => {
 			<InspectorControls key="setting">
 				<div id="geo-maps-controls">
 					<Panel>
-						<PanelBody title={__('Geo Map Settings', 'geo-maps')} initialOpen={true}>
+						<PanelBody title={__('MatrixMap Settings', 'geo-maps')} initialOpen={true}>
 
 							<SelectControl
 								label={__('Select Map', 'geo-maps')}
@@ -58,7 +58,7 @@ const Edit = (props) => {
 	);
 }
 
-registerBlockType('geo-maps/map', {
+registerBlockType('matrixmaps/map', {
 	apiVersion: 2,
 	title: __('Geo Maps', 'geo-maps'),
 	description: __('This block is used to show map', 'geo-maps'),

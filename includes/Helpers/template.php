@@ -42,7 +42,11 @@ if (!function_exists('geo_maps_get_admin_template')) {
 
 		if (!file_exists($template_location)) {
 
-			echo '<div class="geo_maps-notice-warning"> ' . __(sprintf('The file you are trying to load is not exists in your theme or geo_maps plugins location, if you are a developer and extending geo_maps plugin, please create a php file at location %s ', "<code>{$template_location}</code>"), 'geo-maps') . ' </div>';
+			echo '<div class="geo_maps-notice-warning"> ' . sprintf(
+				/* translators: %s: Template file path */
+				__('The file you are trying to load does not exist in your theme or geo-maps plugin location. If you are a developer and extending geo-maps plugin, please create a PHP file at location %s', 'geo-maps'),
+				'<code>' . esc_html($template_location) . '</code>'
+			) . ' </div>';
 		}
 
 
