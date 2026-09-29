@@ -1,0 +1,171 @@
+// MatrixMap → Free vs Pro.
+
+.mm-compare__hero {
+	display: grid;
+	grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+	gap: 32px;
+	align-items: center;
+	padding: 28px 32px;
+	margin-bottom: 24px;
+	background:
+		radial-gradient(420px 260px at 100% 0%, rgba(124, 58, 237, 0.1), transparent 70%),
+		var(--mm-surface);
+}
+
+.mm-compare__hero--active {
+	grid-template-columns: 1fr;
+	background:
+		radial-gradient(420px 260px at 100% 0%, rgba(4, 120, 87, 0.08), transparent 70%),
+		var(--mm-surface);
+}
+
+.mm-compare__title {
+	margin: 12px 0 8px;
+	font-size: 24px;
+	line-height: 1.25;
+	color: var(--mm-ink);
+}
+
+.mm-compare__text {
+	margin: 0 0 16px;
+	color: var(--mm-text);
+	font-size: 14px;
+}
+
+.mm-compare__actions {
+	margin: 18px 0 0;
+}
+
+.mm-compare__plans {
+	display: grid;
+	gap: 10px;
+}
+
+.mm-compare__plan {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 12px 16px;
+	border: 1px solid var(--mm-line);
+	border-radius: var(--mm-radius-sm);
+	background: var(--mm-surface);
+	font-size: 14px;
+
+	strong {
+		color: var(--mm-ink);
+	}
+
+	span {
+		color: var(--mm-muted);
+	}
+}
+
+.mm-compare__note {
+	margin: 4px 0 0;
+	color: var(--mm-muted);
+	font-size: 13px;
+}
+
+.mm-compare__table-wrap {
+	padding: 0;
+	overflow-x: auto;
+}
+
+.mm-compare__table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+
+	th,
+	td {
+		padding: 12px 20px;
+		border-bottom: 1px solid var(--mm-line);
+		text-align: left;
+		vertical-align: middle;
+	}
+
+	thead th {
+		position: sticky;
+		top: 0;
+		z-index: 1;
+		background: var(--mm-surface);
+		color: var(--mm-muted);
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	tbody th[scope="row"] {
+		font-weight: 400;
+		color: var(--mm-text);
+	}
+
+	td {
+		width: 170px;
+		text-align: center;
+	}
+
+	thead th:not(:first-child) {
+		text-align: center;
+	}
+}
+
+.mm-compare__group th {
+	padding-top: 22px;
+	background: var(--mm-bg);
+	color: var(--mm-ink);
+	font-size: 13px;
+	font-weight: 700;
+}
+
+.mm-compare__procol {
+	background: rgba(124, 58, 237, 0.04);
+}
+
+thead .mm-compare__procol {
+	color: var(--mm-pro) !important;
+}
+
+.mm-compare__yes {
+	display: inline-flex;
+	color: var(--mm-ok);
+}
+
+.mm-compare__procol .mm-compare__yes {
+	color: var(--mm-pro);
+}
+
+.mm-compare__no {
+	color: var(--mm-line-strong);
+}
+
+.mm-compare__note-cell {
+	color: var(--mm-text);
+	font-size: 13px;
+}
+
+.mm-compare__footer {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin: 24px 0 0;
+}
+
+@media (max-width: 782px) {
+	.mm-compare__hero {
+		grid-template-columns: 1fr;
+		padding: 20px;
+	}
+
+	.mm-compare__table {
+		th,
+		td {
+			padding: 10px 12px;
+		}
+
+		td {
+			width: 72px;
+		}
+	}
+}

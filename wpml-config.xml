@@ -1,0 +1,35 @@
+<wpml-config>
+	<custom-fields>
+		<custom-field action="copy">_matrixmap_config</custom-field>
+		<custom-field action="copy">mm_lat</custom-field>
+		<custom-field action="copy">mm_lng</custom-field>
+		<custom-field action="copy">mm_country</custom-field>
+		<custom-field action="copy">mm_postcode</custom-field>
+		<custom-field action="copy">mm_phone</custom-field>
+		<custom-field action="copy">mm_email</custom-field>
+		<custom-field action="copy">mm_website</custom-field>
+		<custom-field action="copy">mm_hours</custom-field>
+		<custom-field action="copy">mm_special_hours</custom-field>
+		<custom-field action="copy">mm_closed_until</custom-field>
+		<custom-field action="copy">mm_timezone</custom-field>
+		<custom-field action="copy">mm_external_id</custom-field>
+		<custom-field action="copy">mm_icon_color</custom-field>
+		<custom-field action="translate">mm_street</custom-field>
+		<custom-field action="translate">mm_city</custom-field>
+		<custom-field action="translate">mm_state</custom-field>
+		<custom-field action="translate">mm_closed_note</custom-field>
+		<custom-field action="translate">mm_details</custom-field>
+	</custom-fields>
+	<custom-types>
+		<custom-type translate="1">mm_location</custom-type>
+		<custom-type translate="1">geo-maps</custom-type>
+	</custom-types>
+	<taxonomies>
+		<taxonomy translate="1">mm_location_category</taxonomy>
+	</taxonomies>
+	<admin-texts>
+		<key name="matrixmap_settings">
+			<key name="geocode_country"/>
+		</key>
+	</admin-texts>
+</wpml-config>

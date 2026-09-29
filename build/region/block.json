@@ -1,0 +1,44 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "matrixmaps/region",
+  "version": "2.0.0",
+  "title": "Region Map",
+  "category": "matrixmap",
+  "icon": "admin-site-alt3",
+  "description": "Interactive world, country and US state maps: colour regions by value with a legend, add tooltips and links. Accessible and lightweight.",
+  "keywords": [
+    "world map",
+    "us map",
+    "choropleth",
+    "interactive map",
+    "region",
+    "country",
+    "states",
+    "heat map"
+  ],
+  "textdomain": "geo-maps",
+  "attributes": {
+    "config": {
+      "type": "object",
+      "default": {}
+    },
+    "title": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "supports": {
+    "align": [
+      "wide",
+      "full"
+    ],
+    "anchor": true,
+    "html": false,
+    "spacing": {
+      "margin": true
+    }
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css"
+}

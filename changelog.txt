@@ -1,3 +1,17 @@
+= 2.0.0 =
+- New - MatrixMap: map builder, store locator with geolocation, region maps, maps without an API key (see readme.txt for details)
+- New - Import from WP Go Maps, MapPress, WP Maps, WP Store Locator and Agile Store Locator; Leaflet Map and WP Map Block compatibility
+- Changed - Requires WordPress 6.5 and PHP 7.4
+
+= 1.2.2 - 2026-02-25 =
+- Fixed - WordPress.org guideline and escaping fixes
+
+= 1.2 - 2026-02-25 =
+- Enhanced - Rebranded to MatrixMaps
+
+= 1.1 - 2024-07-04 =
+- Added - Draw lines between markers
+
 = 1.0.13 - 2023-09-21 =
 - Fixed - 6.3 Compatibility issue fixed
 

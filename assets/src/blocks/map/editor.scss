@@ -1,0 +1,34 @@
+.mm-block-preview {
+	position: relative;
+
+	// Selecting the block should not start panning the map.
+	.matrixmap {
+		margin-block: 0;
+	}
+}
+
+// The builder brings its own name field and Close button, so the modal header
+// is hidden and the builder fills the whole frame.
+.mm-builder-modal.components-modal__frame {
+	.components-modal__content {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 0;
+		margin-top: 0;
+		overflow: hidden;
+	}
+
+	.components-modal__content > div:not(.mm-b) {
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		min-height: 0;
+	}
+
+	.mm-b--modal {
+		flex: 1 1 auto;
+		height: auto;
+		min-height: 0;
+	}
+}

@@ -5,3 +5,7 @@ node_modules
 # build/
 geo-maps.zip
 geo-maps.tar
+
+# Downloaded source data for tools/regions (re-created by the build script).
+tools/regions/cache/
+.DS_Store

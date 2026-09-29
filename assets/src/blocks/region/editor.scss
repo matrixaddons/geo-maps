@@ -1,0 +1,70 @@
+.mm-palette-preview {
+	display: flex;
+	gap: 4px;
+	margin: 8px 0 12px;
+}
+
+.mm-region-data {
+	.mm-region-data__paste {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+		margin-bottom: 16px;
+		padding-bottom: 16px;
+		border-bottom: 1px solid #e0e0e0;
+
+		.components-base-control {
+			width: 100%;
+		}
+	}
+
+	.mm-region-data__table {
+		width: 100%;
+		margin-top: 12px;
+		border-collapse: collapse;
+
+		th,
+		td {
+			padding: 6px 8px;
+			border-bottom: 1px solid #f0f0f0;
+			text-align: left;
+			vertical-align: middle;
+		}
+
+		thead th {
+			position: sticky;
+			top: 0;
+			background: #fff;
+			z-index: 1;
+		}
+
+		tbody th {
+			font-weight: 500;
+
+			code {
+				margin-left: 4px;
+				font-size: 11px;
+				color: #757575;
+			}
+		}
+
+		input[type="number"] {
+			width: 110px;
+		}
+
+		input[type="text"],
+		input[type="url"] {
+			width: 100%;
+			min-width: 140px;
+		}
+
+		input[type="color"] {
+			width: 36px;
+			height: 28px;
+			padding: 0;
+			border: 1px solid #ccc;
+			vertical-align: middle;
+		}
+	}
+}

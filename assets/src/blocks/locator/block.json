@@ -1,0 +1,23 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "matrixmaps/locator",
+	"version": "2.0.0",
+	"title": "Store Locator",
+	"category": "matrixmap",
+	"icon": "store",
+	"description": "Let visitors find the nearest location: address or postcode search, “use my location”, radius and category filters, opening hours and directions.",
+	"keywords": [ "store locator", "locations", "find", "near me", "dealer", "map", "geolocation" ],
+	"textdomain": "geo-maps",
+	"attributes": {
+		"config": { "type": "object", "default": {} },
+		"title": { "type": "string", "default": "" }
+	},
+	"supports": {
+		"align": [ "wide", "full" ],
+		"anchor": true,
+		"html": false,
+		"spacing": { "margin": true }
+	},
+	"editorScript": "file:./index.js"
+}
