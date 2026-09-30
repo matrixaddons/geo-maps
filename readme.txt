@@ -12,7 +12,9 @@ Maps that work without an API key: a visual map builder, a store locator with "n
 
 == Description ==
 
-MatrixMap puts maps on your site in minutes, with **no API key, no account and no monthly bill**. Build a map with a visual editor, add a store locator that finds the nearest locations, or colour a world or country map with your own data. Everything is keyboard and screen reader accessible, and nothing loads until a visitor needs it.
+**[Live demo](https://playground.wordpress.net/?blueprint-url=https://ps.w.org/geo-maps/assets/blueprints/blueprint.json) | [Website](https://matrixaddons.com/plugins/matrixmap/) | [Features](https://matrixaddons.com/plugins/matrixmap/#features) | [Free vs Pro](https://matrixaddons.com/plugins/matrixmap/#compare) | [MatrixMap Pro](https://matrixaddons.com/plugins/matrixmap/#pro) | [Pricing](https://matrixaddons.com/plugins/matrixmap/#pricing) | [FAQ](https://matrixaddons.com/plugins/matrixmap/#faq) | [Support](https://wordpress.org/support/plugin/geo-maps/)**
+
+MatrixMap puts maps on your site in minutes, with **no API key, no account and no monthly bill**. Build a map with a visual editor, add a store locator that finds the nearest locations, or colour a world or country map with your own data. Everything is keyboard and screen reader accessible, and nothing loads until a visitor needs it. See it on the [MatrixMap website](https://matrixaddons.com/plugins/matrixmap/) or try the [live demo](https://playground.wordpress.net/?blueprint-url=https://ps.w.org/geo-maps/assets/blueprints/blueprint.json) right in your browser.
 
 = Why MatrixMap? =
 
@@ -26,6 +28,9 @@ MatrixMap puts maps on your site in minutes, with **no API key, no account and n
 Store and dealer locators, franchises and chains, restaurants and cafés, real estate and property listings, tours and travel routes, events and venues, service areas and sales territories, and data stories such as election results, sales by state or members by country.
 
 = Three kinds of map =
+
+See them in action on the [MatrixMap website](https://matrixaddons.com/plugins/matrixmap/#features).
+
 
 * **Maps with places.** Search for an address or click the map to drop a pin, then add a title, text, a photo, a phone number and a link. Group places into categories that visitors can filter. Draw areas, routes and circles, or add a GPX, KML or GeoJSON file.
 * **Store locator.** Keep your stores, dealers or offices as locations, each with an address, contact details, opening hours and your own extra details (parking, languages, services…). Visitors search by address or postcode, with suggestions from your own locations as they type, or tap **Use my location**. They get the nearest locations with distances, "Open now" status and one-tap directions in Google Maps, Apple Maps or Waze. Add the **Store Search** box to your home page or header to send visitors straight to their results.
@@ -73,18 +78,43 @@ MatrixMap imports your maps from **WP Go Maps**, **MapPress**, **WP Maps** and *
 
 = MatrixMap Pro =
 
-Everything above is free, with no limits on maps, places or locations. [MatrixMap Pro](https://matrixaddons.com/plugins/matrixmap/#pro) is an optional add-on for businesses that want more from their locator and data maps:
+Everything above is free, with no limits on maps, places or locations. **[MatrixMap Pro](https://matrixaddons.com/plugins/matrixmap/#pro)** is an optional add-on for businesses that want their maps to bring in customers. It adds:
 
-* **Directions on your own map** – driving, walking and cycling routes with turn-by-turn steps, planned tours and elevation profiles.
-* **Locator analytics** – searches, directions, calls and clicks per location, and a map of where people look but you have no store. Anonymous, no cookies.
-* **A page for every location** – search-friendly location pages with LocalBusiness structured data, plus messages to locations.
-* **Dealer networks** – location submissions, dealer sign-up with review, and enquiries sent to the nearest dealer.
-* **More from region maps** – click actions (gallery, video, page), drilldown from the world to states and counties, custom SVG/GeoJSON maps, and values from your posts or a Google Sheet.
-* **Automation and integrations** – scheduled sync from Google Sheets, CSV or JSON, maps from your posts, WooCommerce "Where to buy", Bricks, Divi and WPBakery elements, and WP-CLI.
+**Store locator and locations**
+
+* **[Directions on your own map](https://matrixaddons.com/plugins/matrixmap/#pro)** – driving, walking and cycling routes drawn on the map with travel time and turn-by-turn steps, from a locator result or a popup. Keyless routing (OSRM) or your own OpenRouteService, GraphHopper, Mapbox or Google key.
+* **[Locator analytics and a demand map](https://matrixaddons.com/plugins/matrixmap/#pro)** – searches, directions, calls, website clicks and messages per location, and a map of where people search but you have no store. Anonymous, no cookies.
+* **[A page for every location](https://matrixaddons.com/plugins/matrixmap/#pro)** – search-friendly location pages with a map, opening hours, contact buttons, LocalBusiness structured data and sitemap entries.
+* **[Messages to locations](https://matrixaddons.com/plugins/matrixmap/#pro)** – a "Send a message" form in popups, results and location pages, emailed to the right store.
+* **[Result templates](https://matrixaddons.com/plugins/matrixmap/#pro)** – cards, photo cards or compact rows, with Route, Message and More info buttons.
+* **["Open now only" filter](https://matrixaddons.com/plugins/matrixmap/#pro)** – using each location's time zone, holidays and overnight hours.
+
+**Growing a network**
+
+* **[Location submissions and dealer sign-up](https://matrixaddons.com/plugins/matrixmap/#pro)** – visitors, members or dealers add their location for your review; "My locations" lets them keep it up to date.
+* **[Enquiries sent to the nearest dealer](https://matrixaddons.com/plugins/matrixmap/#pro)** – a "Find a dealer" form that routes each enquiry to the closest location by email.
+* **[Visitor location on any host](https://matrixaddons.com/plugins/matrixmap/#pro)** – a local copy of the free DB-IP Lite database, so the locator and blocks know the visitor's city without a third-party request.
+* **[Geo-targeted content and a Nearest location block](https://matrixaddons.com/plugins/matrixmap/#pro)** – show content by country or distance, and the closest stores with distance and hours.
+
+**Region maps and data**
+
+* **[Click actions](https://matrixaddons.com/plugins/matrixmap/#pro)** – a region or place opens a picture gallery, a YouTube or Vimeo video, a page of your site or another web page in a lightbox.
+* **[Drilldown](https://matrixaddons.com/plugins/matrixmap/#pro)** – from the world to a country's states, and on to US counties or Mexican municipalities, with an optional link to the store locator.
+* **[Combined and custom maps](https://matrixaddons.com/plugins/matrixmap/#pro)** – world and North America state maps, and your own maps from SVG or GeoJSON: floor plans, campuses, sales territories.
+* **[Region values from your content or a Google Sheet](https://matrixaddons.com/plugins/matrixmap/#pro)** – fill a map from categories, custom fields or a sheet or feed that refreshes in the background.
+
+**Automation and integrations**
+
+* **[Scheduled data sync](https://matrixaddons.com/plugins/matrixmap/#pro)** – keep locations in step with a Google Sheet, CSV or JSON feed, with preview, log and email alerts.
+* **[Maps from your posts](https://matrixaddons.com/plugins/matrixmap/#pro)** – any post type with coordinates, an ACF map field or an address, plus a Posts map block for the Query Loop.
+* **[Routes, tours, heatmaps and a 3D globe](https://matrixaddons.com/plugins/matrixmap/#pro)** – planned routes through your places with elevation profiles, density heatmaps and a globe view.
+* **[WooCommerce "Where to buy"](https://matrixaddons.com/plugins/matrixmap/#pro)** – a store finder on product pages that lists only the stores stocking that product, with stock badges.
+* **[Page builders and WP-CLI](https://matrixaddons.com/plugins/matrixmap/#pro)** – Bricks, Divi and WPBakery elements, and `wp matrixmap` commands for imports, exports and sync.
+* **[Updates and email support](https://matrixaddons.com/plugins/matrixmap/#pro)** – one-click updates and email support with your licence (priority support on Agency).
 
 Plans start at $49 a year for one site (Plus: 5 sites, Agency: 25 sites), or pay once with a lifetime licence, with a 14-day money-back guarantee. Pro installs next to the free plugin, keeps your maps as they are, and keeps working if a licence lapses; the licence brings updates and support.
 
-Compare every feature under **MatrixMap → Free vs Pro** in your dashboard or in the [full Free vs Pro comparison](https://matrixaddons.com/plugins/matrixmap/#compare), and see [plans and pricing](https://matrixaddons.com/plugins/matrixmap/#pricing).
+**[See every Pro feature](https://matrixaddons.com/plugins/matrixmap/#pro) · [Compare Free and Pro](https://matrixaddons.com/plugins/matrixmap/#compare) · [Plans and pricing](https://matrixaddons.com/plugins/matrixmap/#pricing)** — or open **MatrixMap → Free vs Pro** in your dashboard.
 
 = Upgrading from MatrixMaps 1.x =
 
