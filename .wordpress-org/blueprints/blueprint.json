@@ -1,0 +1,42 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "meta": {
+    "title": "MatrixMap demo",
+    "description": "A store locator with 20 cafés, a world data map and a US states map.",
+    "author": "matrixaddons",
+    "categories": [
+      "Maps"
+    ]
+  },
+  "landingPage": "/find-a-cafe/",
+  "preferredVersions": {
+    "php": "8.2",
+    "wp": "latest"
+  },
+  "features": {
+    "networking": true
+  },
+  "login": true,
+  "steps": [
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "wordpress.org/plugins",
+        "slug": "geo-maps"
+      },
+      "options": {
+        "activate": true
+      }
+    },
+    {
+      "step": "setSiteOptions",
+      "options": {
+        "permalink_structure": "/%postname%/"
+      }
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php\nrequire_once '/wordpress/wp-load.php';\nuse MatrixMap\\Locations\\Location;\nuse MatrixMap\\Maps\\MapConfig;\n\n$cats = array();\nforeach (array('Café' => '#b45309', 'Roastery' => '#7c3aed', 'Drive-thru' => '#0891b2') as $name => $color) {\n    $t = wp_insert_term($name, 'mm_location_category');\n    if (!is_wp_error($t)) { $cats[$name] = (int) $t['term_id']; update_term_meta($cats[$name], 'mm_color', $color); }\n}\n$hours = array();\nforeach (array('mon','tue','wed','thu','fri','sat','sun') as $d) { $hours[$d] = array(array('07:00', 'sat' === $d || 'sun' === $d ? '17:00' : '19:00')); }\n$stores = array(\n    array('SoHo','112 Prince St','New York','NY','10012',40.7250,-73.9985,'Café'),\n    array('Williamsburg','214 Bedford Ave','Brooklyn','NY','11249',40.7176,-73.9577,'Roastery'),\n    array('Back Bay','301 Newbury St','Boston','MA','02115',42.3485,-71.0850,'Café'),\n    array('Dupont Circle','1517 Connecticut Ave NW','Washington','DC','20036',38.9110,-77.0435,'Café'),\n    array('River North','420 N Wells St','Chicago','IL','60654',41.8895,-87.6340,'Café'),\n    array('Loop','55 E Monroe St','Chicago','IL','60603',41.8807,-87.6255,'Café'),\n    array('Wicker Park','1530 N Milwaukee Ave','Chicago','IL','60622',41.9095,-87.6770,'Roastery'),\n    array('Capitol Hill','1200 E Pike St','Seattle','WA','98122',47.6140,-122.3165,'Café'),\n    array('Ballard','5300 Ballard Ave NW','Seattle','WA','98107',47.6670,-122.3830,'Roastery'),\n    array('Pearl District','1100 NW Glisan St','Portland','OR','97209',45.5265,-122.6825,'Café'),\n    array('Mission','3200 Valencia St','San Francisco','CA','94110',37.7565,-122.4210,'Café'),\n    array('Silver Lake','3900 Sunset Blvd','Los Angeles','CA','90029',34.0915,-118.2790,'Café'),\n    array('North Park','3000 University Ave','San Diego','CA','92104',32.7485,-117.1300,'Drive-thru'),\n    array('LoDo','1600 Wazee St','Denver','CO','80202',39.7525,-105.0010,'Café'),\n    array('South Congress','1500 S Congress Ave','Austin','TX','78704',30.2485,-97.7500,'Café'),\n    array('Deep Ellum','2700 Main St','Dallas','TX','75226',32.7845,-96.7835,'Drive-thru'),\n    array('Midtown','950 Peachtree St NE','Atlanta','GA','30309',33.7810,-84.3835,'Café'),\n    array('Wynwood','250 NW 24th St','Miami','FL','33127',25.8000,-80.1990,'Café'),\n    array('The Gulch','600 12th Ave S','Nashville','TN','37203',36.1520,-86.7845,'Café'),\n    array('North Loop','300 Washington Ave N','Minneapolis','MN','55401',44.9855,-93.2735,'Drive-thru'),\n);\n$per = array();\nforeach ($stores as $i => $s) {\n    $id = wp_insert_post(array('post_type' => 'mm_location', 'post_status' => 'publish', 'post_title' => 'Lumen Coffee — ' . $s[0], 'post_content' => 'Espresso bar, pour-overs and fresh pastries.'));\n    Location::save_fields($id, array('street' => $s[1], 'city' => $s[2], 'state' => $s[3], 'postcode' => $s[4], 'country' => 'US', 'lat' => $s[5], 'lng' => $s[6], 'phone' => sprintf('(555) %03d-%04d', 200 + $i, 1000 + $i * 37), 'hours' => $hours));\n    if (isset($cats[$s[7]])) { wp_set_object_terms($id, array($cats[$s[7]]), 'mm_location_category'); }\n    $per['US-' . $s[3]] = ($per['US-' . $s[3]] ?? 0) + 1;\n}\nfunction mm_demo_map($title, $config) { $id = wp_insert_post(array('post_type' => 'geo-maps', 'post_status' => 'publish', 'post_title' => $title)); MapConfig::save($id, $config); return $id; }\n$c = MapConfig::defaults('locator'); $c['size']['height'] = '600px'; $c['locator']['categories'] = array_values($cats);\n$locator = mm_demo_map('Find a café', $c);\n$c = MapConfig::defaults('region'); $c['size']['height'] = '520px'; $c['region']['map'] = 'world';\n$c['region']['choropleth'] = array('enabled' => true, 'palette' => 'oranges', 'steps' => 5, 'scale' => 'quantile', 'noData' => '#e7e5e4', 'style' => 'fill');\n$c['region']['legend'] = array('enabled' => true, 'title' => 'Coffee bought in 2026 (bags)', 'position' => 'bottom-left');\n$c['region']['valueSuffix'] = ' bags';\nforeach (array('BR' => 3200, 'CO' => 2400, 'ET' => 1800, 'VN' => 900, 'KE' => 750, 'GT' => 680, 'HN' => 620, 'PE' => 540, 'CR' => 480, 'ID' => 460, 'RW' => 320, 'MX' => 300, 'UG' => 240, 'IN' => 220, 'PA' => 160) as $code => $v) { $c['region']['regions'][$code] = array('value' => (string) $v); }\n$world = mm_demo_map('Where our coffee comes from', $c);\n$c = MapConfig::defaults('region'); $c['size']['height'] = '520px'; $c['region']['map'] = 'us-states'; $c['region']['labels'] = true;\n$c['region']['choropleth'] = array('enabled' => true, 'palette' => 'blues', 'steps' => 4, 'scale' => 'quantize', 'noData' => '#e5e7eb', 'style' => 'fill');\n$c['region']['legend'] = array('enabled' => true, 'title' => 'Cafés per state', 'position' => 'bottom-left');\nforeach ($per as $code => $n) { $c['region']['regions'][$code] = array('value' => (string) $n); }\n$us = mm_demo_map('Cafés by state', $c);\n$page = function ($title, $slug, $html) { return wp_insert_post(array('post_type' => 'page', 'post_status' => 'publish', 'post_title' => $title, 'post_name' => $slug, 'post_content' => '<!-- wp:group {\"align\":\"wide\",\"layout\":{\"type\":\"constrained\",\"contentSize\":\"1100px\"}} --><div class=\"wp-block-group alignwide\">' . $html . '</div><!-- /wp:group -->')); };\nforeach (get_posts(array('post_type' => array('post', 'page'), 'numberposts' => 5, 'post_status' => 'any', 'name__in' => array('hello-world', 'sample-page'))) as $old) { wp_delete_post($old->ID, true); }\n$page('Find a café', 'find-a-cafe', \"<!-- wp:paragraph --><p>Search a US city (try <strong>Chicago</strong> or <strong>Seattle</strong>) or use your location.</p><!-- /wp:paragraph -->\\n<!-- wp:shortcode -->[matrixmap id=\\\"$locator\\\"]<!-- /wp:shortcode -->\");\n$page('Where our coffee comes from', 'our-coffee', \"<!-- wp:shortcode -->[matrixmap id=\\\"$world\\\"]<!-- /wp:shortcode -->\");\n$page('Cafés by state', 'cafes-by-state', \"<!-- wp:shortcode -->[matrixmap id=\\\"$us\\\"]<!-- /wp:shortcode -->\");\nupdate_option('blogname', 'Lumen Coffee Co. — MatrixMap demo');\nflush_rewrite_rules(false);\n"
+    }
+  ]
+}

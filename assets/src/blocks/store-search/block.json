@@ -1,0 +1,27 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "matrixmaps/store-search",
+	"version": "2.0.0",
+	"title": "Store Search",
+	"category": "matrixmap",
+	"icon": "search",
+	"description": "A compact “find a store near you” box for any page, header or sidebar. Visitors land on your store locator with the results already shown.",
+	"keywords": [ "store locator", "search", "find", "near me", "postcode", "dealer" ],
+	"textdomain": "geo-maps",
+	"attributes": {
+		"page": { "type": "number", "default": 0 },
+		"label": { "type": "string", "default": "" },
+		"placeholder": { "type": "string", "default": "" },
+		"button": { "type": "string", "default": "" },
+		"locate": { "type": "boolean", "default": true }
+	},
+	"supports": {
+		"align": [ "wide", "full" ],
+		"anchor": true,
+		"html": false,
+		"spacing": { "margin": true, "padding": true }
+	},
+	"editorScript": "file:./index.js",
+	"style": "file:./style-index.css"
+}

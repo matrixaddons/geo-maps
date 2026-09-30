@@ -1,0 +1,56 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "matrixmaps/map",
+  "version": "2.0.0",
+  "title": "MatrixMap",
+  "category": "matrixmap",
+  "icon": "location-alt",
+  "description": "Show a map with your places: custom markers, popups, categories, clustering and directions. No API key needed.",
+  "keywords": [
+    "map",
+    "maps",
+    "google maps",
+    "openstreetmap",
+    "location",
+    "marker",
+    "geo"
+  ],
+  "textdomain": "geo-maps",
+  "attributes": {
+    "map_id": {
+      "type": "string",
+      "default": "0"
+    },
+    "width": {
+      "type": "string",
+      "default": "100%"
+    },
+    "height": {
+      "type": "string",
+      "default": "500px"
+    },
+    "title": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "supports": {
+    "align": [
+      "wide",
+      "full"
+    ],
+    "anchor": true,
+    "html": false,
+    "spacing": {
+      "margin": true
+    }
+  },
+  "example": {
+    "attributes": {
+      "map_id": "0"
+    }
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css"
+}

@@ -1,0 +1,59 @@
+Region boundary data
+====================
+
+The files in this directory (*.json except manifest.json's metadata and nepal.json, see
+below) are derived from Natural Earth vector data (https://www.naturalearthdata.com/), which is in the PUBLIC DOMAIN.
+No permission is needed to use Natural Earth; attribution is appreciated:
+"Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com."
+
+Source:   https://github.com/nvkelso/natural-earth-vector (master branch, geojson/)
+          - ne_50m_admin_0_countries.geojson      (world, continents)
+          - ne_10m_admin_1_states_provinces.geojson (US states and country subdivisions)
+Version:  Natural Earth v5.1.2 (latest release; repository VERSION file reads 5.2.0-pre).
+          Last upstream change to the files used: 2022-05-13 (commit 9380cca).
+Downloaded: 2026-09-29
+
+The data was re-projected, simplified, dissolved and re-coded by tools/regions/build.mjs.
+Boundaries follow Natural Earth's default (de facto) world view and do not imply any
+opinion on the legal status of any territory.
+
+nepal.json (Nepal, 7 provinces)
+-------------------------------
+Source:   Survey Department of Nepal, OCHA FISS, via geoBoundaries (gbOpen NPL ADM1,
+          https://www.geoboundaries.org/, commit 9469f09; boundary year 2020).
+License:  Creative Commons Attribution 3.0 IGO (CC BY 3.0 IGO),
+          https://creativecommons.org/licenses/by/3.0/igo/
+          Original: https://data.humdata.org/dataset/administrative-bounadries-of-nepal
+Changes:  re-projected and simplified by tools/regions/build.mjs; province names updated to
+          the current official names (Koshi, Madhesh).
+Downloaded: 2026-09-29
+
+us-counties-*.json (county maps for every US state)
+---------------------------------------------------
+Source:   US Census Bureau cartographic boundary files (public domain), via us-atlas 3.0.1
+          (https://github.com/topojson/us-atlas), ISC license, Copyright 2013-2019 Michael Bostock.
+Changes:  re-projected and simplified by tools/regions/build.mjs.
+
+Detailed maps (second-level units)
+----------------------------------
+france-departments, italy-provinces, spain-provinces, philippines-provinces:
+          Natural Earth admin-1 layer (public domain, see above).
+
+The following come from geoBoundaries (https://www.geoboundaries.org/, gbOpen, simplified
+release) under the licence of each original publisher. All were re-projected and simplified
+by tools/regions/build.mjs; region ids are derived from the unit and parent state names.
+Downloaded: 2026-09-29
+
+united-kingdom-districts.json  Office for National Statistics Open Geography Portal (2019).
+                               Open Government Licence v3.0. Contains public sector information
+                               licensed under the Open Government Licence v3.0; contains OS data
+                               © Crown copyright and database right.
+germany-districts.json         © GeoBasis-DE / BKG (2021), Bundesamt für Kartographie und Geodäsie.
+                               Data licence Germany – attribution – version 2.0 (dl-de/by-2-0).
+canada-economic-regions.json   Statistics Canada (2022). Open Government Licence – Canada 2.0.
+australia-lgas.json            Australian Bureau of Statistics (2022). CC BY 4.0.
+new-zealand-districts.json     Stats NZ (2021). CC BY 4.0.
+india-districts.json           Pathways Data Pvt. Ltd., lgdirectory.gov.in (2021). Open Data Commons
+                               Open Database License 1.0 (ODbL). This derived file is made available
+                               under the ODbL: https://opendatacommons.org/licenses/odbl/1-0/
+mexico-municipalities-*.json   World Bank / INEGI (2012). CC BY 4.0.

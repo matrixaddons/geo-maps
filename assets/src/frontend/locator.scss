@@ -1,0 +1,489 @@
+/* MatrixMap store locator. */
+
+.mm-locator {
+	container-type: inline-size;
+	container-name: mmloc;
+}
+
+.mm-locator .matrixmap__stage {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.mm-loc__form {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-bottom: 14px;
+}
+
+.mm-loc__field {
+	display: flex;
+	gap: 8px;
+}
+
+.mm-loc__combo {
+	position: relative;
+	display: flex;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.mm-loc__suggest {
+	position: absolute;
+	z-index: 30;
+	top: calc(100% + 4px);
+	right: 0;
+	left: 0;
+	max-height: 320px;
+	margin: 0;
+	padding: 6px;
+	overflow-y: auto;
+	list-style: none;
+	border: 1px solid #cbd5e1;
+	border-radius: var(--mm-radius, 10px);
+	background: #fff;
+	box-shadow: 0 10px 30px rgba(15, 23, 42, 0.16);
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+.mm-loc__option {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin: 0;
+	padding: 9px 10px;
+	border-radius: var(--mm-radius, 8px);
+	color: #0f172a;
+	cursor: pointer;
+	line-height: 1.35;
+
+	&:hover,
+	&[aria-selected="true"] {
+		background: #eff6ff;
+	}
+
+	&[aria-selected="true"] {
+		outline: 2px solid var(--mm-accent, #2563eb);
+		outline-offset: -2px;
+	}
+}
+
+.mm-loc__option-icon {
+	flex: none;
+	margin-top: 1px;
+	color: #64748b;
+}
+
+.mm-loc__option-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.mm-loc__option-label {
+	font-weight: 600;
+}
+
+.mm-loc__option-sub {
+	overflow: hidden;
+	color: #475569;
+	font-size: 0.875em;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.mm-loc__input {
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 46px;
+	padding: 10px 14px;
+	border: 1px solid #7c8799;
+	border-radius: var(--mm-radius, 10px);
+	background: #fff;
+	color: #0f172a;
+	font: inherit;
+	font-size: 16px;
+
+	// A solid ring (3:1 against the page), not a faint tint.
+	&:focus {
+		border-color: var(--mm-accent, #2563eb);
+		outline: 2px solid var(--mm-accent-strong, #1d4ed8);
+		outline-offset: 1px;
+	}
+}
+
+.mm-loc__submit,
+.mm-loc__locate {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 46px;
+	padding: 10px 18px;
+	border: 1px solid var(--mm-accent, #2563eb);
+	border-radius: var(--mm-radius, 10px);
+	background: var(--mm-accent, #2563eb);
+	color: #fff;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+
+	&:hover {
+		background: var(--mm-accent-strong, #1d4ed8);
+	}
+
+	&:focus-visible {
+		outline: 3px solid var(--mm-accent-strong, #1d4ed8);
+		outline-offset: 2px;
+	}
+}
+
+.mm-loc__locate {
+	border-color: #cbd5e1;
+	background: #fff;
+	color: #0f172a;
+	min-height: 40px;
+	padding: 8px 14px;
+
+	&:hover {
+		background: #f1f5f9;
+	}
+
+	&.is-busy svg {
+		animation: matrixmap-spin 1s linear infinite;
+	}
+}
+
+.mm-loc__row--filters {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px 16px;
+}
+
+.mm-loc__label {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: #334155;
+	font-size: 14px;
+}
+
+.mm-loc__select {
+	min-height: 40px;
+	padding: 6px 10px;
+	border: 1px solid #7c8799;
+	border-radius: var(--mm-radius, 8px);
+	background: #fff;
+	font: inherit;
+}
+
+.mm-loc__layout {
+	display: flex;
+	gap: 16px;
+	align-items: stretch;
+}
+
+.mm-locator--side .mm-loc__layout {
+	flex-direction: row-reverse;
+}
+
+.mm-locator--stacked .mm-loc__layout,
+.mm-locator--grid .mm-loc__layout {
+	flex-direction: column;
+}
+
+.mm-locator--side-right .mm-loc__layout {
+	flex-direction: row;
+}
+
+// Grid: results as cards under the map.
+.mm-locator--grid .mm-loc__panel {
+	flex-basis: auto;
+	max-height: none;
+	border: 0;
+	background: transparent;
+	overflow: visible;
+}
+
+.mm-locator--grid .mm-loc__status {
+	padding: 4px 2px 10px;
+	border-bottom: 0;
+}
+
+.mm-locator--grid .mm-loc__results {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	gap: 12px;
+	overflow: visible;
+}
+
+.mm-locator--grid .mm-loc__item {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	border: 1px solid var(--mm-border);
+	border-radius: var(--mm-radius, 10px);
+	background: #fff;
+
+	&.mm-loc__item--more {
+		grid-column: 1 / -1;
+		border: 0;
+		background: transparent;
+	}
+}
+
+.mm-loc__panel {
+	display: flex;
+	flex: 0 0 360px;
+	flex-direction: column;
+	max-height: var(--mm-height, 560px);
+	min-height: 0;
+	border: 1px solid var(--mm-border);
+	border-radius: var(--mm-radius);
+	background: #fff;
+	overflow: hidden;
+}
+
+.mm-locator--stacked .mm-loc__panel {
+	flex-basis: auto;
+	max-height: min(520px, 70vh);
+}
+
+.mm-loc__status {
+	padding: 12px 14px;
+	border-bottom: 1px solid var(--mm-border);
+	font-size: 14px;
+
+	p {
+		margin: 0;
+	}
+}
+
+.mm-loc__count {
+	font-weight: 600;
+}
+
+.mm-loc__empty {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 10px;
+}
+
+.mm-loc__alts {
+	margin-top: 8px !important;
+	color: #475569;
+	font-size: 13px;
+}
+
+.mm-loc__alt {
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--mm-accent-strong, #1d4ed8);
+	font: inherit;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.mm-loc__results {
+	flex: 1 1 auto;
+	margin: 0;
+	padding: 0;
+	overflow-y: auto;
+	list-style: none;
+}
+
+.mm-loc__item {
+	padding: 8px 10px 10px;
+	border-bottom: 1px solid #f1f5f9;
+
+	&:last-child {
+		border-bottom: 0;
+	}
+}
+
+.mm-loc__card {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	width: 100%;
+	padding: 4px;
+	border: 1px solid transparent;
+	border-radius: var(--mm-radius, 8px);
+	background: none;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+
+	&:hover {
+		background: #f8fafc;
+	}
+
+	&.is-active {
+		border-color: #bfdbfe;
+		background: #eff6ff;
+	}
+
+	&:focus-visible {
+		outline: 3px solid var(--mm-accent-strong, #1d4ed8);
+		outline-offset: 1px;
+	}
+}
+
+.mm-loc__num {
+	display: grid;
+	flex: 0 0 26px;
+	place-items: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	background: var(--mm-accent, #2563eb);
+	color: #fff;
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.mm-loc__body {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.mm-loc__title {
+	font-weight: 700;
+}
+
+.mm-loc__address {
+	color: #475569;
+	font-size: 13px;
+}
+
+.mm-loc__details {
+	color: #334155;
+	font-size: 12.5px;
+}
+
+.mm-loc__distance {
+	flex: 0 0 auto;
+	color: #334155;
+	font-size: 13px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.mm-loc__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 4px 0 0 42px;
+
+	.mm-btn {
+		min-height: 30px;
+		padding: 4px 12px;
+		font-size: 13px;
+	}
+}
+
+.mm-loc__item--more {
+	text-align: center;
+
+	.mm-loc__more {
+		width: 100%;
+		justify-content: center;
+	}
+}
+
+.mm-loc__credit {
+	margin: 0;
+	padding: 6px 12px;
+	border-top: 1px solid var(--mm-border);
+	color: #64748b;
+	font-size: 11px;
+	text-align: right;
+
+	a {
+		color: inherit;
+	}
+}
+
+.mm-locator.is-searching .mm-loc__results {
+	opacity: 0.5;
+}
+
+@media (max-width: 782px) {
+	.mm-locator--side .mm-loc__layout,
+	.mm-locator--side-right .mm-loc__layout,
+	.mm-locator--stacked .mm-loc__layout {
+		flex-direction: column;
+	}
+
+	// Results keep their own scroll area, so the page stays short.
+	.mm-loc__panel {
+		flex-basis: auto;
+		max-height: min(480px, 70vh);
+	}
+
+	.mm-locator .matrixmap__stage {
+		height: var(--mm-height-mobile, 320px);
+	}
+
+	.mm-loc__field .mm-loc__submit {
+		padding-inline: 14px;
+	}
+}
+
+/* Narrow containers (e.g. a theme's content column): map on top, results below. */
+@container mmloc (max-width: 820px) {
+	.mm-loc__layout {
+		flex-direction: column !important;
+	}
+
+	.mm-loc__panel {
+		flex-basis: auto;
+		max-height: min(520px, 70vh);
+	}
+
+	.mm-locator .matrixmap__stage {
+		height: min(var(--mm-height, 560px), 60vh);
+	}
+}
+
+/* Phone-width locators: "Use my location" full width, then the filters two per row
+   with their labels above, instead of ragged wrapping. */
+@container mmloc (max-width: 480px) {
+	.mm-loc__row--filters {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 10px;
+	}
+
+	.mm-loc__locate {
+		grid-column: 1 / -1;
+		width: 100%;
+	}
+
+	.mm-loc__row--filters > .mm-loc__label:has(> select) {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 4px;
+		min-width: 0;
+		font-size: 13px;
+	}
+
+	.mm-loc__row--filters .mm-loc__select {
+		width: 100%;
+		min-width: 0;
+	}
+
+	.mm-loc__row--filters > .mm-loc__label:not(:has(> select)) {
+		grid-column: 1 / -1;
+	}
+}

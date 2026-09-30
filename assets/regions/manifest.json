@@ -1,0 +1,2416 @@
+{
+	"world": {
+		"label": "World (countries)",
+		"group": "World",
+		"file": "world.json",
+		"regions": 237,
+		"projection": "naturalEarth1"
+	},
+	"continents": {
+		"label": "World (continents)",
+		"group": "World",
+		"file": "continents.json",
+		"regions": 7,
+		"projection": "naturalEarth1"
+	},
+	"us-states": {
+		"label": "United States (states)",
+		"group": "United States",
+		"file": "us-states.json",
+		"regions": 51,
+		"projection": "albersUsa",
+		"iso": "US"
+	},
+	"us-counties-al": {
+		"label": "Alabama (counties)",
+		"group": "US counties",
+		"file": "us-counties-al.json",
+		"regions": 67,
+		"projection": "mercator",
+		"iso": "US-AL"
+	},
+	"us-counties-ak": {
+		"label": "Alaska (counties)",
+		"group": "US counties",
+		"file": "us-counties-ak.json",
+		"regions": 29,
+		"projection": "mercator",
+		"iso": "US-AK"
+	},
+	"us-counties-az": {
+		"label": "Arizona (counties)",
+		"group": "US counties",
+		"file": "us-counties-az.json",
+		"regions": 15,
+		"projection": "mercator",
+		"iso": "US-AZ"
+	},
+	"us-counties-ar": {
+		"label": "Arkansas (counties)",
+		"group": "US counties",
+		"file": "us-counties-ar.json",
+		"regions": 75,
+		"projection": "mercator",
+		"iso": "US-AR"
+	},
+	"us-counties-ca": {
+		"label": "California (counties)",
+		"group": "US counties",
+		"file": "us-counties-ca.json",
+		"regions": 58,
+		"projection": "mercator",
+		"iso": "US-CA"
+	},
+	"us-counties-co": {
+		"label": "Colorado (counties)",
+		"group": "US counties",
+		"file": "us-counties-co.json",
+		"regions": 64,
+		"projection": "mercator",
+		"iso": "US-CO"
+	},
+	"us-counties-ct": {
+		"label": "Connecticut (counties)",
+		"group": "US counties",
+		"file": "us-counties-ct.json",
+		"regions": 8,
+		"projection": "mercator",
+		"iso": "US-CT"
+	},
+	"us-counties-de": {
+		"label": "Delaware (counties)",
+		"group": "US counties",
+		"file": "us-counties-de.json",
+		"regions": 3,
+		"projection": "mercator",
+		"iso": "US-DE"
+	},
+	"us-counties-fl": {
+		"label": "Florida (counties)",
+		"group": "US counties",
+		"file": "us-counties-fl.json",
+		"regions": 67,
+		"projection": "mercator",
+		"iso": "US-FL"
+	},
+	"us-counties-ga": {
+		"label": "Georgia (counties)",
+		"group": "US counties",
+		"file": "us-counties-ga.json",
+		"regions": 159,
+		"projection": "mercator",
+		"iso": "US-GA"
+	},
+	"us-counties-hi": {
+		"label": "Hawaii (counties)",
+		"group": "US counties",
+		"file": "us-counties-hi.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "US-HI"
+	},
+	"us-counties-id": {
+		"label": "Idaho (counties)",
+		"group": "US counties",
+		"file": "us-counties-id.json",
+		"regions": 44,
+		"projection": "mercator",
+		"iso": "US-ID"
+	},
+	"us-counties-il": {
+		"label": "Illinois (counties)",
+		"group": "US counties",
+		"file": "us-counties-il.json",
+		"regions": 102,
+		"projection": "mercator",
+		"iso": "US-IL"
+	},
+	"us-counties-in": {
+		"label": "Indiana (counties)",
+		"group": "US counties",
+		"file": "us-counties-in.json",
+		"regions": 92,
+		"projection": "mercator",
+		"iso": "US-IN"
+	},
+	"us-counties-ia": {
+		"label": "Iowa (counties)",
+		"group": "US counties",
+		"file": "us-counties-ia.json",
+		"regions": 99,
+		"projection": "mercator",
+		"iso": "US-IA"
+	},
+	"us-counties-ks": {
+		"label": "Kansas (counties)",
+		"group": "US counties",
+		"file": "us-counties-ks.json",
+		"regions": 105,
+		"projection": "mercator",
+		"iso": "US-KS"
+	},
+	"us-counties-ky": {
+		"label": "Kentucky (counties)",
+		"group": "US counties",
+		"file": "us-counties-ky.json",
+		"regions": 120,
+		"projection": "mercator",
+		"iso": "US-KY"
+	},
+	"us-counties-la": {
+		"label": "Louisiana (counties)",
+		"group": "US counties",
+		"file": "us-counties-la.json",
+		"regions": 64,
+		"projection": "mercator",
+		"iso": "US-LA"
+	},
+	"us-counties-me": {
+		"label": "Maine (counties)",
+		"group": "US counties",
+		"file": "us-counties-me.json",
+		"regions": 16,
+		"projection": "mercator",
+		"iso": "US-ME"
+	},
+	"us-counties-md": {
+		"label": "Maryland (counties)",
+		"group": "US counties",
+		"file": "us-counties-md.json",
+		"regions": 24,
+		"projection": "mercator",
+		"iso": "US-MD"
+	},
+	"us-counties-ma": {
+		"label": "Massachusetts (counties)",
+		"group": "US counties",
+		"file": "us-counties-ma.json",
+		"regions": 14,
+		"projection": "mercator",
+		"iso": "US-MA"
+	},
+	"us-counties-mi": {
+		"label": "Michigan (counties)",
+		"group": "US counties",
+		"file": "us-counties-mi.json",
+		"regions": 83,
+		"projection": "mercator",
+		"iso": "US-MI"
+	},
+	"us-counties-mn": {
+		"label": "Minnesota (counties)",
+		"group": "US counties",
+		"file": "us-counties-mn.json",
+		"regions": 87,
+		"projection": "mercator",
+		"iso": "US-MN"
+	},
+	"us-counties-ms": {
+		"label": "Mississippi (counties)",
+		"group": "US counties",
+		"file": "us-counties-ms.json",
+		"regions": 82,
+		"projection": "mercator",
+		"iso": "US-MS"
+	},
+	"us-counties-mo": {
+		"label": "Missouri (counties)",
+		"group": "US counties",
+		"file": "us-counties-mo.json",
+		"regions": 115,
+		"projection": "mercator",
+		"iso": "US-MO"
+	},
+	"us-counties-mt": {
+		"label": "Montana (counties)",
+		"group": "US counties",
+		"file": "us-counties-mt.json",
+		"regions": 56,
+		"projection": "mercator",
+		"iso": "US-MT"
+	},
+	"us-counties-ne": {
+		"label": "Nebraska (counties)",
+		"group": "US counties",
+		"file": "us-counties-ne.json",
+		"regions": 93,
+		"projection": "mercator",
+		"iso": "US-NE"
+	},
+	"us-counties-nv": {
+		"label": "Nevada (counties)",
+		"group": "US counties",
+		"file": "us-counties-nv.json",
+		"regions": 17,
+		"projection": "mercator",
+		"iso": "US-NV"
+	},
+	"us-counties-nh": {
+		"label": "New Hampshire (counties)",
+		"group": "US counties",
+		"file": "us-counties-nh.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "US-NH"
+	},
+	"us-counties-nj": {
+		"label": "New Jersey (counties)",
+		"group": "US counties",
+		"file": "us-counties-nj.json",
+		"regions": 21,
+		"projection": "mercator",
+		"iso": "US-NJ"
+	},
+	"us-counties-nm": {
+		"label": "New Mexico (counties)",
+		"group": "US counties",
+		"file": "us-counties-nm.json",
+		"regions": 33,
+		"projection": "mercator",
+		"iso": "US-NM"
+	},
+	"us-counties-ny": {
+		"label": "New York (counties)",
+		"group": "US counties",
+		"file": "us-counties-ny.json",
+		"regions": 62,
+		"projection": "mercator",
+		"iso": "US-NY"
+	},
+	"us-counties-nc": {
+		"label": "North Carolina (counties)",
+		"group": "US counties",
+		"file": "us-counties-nc.json",
+		"regions": 100,
+		"projection": "mercator",
+		"iso": "US-NC"
+	},
+	"us-counties-nd": {
+		"label": "North Dakota (counties)",
+		"group": "US counties",
+		"file": "us-counties-nd.json",
+		"regions": 53,
+		"projection": "mercator",
+		"iso": "US-ND"
+	},
+	"us-counties-oh": {
+		"label": "Ohio (counties)",
+		"group": "US counties",
+		"file": "us-counties-oh.json",
+		"regions": 88,
+		"projection": "mercator",
+		"iso": "US-OH"
+	},
+	"us-counties-ok": {
+		"label": "Oklahoma (counties)",
+		"group": "US counties",
+		"file": "us-counties-ok.json",
+		"regions": 77,
+		"projection": "mercator",
+		"iso": "US-OK"
+	},
+	"us-counties-or": {
+		"label": "Oregon (counties)",
+		"group": "US counties",
+		"file": "us-counties-or.json",
+		"regions": 36,
+		"projection": "mercator",
+		"iso": "US-OR"
+	},
+	"us-counties-pa": {
+		"label": "Pennsylvania (counties)",
+		"group": "US counties",
+		"file": "us-counties-pa.json",
+		"regions": 67,
+		"projection": "mercator",
+		"iso": "US-PA"
+	},
+	"us-counties-ri": {
+		"label": "Rhode Island (counties)",
+		"group": "US counties",
+		"file": "us-counties-ri.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "US-RI"
+	},
+	"us-counties-sc": {
+		"label": "South Carolina (counties)",
+		"group": "US counties",
+		"file": "us-counties-sc.json",
+		"regions": 46,
+		"projection": "mercator",
+		"iso": "US-SC"
+	},
+	"us-counties-sd": {
+		"label": "South Dakota (counties)",
+		"group": "US counties",
+		"file": "us-counties-sd.json",
+		"regions": 66,
+		"projection": "mercator",
+		"iso": "US-SD"
+	},
+	"us-counties-tn": {
+		"label": "Tennessee (counties)",
+		"group": "US counties",
+		"file": "us-counties-tn.json",
+		"regions": 95,
+		"projection": "mercator",
+		"iso": "US-TN"
+	},
+	"us-counties-tx": {
+		"label": "Texas (counties)",
+		"group": "US counties",
+		"file": "us-counties-tx.json",
+		"regions": 254,
+		"projection": "mercator",
+		"iso": "US-TX"
+	},
+	"us-counties-ut": {
+		"label": "Utah (counties)",
+		"group": "US counties",
+		"file": "us-counties-ut.json",
+		"regions": 29,
+		"projection": "mercator",
+		"iso": "US-UT"
+	},
+	"us-counties-vt": {
+		"label": "Vermont (counties)",
+		"group": "US counties",
+		"file": "us-counties-vt.json",
+		"regions": 14,
+		"projection": "mercator",
+		"iso": "US-VT"
+	},
+	"us-counties-va": {
+		"label": "Virginia (counties)",
+		"group": "US counties",
+		"file": "us-counties-va.json",
+		"regions": 132,
+		"projection": "mercator",
+		"iso": "US-VA"
+	},
+	"us-counties-wa": {
+		"label": "Washington (counties)",
+		"group": "US counties",
+		"file": "us-counties-wa.json",
+		"regions": 39,
+		"projection": "mercator",
+		"iso": "US-WA"
+	},
+	"us-counties-wv": {
+		"label": "West Virginia (counties)",
+		"group": "US counties",
+		"file": "us-counties-wv.json",
+		"regions": 55,
+		"projection": "mercator",
+		"iso": "US-WV"
+	},
+	"us-counties-wi": {
+		"label": "Wisconsin (counties)",
+		"group": "US counties",
+		"file": "us-counties-wi.json",
+		"regions": 72,
+		"projection": "mercator",
+		"iso": "US-WI"
+	},
+	"us-counties-wy": {
+		"label": "Wyoming (counties)",
+		"group": "US counties",
+		"file": "us-counties-wy.json",
+		"regions": 23,
+		"projection": "mercator",
+		"iso": "US-WY"
+	},
+	"afghanistan": {
+		"label": "Afghanistan",
+		"group": "Countries",
+		"file": "afghanistan.json",
+		"regions": 32,
+		"projection": "mercator",
+		"iso": "AF"
+	},
+	"aland": {
+		"label": "Åland",
+		"group": "Countries",
+		"file": "aland.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "AX"
+	},
+	"albania": {
+		"label": "Albania",
+		"group": "Countries",
+		"file": "albania.json",
+		"regions": 12,
+		"projection": "mercator",
+		"iso": "AL"
+	},
+	"algeria": {
+		"label": "Algeria",
+		"group": "Countries",
+		"file": "algeria.json",
+		"regions": 48,
+		"projection": "mercator",
+		"iso": "DZ"
+	},
+	"american-samoa": {
+		"label": "American Samoa",
+		"group": "Countries",
+		"file": "american-samoa.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "AS"
+	},
+	"andorra": {
+		"label": "Andorra",
+		"group": "Countries",
+		"file": "andorra.json",
+		"regions": 7,
+		"projection": "mercator",
+		"iso": "AD"
+	},
+	"angola": {
+		"label": "Angola",
+		"group": "Countries",
+		"file": "angola.json",
+		"regions": 18,
+		"projection": "mercator",
+		"iso": "AO"
+	},
+	"antigua-and-barbuda": {
+		"label": "Antigua and Barbuda",
+		"group": "Countries",
+		"file": "antigua-and-barbuda.json",
+		"regions": 8,
+		"projection": "mercator",
+		"iso": "AG"
+	},
+	"argentina": {
+		"label": "Argentina",
+		"group": "Countries",
+		"file": "argentina.json",
+		"regions": 24,
+		"projection": "conicConformal",
+		"iso": "AR"
+	},
+	"armenia": {
+		"label": "Armenia",
+		"group": "Countries",
+		"file": "armenia.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "AM"
+	},
+	"australia": {
+		"label": "Australia",
+		"group": "Countries",
+		"file": "australia.json",
+		"regions": 8,
+		"projection": "conicConformal",
+		"iso": "AU"
+	},
+	"austria": {
+		"label": "Austria",
+		"group": "Countries",
+		"file": "austria.json",
+		"regions": 9,
+		"projection": "mercator",
+		"iso": "AT"
+	},
+	"azerbaijan": {
+		"label": "Azerbaijan",
+		"group": "Countries",
+		"file": "azerbaijan.json",
+		"regions": 75,
+		"projection": "mercator",
+		"iso": "AZ"
+	},
+	"bahamas": {
+		"label": "Bahamas",
+		"group": "Countries",
+		"file": "bahamas.json",
+		"regions": 30,
+		"projection": "mercator",
+		"iso": "BS"
+	},
+	"bahrain": {
+		"label": "Bahrain",
+		"group": "Countries",
+		"file": "bahrain.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "BH"
+	},
+	"bangladesh": {
+		"label": "Bangladesh",
+		"group": "Countries",
+		"file": "bangladesh.json",
+		"regions": 7,
+		"projection": "mercator",
+		"iso": "BD"
+	},
+	"barbados": {
+		"label": "Barbados",
+		"group": "Countries",
+		"file": "barbados.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "BB"
+	},
+	"belarus": {
+		"label": "Belarus",
+		"group": "Countries",
+		"file": "belarus.json",
+		"regions": 7,
+		"projection": "mercator",
+		"iso": "BY"
+	},
+	"belgium": {
+		"label": "Belgium",
+		"group": "Countries",
+		"file": "belgium.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "BE"
+	},
+	"belize": {
+		"label": "Belize",
+		"group": "Countries",
+		"file": "belize.json",
+		"regions": 6,
+		"projection": "mercator",
+		"iso": "BZ"
+	},
+	"benin": {
+		"label": "Benin",
+		"group": "Countries",
+		"file": "benin.json",
+		"regions": 12,
+		"projection": "mercator",
+		"iso": "BJ"
+	},
+	"bermuda": {
+		"label": "Bermuda",
+		"group": "Countries",
+		"file": "bermuda.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "BM"
+	},
+	"bhutan": {
+		"label": "Bhutan",
+		"group": "Countries",
+		"file": "bhutan.json",
+		"regions": 20,
+		"projection": "mercator",
+		"iso": "BT"
+	},
+	"bolivia": {
+		"label": "Bolivia",
+		"group": "Countries",
+		"file": "bolivia.json",
+		"regions": 9,
+		"projection": "mercator",
+		"iso": "BO"
+	},
+	"bosnia-and-herzegovina": {
+		"label": "Bosnia and Herzegovina",
+		"group": "Countries",
+		"file": "bosnia-and-herzegovina.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "BA"
+	},
+	"botswana": {
+		"label": "Botswana",
+		"group": "Countries",
+		"file": "botswana.json",
+		"regions": 15,
+		"projection": "mercator",
+		"iso": "BW"
+	},
+	"brazil": {
+		"label": "Brazil",
+		"group": "Countries",
+		"file": "brazil.json",
+		"regions": 27,
+		"projection": "mercator",
+		"iso": "BR"
+	},
+	"brunei": {
+		"label": "Brunei",
+		"group": "Countries",
+		"file": "brunei.json",
+		"regions": 4,
+		"projection": "mercator",
+		"iso": "BN"
+	},
+	"bulgaria": {
+		"label": "Bulgaria",
+		"group": "Countries",
+		"file": "bulgaria.json",
+		"regions": 28,
+		"projection": "mercator",
+		"iso": "BG"
+	},
+	"burkina-faso": {
+		"label": "Burkina Faso",
+		"group": "Countries",
+		"file": "burkina-faso.json",
+		"regions": 45,
+		"projection": "mercator",
+		"iso": "BF"
+	},
+	"burundi": {
+		"label": "Burundi",
+		"group": "Countries",
+		"file": "burundi.json",
+		"regions": 17,
+		"projection": "mercator",
+		"iso": "BI"
+	},
+	"cabo-verde": {
+		"label": "Cabo Verde",
+		"group": "Countries",
+		"file": "cabo-verde.json",
+		"regions": 22,
+		"projection": "mercator",
+		"iso": "CV"
+	},
+	"cambodia": {
+		"label": "Cambodia",
+		"group": "Countries",
+		"file": "cambodia.json",
+		"regions": 24,
+		"projection": "mercator",
+		"iso": "KH"
+	},
+	"cameroon": {
+		"label": "Cameroon",
+		"group": "Countries",
+		"file": "cameroon.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "CM"
+	},
+	"canada": {
+		"label": "Canada",
+		"group": "Countries",
+		"file": "canada.json",
+		"regions": 13,
+		"projection": "conicConformal",
+		"iso": "CA"
+	},
+	"central-african-republic": {
+		"label": "Central African Republic",
+		"group": "Countries",
+		"file": "central-african-republic.json",
+		"regions": 17,
+		"projection": "mercator",
+		"iso": "CF"
+	},
+	"chad": {
+		"label": "Chad",
+		"group": "Countries",
+		"file": "chad.json",
+		"regions": 22,
+		"projection": "mercator",
+		"iso": "TD"
+	},
+	"chile": {
+		"label": "Chile",
+		"group": "Countries",
+		"file": "chile.json",
+		"regions": 16,
+		"projection": "mercator",
+		"iso": "CL"
+	},
+	"china": {
+		"label": "China",
+		"group": "Countries",
+		"file": "china.json",
+		"regions": 31,
+		"projection": "conicConformal",
+		"iso": "CN"
+	},
+	"colombia": {
+		"label": "Colombia",
+		"group": "Countries",
+		"file": "colombia.json",
+		"regions": 32,
+		"projection": "mercator",
+		"iso": "CO"
+	},
+	"comoros": {
+		"label": "Comoros",
+		"group": "Countries",
+		"file": "comoros.json",
+		"regions": 3,
+		"projection": "mercator",
+		"iso": "KM"
+	},
+	"congo": {
+		"label": "Congo",
+		"group": "Countries",
+		"file": "congo.json",
+		"regions": 12,
+		"projection": "mercator",
+		"iso": "CG"
+	},
+	"cook-islands": {
+		"label": "Cook Islands",
+		"group": "Countries",
+		"file": "cook-islands.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "CK"
+	},
+	"costa-rica": {
+		"label": "Costa Rica",
+		"group": "Countries",
+		"file": "costa-rica.json",
+		"regions": 7,
+		"projection": "mercator",
+		"iso": "CR"
+	},
+	"cote-d-ivoire": {
+		"label": "Côte d'Ivoire",
+		"group": "Countries",
+		"file": "cote-d-ivoire.json",
+		"regions": 19,
+		"projection": "mercator",
+		"iso": "CI"
+	},
+	"croatia": {
+		"label": "Croatia",
+		"group": "Countries",
+		"file": "croatia.json",
+		"regions": 20,
+		"projection": "mercator",
+		"iso": "HR"
+	},
+	"cuba": {
+		"label": "Cuba",
+		"group": "Countries",
+		"file": "cuba.json",
+		"regions": 16,
+		"projection": "mercator",
+		"iso": "CU"
+	},
+	"cyprus": {
+		"label": "Cyprus",
+		"group": "Countries",
+		"file": "cyprus.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "CY"
+	},
+	"czechia": {
+		"label": "Czechia",
+		"group": "Countries",
+		"file": "czechia.json",
+		"regions": 14,
+		"projection": "mercator",
+		"iso": "CZ"
+	},
+	"denmark": {
+		"label": "Denmark",
+		"group": "Countries",
+		"file": "denmark.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "DK"
+	},
+	"djibouti": {
+		"label": "Djibouti",
+		"group": "Countries",
+		"file": "djibouti.json",
+		"regions": 6,
+		"projection": "mercator",
+		"iso": "DJ"
+	},
+	"dominica": {
+		"label": "Dominica",
+		"group": "Countries",
+		"file": "dominica.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "DM"
+	},
+	"dominican-republic": {
+		"label": "Dominican Republic",
+		"group": "Countries",
+		"file": "dominican-republic.json",
+		"regions": 32,
+		"projection": "mercator",
+		"iso": "DO"
+	},
+	"dr-congo": {
+		"label": "DR Congo",
+		"group": "Countries",
+		"file": "dr-congo.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "CD"
+	},
+	"ecuador": {
+		"label": "Ecuador",
+		"group": "Countries",
+		"file": "ecuador.json",
+		"regions": 24,
+		"projection": "mercator",
+		"iso": "EC"
+	},
+	"egypt": {
+		"label": "Egypt",
+		"group": "Countries",
+		"file": "egypt.json",
+		"regions": 27,
+		"projection": "mercator",
+		"iso": "EG"
+	},
+	"el-salvador": {
+		"label": "El Salvador",
+		"group": "Countries",
+		"file": "el-salvador.json",
+		"regions": 14,
+		"projection": "mercator",
+		"iso": "SV"
+	},
+	"equatorial-guinea": {
+		"label": "Equatorial Guinea",
+		"group": "Countries",
+		"file": "equatorial-guinea.json",
+		"regions": 7,
+		"projection": "mercator",
+		"iso": "GQ"
+	},
+	"eritrea": {
+		"label": "Eritrea",
+		"group": "Countries",
+		"file": "eritrea.json",
+		"regions": 6,
+		"projection": "mercator",
+		"iso": "ER"
+	},
+	"estonia": {
+		"label": "Estonia",
+		"group": "Countries",
+		"file": "estonia.json",
+		"regions": 15,
+		"projection": "mercator",
+		"iso": "EE"
+	},
+	"eswatini": {
+		"label": "Eswatini",
+		"group": "Countries",
+		"file": "eswatini.json",
+		"regions": 4,
+		"projection": "mercator",
+		"iso": "SZ"
+	},
+	"ethiopia": {
+		"label": "Ethiopia",
+		"group": "Countries",
+		"file": "ethiopia.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "ET"
+	},
+	"federated-states-of-micronesia": {
+		"label": "Federated States of Micronesia",
+		"group": "Countries",
+		"file": "federated-states-of-micronesia.json",
+		"regions": 4,
+		"projection": "mercator",
+		"iso": "FM"
+	},
+	"fiji": {
+		"label": "Fiji",
+		"group": "Countries",
+		"file": "fiji.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "FJ"
+	},
+	"finland": {
+		"label": "Finland",
+		"group": "Countries",
+		"file": "finland.json",
+		"regions": 18,
+		"projection": "mercator",
+		"iso": "FI"
+	},
+	"france": {
+		"label": "France (regions)",
+		"group": "Countries",
+		"file": "france.json",
+		"regions": 13,
+		"projection": "mercator",
+		"iso": "FR"
+	},
+	"french-polynesia": {
+		"label": "French Polynesia",
+		"group": "Countries",
+		"file": "french-polynesia.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "PF"
+	},
+	"gabon": {
+		"label": "Gabon",
+		"group": "Countries",
+		"file": "gabon.json",
+		"regions": 9,
+		"projection": "mercator",
+		"iso": "GA"
+	},
+	"gambia": {
+		"label": "Gambia",
+		"group": "Countries",
+		"file": "gambia.json",
+		"regions": 6,
+		"projection": "mercator",
+		"iso": "GM"
+	},
+	"georgia": {
+		"label": "Georgia",
+		"group": "Countries",
+		"file": "georgia.json",
+		"regions": 12,
+		"projection": "mercator",
+		"iso": "GE"
+	},
+	"germany": {
+		"label": "Germany",
+		"group": "Countries",
+		"file": "germany.json",
+		"regions": 16,
+		"projection": "mercator",
+		"iso": "DE"
+	},
+	"ghana": {
+		"label": "Ghana",
+		"group": "Countries",
+		"file": "ghana.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "GH"
+	},
+	"greece": {
+		"label": "Greece",
+		"group": "Countries",
+		"file": "greece.json",
+		"regions": 14,
+		"projection": "mercator",
+		"iso": "GR"
+	},
+	"greenland": {
+		"label": "Greenland",
+		"group": "Countries",
+		"file": "greenland.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "GL"
+	},
+	"grenada": {
+		"label": "Grenada",
+		"group": "Countries",
+		"file": "grenada.json",
+		"regions": 7,
+		"projection": "mercator",
+		"iso": "GD"
+	},
+	"guatemala": {
+		"label": "Guatemala",
+		"group": "Countries",
+		"file": "guatemala.json",
+		"regions": 22,
+		"projection": "mercator",
+		"iso": "GT"
+	},
+	"guinea": {
+		"label": "Guinea",
+		"group": "Countries",
+		"file": "guinea.json",
+		"regions": 34,
+		"projection": "mercator",
+		"iso": "GN"
+	},
+	"guinea-bissau": {
+		"label": "Guinea-Bissau",
+		"group": "Countries",
+		"file": "guinea-bissau.json",
+		"regions": 9,
+		"projection": "mercator",
+		"iso": "GW"
+	},
+	"guyana": {
+		"label": "Guyana",
+		"group": "Countries",
+		"file": "guyana.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "GY"
+	},
+	"haiti": {
+		"label": "Haiti",
+		"group": "Countries",
+		"file": "haiti.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "HT"
+	},
+	"honduras": {
+		"label": "Honduras",
+		"group": "Countries",
+		"file": "honduras.json",
+		"regions": 18,
+		"projection": "mercator",
+		"iso": "HN"
+	},
+	"hong-kong": {
+		"label": "Hong Kong",
+		"group": "Countries",
+		"file": "hong-kong.json",
+		"regions": 18,
+		"projection": "mercator",
+		"iso": "HK"
+	},
+	"hungary": {
+		"label": "Hungary",
+		"group": "Countries",
+		"file": "hungary.json",
+		"regions": 43,
+		"projection": "mercator",
+		"iso": "HU"
+	},
+	"iceland": {
+		"label": "Iceland",
+		"group": "Countries",
+		"file": "iceland.json",
+		"regions": 9,
+		"projection": "mercator",
+		"iso": "IS"
+	},
+	"india": {
+		"label": "India",
+		"group": "Countries",
+		"file": "india.json",
+		"regions": 36,
+		"projection": "conicConformal",
+		"iso": "IN"
+	},
+	"indonesia": {
+		"label": "Indonesia",
+		"group": "Countries",
+		"file": "indonesia.json",
+		"regions": 33,
+		"projection": "mercator",
+		"iso": "ID"
+	},
+	"iran": {
+		"label": "Iran",
+		"group": "Countries",
+		"file": "iran.json",
+		"regions": 30,
+		"projection": "mercator",
+		"iso": "IR"
+	},
+	"iraq": {
+		"label": "Iraq",
+		"group": "Countries",
+		"file": "iraq.json",
+		"regions": 18,
+		"projection": "mercator",
+		"iso": "IQ"
+	},
+	"ireland": {
+		"label": "Ireland",
+		"group": "Countries",
+		"file": "ireland.json",
+		"regions": 26,
+		"projection": "mercator",
+		"iso": "IE"
+	},
+	"israel": {
+		"label": "Israel",
+		"group": "Countries",
+		"file": "israel.json",
+		"regions": 6,
+		"projection": "mercator",
+		"iso": "IL"
+	},
+	"italy": {
+		"label": "Italy (regions)",
+		"group": "Countries",
+		"file": "italy.json",
+		"regions": 20,
+		"projection": "mercator",
+		"iso": "IT"
+	},
+	"jamaica": {
+		"label": "Jamaica",
+		"group": "Countries",
+		"file": "jamaica.json",
+		"regions": 14,
+		"projection": "mercator",
+		"iso": "JM"
+	},
+	"japan": {
+		"label": "Japan",
+		"group": "Countries",
+		"file": "japan.json",
+		"regions": 47,
+		"projection": "mercator",
+		"iso": "JP"
+	},
+	"jordan": {
+		"label": "Jordan",
+		"group": "Countries",
+		"file": "jordan.json",
+		"regions": 12,
+		"projection": "mercator",
+		"iso": "JO"
+	},
+	"kazakhstan": {
+		"label": "Kazakhstan",
+		"group": "Countries",
+		"file": "kazakhstan.json",
+		"regions": 15,
+		"projection": "mercator",
+		"iso": "KZ"
+	},
+	"kenya": {
+		"label": "Kenya",
+		"group": "Countries",
+		"file": "kenya.json",
+		"regions": 8,
+		"projection": "mercator",
+		"iso": "KE"
+	},
+	"kosovo": {
+		"label": "Kosovo",
+		"group": "Countries",
+		"file": "kosovo.json",
+		"regions": 30,
+		"projection": "mercator",
+		"iso": "XK"
+	},
+	"kuwait": {
+		"label": "Kuwait",
+		"group": "Countries",
+		"file": "kuwait.json",
+		"regions": 6,
+		"projection": "mercator",
+		"iso": "KW"
+	},
+	"kyrgyzstan": {
+		"label": "Kyrgyzstan",
+		"group": "Countries",
+		"file": "kyrgyzstan.json",
+		"regions": 8,
+		"projection": "mercator",
+		"iso": "KG"
+	},
+	"laos": {
+		"label": "Laos",
+		"group": "Countries",
+		"file": "laos.json",
+		"regions": 16,
+		"projection": "mercator",
+		"iso": "LA"
+	},
+	"latvia": {
+		"label": "Latvia",
+		"group": "Countries",
+		"file": "latvia.json",
+		"regions": 114,
+		"projection": "mercator",
+		"iso": "LV"
+	},
+	"lebanon": {
+		"label": "Lebanon",
+		"group": "Countries",
+		"file": "lebanon.json",
+		"regions": 6,
+		"projection": "mercator",
+		"iso": "LB"
+	},
+	"lesotho": {
+		"label": "Lesotho",
+		"group": "Countries",
+		"file": "lesotho.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "LS"
+	},
+	"liberia": {
+		"label": "Liberia",
+		"group": "Countries",
+		"file": "liberia.json",
+		"regions": 15,
+		"projection": "mercator",
+		"iso": "LR"
+	},
+	"libya": {
+		"label": "Libya",
+		"group": "Countries",
+		"file": "libya.json",
+		"regions": 22,
+		"projection": "mercator",
+		"iso": "LY"
+	},
+	"liechtenstein": {
+		"label": "Liechtenstein",
+		"group": "Countries",
+		"file": "liechtenstein.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "LI"
+	},
+	"lithuania": {
+		"label": "Lithuania",
+		"group": "Countries",
+		"file": "lithuania.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "LT"
+	},
+	"luxembourg": {
+		"label": "Luxembourg",
+		"group": "Countries",
+		"file": "luxembourg.json",
+		"regions": 3,
+		"projection": "mercator",
+		"iso": "LU"
+	},
+	"madagascar": {
+		"label": "Madagascar",
+		"group": "Countries",
+		"file": "madagascar.json",
+		"regions": 6,
+		"projection": "mercator",
+		"iso": "MG"
+	},
+	"malawi": {
+		"label": "Malawi",
+		"group": "Countries",
+		"file": "malawi.json",
+		"regions": 27,
+		"projection": "mercator",
+		"iso": "MW"
+	},
+	"malaysia": {
+		"label": "Malaysia",
+		"group": "Countries",
+		"file": "malaysia.json",
+		"regions": 16,
+		"projection": "mercator",
+		"iso": "MY"
+	},
+	"maldives": {
+		"label": "Maldives",
+		"group": "Countries",
+		"file": "maldives.json",
+		"regions": 20,
+		"projection": "mercator",
+		"iso": "MV"
+	},
+	"mali": {
+		"label": "Mali",
+		"group": "Countries",
+		"file": "mali.json",
+		"regions": 9,
+		"projection": "mercator",
+		"iso": "ML"
+	},
+	"malta": {
+		"label": "Malta",
+		"group": "Countries",
+		"file": "malta.json",
+		"regions": 68,
+		"projection": "mercator",
+		"iso": "MT"
+	},
+	"marshall-islands": {
+		"label": "Marshall Islands",
+		"group": "Countries",
+		"file": "marshall-islands.json",
+		"regions": 2,
+		"projection": "mercator",
+		"iso": "MH"
+	},
+	"mauritania": {
+		"label": "Mauritania",
+		"group": "Countries",
+		"file": "mauritania.json",
+		"regions": 13,
+		"projection": "mercator",
+		"iso": "MR"
+	},
+	"mauritius": {
+		"label": "Mauritius",
+		"group": "Countries",
+		"file": "mauritius.json",
+		"regions": 14,
+		"projection": "mercator",
+		"iso": "MU"
+	},
+	"mexico": {
+		"label": "Mexico",
+		"group": "Countries",
+		"file": "mexico.json",
+		"regions": 32,
+		"projection": "mercator",
+		"iso": "MX"
+	},
+	"moldova": {
+		"label": "Moldova",
+		"group": "Countries",
+		"file": "moldova.json",
+		"regions": 38,
+		"projection": "mercator",
+		"iso": "MD"
+	},
+	"mongolia": {
+		"label": "Mongolia",
+		"group": "Countries",
+		"file": "mongolia.json",
+		"regions": 22,
+		"projection": "mercator",
+		"iso": "MN"
+	},
+	"montenegro": {
+		"label": "Montenegro",
+		"group": "Countries",
+		"file": "montenegro.json",
+		"regions": 21,
+		"projection": "mercator",
+		"iso": "ME"
+	},
+	"montserrat": {
+		"label": "Montserrat",
+		"group": "Countries",
+		"file": "montserrat.json",
+		"regions": 3,
+		"projection": "mercator",
+		"iso": "MS"
+	},
+	"morocco": {
+		"label": "Morocco",
+		"group": "Countries",
+		"file": "morocco.json",
+		"regions": 16,
+		"projection": "mercator",
+		"iso": "MA"
+	},
+	"mozambique": {
+		"label": "Mozambique",
+		"group": "Countries",
+		"file": "mozambique.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "MZ"
+	},
+	"myanmar": {
+		"label": "Myanmar",
+		"group": "Countries",
+		"file": "myanmar.json",
+		"regions": 14,
+		"projection": "mercator",
+		"iso": "MM"
+	},
+	"namibia": {
+		"label": "Namibia",
+		"group": "Countries",
+		"file": "namibia.json",
+		"regions": 13,
+		"projection": "mercator",
+		"iso": "NA"
+	},
+	"nauru": {
+		"label": "Nauru",
+		"group": "Countries",
+		"file": "nauru.json",
+		"regions": 14,
+		"projection": "mercator",
+		"iso": "NR"
+	},
+	"nepal": {
+		"label": "Nepal (provinces)",
+		"group": "Countries",
+		"file": "nepal.json",
+		"regions": 7,
+		"projection": "mercator",
+		"iso": "NP"
+	},
+	"netherlands": {
+		"label": "Netherlands",
+		"group": "Countries",
+		"file": "netherlands.json",
+		"regions": 12,
+		"projection": "mercator",
+		"iso": "NL"
+	},
+	"new-caledonia": {
+		"label": "New Caledonia",
+		"group": "Countries",
+		"file": "new-caledonia.json",
+		"regions": 3,
+		"projection": "mercator",
+		"iso": "NC"
+	},
+	"new-zealand": {
+		"label": "New Zealand",
+		"group": "Countries",
+		"file": "new-zealand.json",
+		"regions": 17,
+		"projection": "mercator",
+		"iso": "NZ"
+	},
+	"nicaragua": {
+		"label": "Nicaragua",
+		"group": "Countries",
+		"file": "nicaragua.json",
+		"regions": 17,
+		"projection": "mercator",
+		"iso": "NI"
+	},
+	"niger": {
+		"label": "Niger",
+		"group": "Countries",
+		"file": "niger.json",
+		"regions": 8,
+		"projection": "mercator",
+		"iso": "NE"
+	},
+	"nigeria": {
+		"label": "Nigeria",
+		"group": "Countries",
+		"file": "nigeria.json",
+		"regions": 37,
+		"projection": "mercator",
+		"iso": "NG"
+	},
+	"north-korea": {
+		"label": "North Korea",
+		"group": "Countries",
+		"file": "north-korea.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "KP"
+	},
+	"north-macedonia": {
+		"label": "North Macedonia",
+		"group": "Countries",
+		"file": "north-macedonia.json",
+		"regions": 84,
+		"projection": "mercator",
+		"iso": "MK"
+	},
+	"northern-mariana-islands": {
+		"label": "Northern Mariana Islands",
+		"group": "Countries",
+		"file": "northern-mariana-islands.json",
+		"regions": 4,
+		"projection": "mercator",
+		"iso": "MP"
+	},
+	"norway": {
+		"label": "Norway",
+		"group": "Countries",
+		"file": "norway.json",
+		"regions": 20,
+		"projection": "mercator",
+		"iso": "NO"
+	},
+	"oman": {
+		"label": "Oman",
+		"group": "Countries",
+		"file": "oman.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "OM"
+	},
+	"pakistan": {
+		"label": "Pakistan",
+		"group": "Countries",
+		"file": "pakistan.json",
+		"regions": 7,
+		"projection": "mercator",
+		"iso": "PK"
+	},
+	"palau": {
+		"label": "Palau",
+		"group": "Countries",
+		"file": "palau.json",
+		"regions": 16,
+		"projection": "mercator",
+		"iso": "PW"
+	},
+	"palestine": {
+		"label": "Palestine",
+		"group": "Countries",
+		"file": "palestine.json",
+		"regions": 2,
+		"projection": "mercator",
+		"iso": "PS"
+	},
+	"panama": {
+		"label": "Panama",
+		"group": "Countries",
+		"file": "panama.json",
+		"regions": 12,
+		"projection": "mercator",
+		"iso": "PA"
+	},
+	"papua-new-guinea": {
+		"label": "Papua New Guinea",
+		"group": "Countries",
+		"file": "papua-new-guinea.json",
+		"regions": 20,
+		"projection": "mercator",
+		"iso": "PG"
+	},
+	"paraguay": {
+		"label": "Paraguay",
+		"group": "Countries",
+		"file": "paraguay.json",
+		"regions": 18,
+		"projection": "mercator",
+		"iso": "PY"
+	},
+	"peru": {
+		"label": "Peru",
+		"group": "Countries",
+		"file": "peru.json",
+		"regions": 25,
+		"projection": "mercator",
+		"iso": "PE"
+	},
+	"philippines": {
+		"label": "Philippines (regions)",
+		"group": "Countries",
+		"file": "philippines.json",
+		"regions": 17,
+		"projection": "mercator",
+		"iso": "PH"
+	},
+	"poland": {
+		"label": "Poland",
+		"group": "Countries",
+		"file": "poland.json",
+		"regions": 16,
+		"projection": "mercator",
+		"iso": "PL"
+	},
+	"portugal": {
+		"label": "Portugal",
+		"group": "Countries",
+		"file": "portugal.json",
+		"regions": 18,
+		"projection": "mercator",
+		"iso": "PT"
+	},
+	"qatar": {
+		"label": "Qatar",
+		"group": "Countries",
+		"file": "qatar.json",
+		"regions": 7,
+		"projection": "mercator",
+		"iso": "QA"
+	},
+	"romania": {
+		"label": "Romania",
+		"group": "Countries",
+		"file": "romania.json",
+		"regions": 42,
+		"projection": "mercator",
+		"iso": "RO"
+	},
+	"russia": {
+		"label": "Russia",
+		"group": "Countries",
+		"file": "russia.json",
+		"regions": 85,
+		"projection": "mercator",
+		"iso": "RU"
+	},
+	"rwanda": {
+		"label": "Rwanda",
+		"group": "Countries",
+		"file": "rwanda.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "RW"
+	},
+	"saint-helena": {
+		"label": "Saint Helena",
+		"group": "Countries",
+		"file": "saint-helena.json",
+		"regions": 3,
+		"projection": "mercator",
+		"iso": "SH"
+	},
+	"saint-kitts-and-nevis": {
+		"label": "Saint Kitts and Nevis",
+		"group": "Countries",
+		"file": "saint-kitts-and-nevis.json",
+		"regions": 14,
+		"projection": "mercator",
+		"iso": "KN"
+	},
+	"saint-lucia": {
+		"label": "Saint Lucia",
+		"group": "Countries",
+		"file": "saint-lucia.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "LC"
+	},
+	"saint-pierre-and-miquelon": {
+		"label": "Saint Pierre and Miquelon",
+		"group": "Countries",
+		"file": "saint-pierre-and-miquelon.json",
+		"regions": 2,
+		"projection": "mercator",
+		"iso": "PM"
+	},
+	"saint-vincent-and-the-grenadines": {
+		"label": "Saint Vincent and the Grenadines",
+		"group": "Countries",
+		"file": "saint-vincent-and-the-grenadines.json",
+		"regions": 6,
+		"projection": "mercator",
+		"iso": "VC"
+	},
+	"samoa": {
+		"label": "Samoa",
+		"group": "Countries",
+		"file": "samoa.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "WS"
+	},
+	"san-marino": {
+		"label": "San Marino",
+		"group": "Countries",
+		"file": "san-marino.json",
+		"regions": 9,
+		"projection": "mercator",
+		"iso": "SM"
+	},
+	"sao-tome-and-principe": {
+		"label": "São Tomé and Príncipe",
+		"group": "Countries",
+		"file": "sao-tome-and-principe.json",
+		"regions": 2,
+		"projection": "mercator",
+		"iso": "ST"
+	},
+	"saudi-arabia": {
+		"label": "Saudi Arabia",
+		"group": "Countries",
+		"file": "saudi-arabia.json",
+		"regions": 13,
+		"projection": "mercator",
+		"iso": "SA"
+	},
+	"senegal": {
+		"label": "Senegal",
+		"group": "Countries",
+		"file": "senegal.json",
+		"regions": 14,
+		"projection": "mercator",
+		"iso": "SN"
+	},
+	"serbia": {
+		"label": "Serbia",
+		"group": "Countries",
+		"file": "serbia.json",
+		"regions": 25,
+		"projection": "mercator",
+		"iso": "RS"
+	},
+	"seychelles": {
+		"label": "Seychelles",
+		"group": "Countries",
+		"file": "seychelles.json",
+		"regions": 26,
+		"projection": "mercator",
+		"iso": "SC"
+	},
+	"sierra-leone": {
+		"label": "Sierra Leone",
+		"group": "Countries",
+		"file": "sierra-leone.json",
+		"regions": 4,
+		"projection": "mercator",
+		"iso": "SL"
+	},
+	"singapore": {
+		"label": "Singapore",
+		"group": "Countries",
+		"file": "singapore.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "SG"
+	},
+	"slovakia": {
+		"label": "Slovakia",
+		"group": "Countries",
+		"file": "slovakia.json",
+		"regions": 8,
+		"projection": "mercator",
+		"iso": "SK"
+	},
+	"slovenia": {
+		"label": "Slovenia",
+		"group": "Countries",
+		"file": "slovenia.json",
+		"regions": 192,
+		"projection": "mercator",
+		"iso": "SI"
+	},
+	"solomon-islands": {
+		"label": "Solomon Islands",
+		"group": "Countries",
+		"file": "solomon-islands.json",
+		"regions": 9,
+		"projection": "mercator",
+		"iso": "SB"
+	},
+	"somalia": {
+		"label": "Somalia",
+		"group": "Countries",
+		"file": "somalia.json",
+		"regions": 13,
+		"projection": "mercator",
+		"iso": "SO"
+	},
+	"south-africa": {
+		"label": "South Africa",
+		"group": "Countries",
+		"file": "south-africa.json",
+		"regions": 9,
+		"projection": "mercator",
+		"iso": "ZA"
+	},
+	"south-korea": {
+		"label": "South Korea",
+		"group": "Countries",
+		"file": "south-korea.json",
+		"regions": 17,
+		"projection": "mercator",
+		"iso": "KR"
+	},
+	"south-sudan": {
+		"label": "South Sudan",
+		"group": "Countries",
+		"file": "south-sudan.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "SS"
+	},
+	"spain": {
+		"label": "Spain (autonomous communities)",
+		"group": "Countries",
+		"file": "spain.json",
+		"regions": 19,
+		"projection": "mercator",
+		"iso": "ES"
+	},
+	"sri-lanka": {
+		"label": "Sri Lanka",
+		"group": "Countries",
+		"file": "sri-lanka.json",
+		"regions": 25,
+		"projection": "mercator",
+		"iso": "LK"
+	},
+	"sudan": {
+		"label": "Sudan",
+		"group": "Countries",
+		"file": "sudan.json",
+		"regions": 16,
+		"projection": "mercator",
+		"iso": "SD"
+	},
+	"suriname": {
+		"label": "Suriname",
+		"group": "Countries",
+		"file": "suriname.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "SR"
+	},
+	"sweden": {
+		"label": "Sweden",
+		"group": "Countries",
+		"file": "sweden.json",
+		"regions": 21,
+		"projection": "mercator",
+		"iso": "SE"
+	},
+	"switzerland": {
+		"label": "Switzerland",
+		"group": "Countries",
+		"file": "switzerland.json",
+		"regions": 26,
+		"projection": "mercator",
+		"iso": "CH"
+	},
+	"syria": {
+		"label": "Syria",
+		"group": "Countries",
+		"file": "syria.json",
+		"regions": 15,
+		"projection": "mercator",
+		"iso": "SY"
+	},
+	"taiwan": {
+		"label": "Taiwan",
+		"group": "Countries",
+		"file": "taiwan.json",
+		"regions": 21,
+		"projection": "mercator",
+		"iso": "TW"
+	},
+	"tajikistan": {
+		"label": "Tajikistan",
+		"group": "Countries",
+		"file": "tajikistan.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "TJ"
+	},
+	"tanzania": {
+		"label": "Tanzania",
+		"group": "Countries",
+		"file": "tanzania.json",
+		"regions": 30,
+		"projection": "mercator",
+		"iso": "TZ"
+	},
+	"thailand": {
+		"label": "Thailand",
+		"group": "Countries",
+		"file": "thailand.json",
+		"regions": 77,
+		"projection": "mercator",
+		"iso": "TH"
+	},
+	"timor-leste": {
+		"label": "Timor-Leste",
+		"group": "Countries",
+		"file": "timor-leste.json",
+		"regions": 13,
+		"projection": "mercator",
+		"iso": "TL"
+	},
+	"togo": {
+		"label": "Togo",
+		"group": "Countries",
+		"file": "togo.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "TG"
+	},
+	"tonga": {
+		"label": "Tonga",
+		"group": "Countries",
+		"file": "tonga.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "TO"
+	},
+	"trinidad-and-tobago": {
+		"label": "Trinidad and Tobago",
+		"group": "Countries",
+		"file": "trinidad-and-tobago.json",
+		"regions": 16,
+		"projection": "mercator",
+		"iso": "TT"
+	},
+	"tunisia": {
+		"label": "Tunisia",
+		"group": "Countries",
+		"file": "tunisia.json",
+		"regions": 23,
+		"projection": "mercator",
+		"iso": "TN"
+	},
+	"turkey": {
+		"label": "Türkiye",
+		"group": "Countries",
+		"file": "turkey.json",
+		"regions": 81,
+		"projection": "mercator",
+		"iso": "TR"
+	},
+	"turkmenistan": {
+		"label": "Turkmenistan",
+		"group": "Countries",
+		"file": "turkmenistan.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "TM"
+	},
+	"turks-and-caicos-islands": {
+		"label": "Turks and Caicos Islands",
+		"group": "Countries",
+		"file": "turks-and-caicos-islands.json",
+		"regions": 6,
+		"projection": "mercator",
+		"iso": "TC"
+	},
+	"uganda": {
+		"label": "Uganda",
+		"group": "Countries",
+		"file": "uganda.json",
+		"regions": 111,
+		"projection": "mercator",
+		"iso": "UG"
+	},
+	"ukraine": {
+		"label": "Ukraine",
+		"group": "Countries",
+		"file": "ukraine.json",
+		"regions": 25,
+		"projection": "mercator",
+		"iso": "UA"
+	},
+	"united-arab-emirates": {
+		"label": "United Arab Emirates",
+		"group": "Countries",
+		"file": "united-arab-emirates.json",
+		"regions": 9,
+		"projection": "mercator",
+		"iso": "AE"
+	},
+	"united-kingdom": {
+		"label": "United Kingdom (nations)",
+		"group": "Countries",
+		"file": "united-kingdom.json",
+		"regions": 4,
+		"projection": "mercator",
+		"iso": "GB"
+	},
+	"united-states-virgin-islands": {
+		"label": "United States Virgin Islands",
+		"group": "Countries",
+		"file": "united-states-virgin-islands.json",
+		"regions": 3,
+		"projection": "mercator",
+		"iso": "VI"
+	},
+	"uruguay": {
+		"label": "Uruguay",
+		"group": "Countries",
+		"file": "uruguay.json",
+		"regions": 19,
+		"projection": "mercator",
+		"iso": "UY"
+	},
+	"uzbekistan": {
+		"label": "Uzbekistan",
+		"group": "Countries",
+		"file": "uzbekistan.json",
+		"regions": 14,
+		"projection": "mercator",
+		"iso": "UZ"
+	},
+	"vanuatu": {
+		"label": "Vanuatu",
+		"group": "Countries",
+		"file": "vanuatu.json",
+		"regions": 6,
+		"projection": "mercator",
+		"iso": "VU"
+	},
+	"venezuela": {
+		"label": "Venezuela",
+		"group": "Countries",
+		"file": "venezuela.json",
+		"regions": 25,
+		"projection": "mercator",
+		"iso": "VE"
+	},
+	"vietnam": {
+		"label": "Vietnam",
+		"group": "Countries",
+		"file": "vietnam.json",
+		"regions": 63,
+		"projection": "mercator",
+		"iso": "VN"
+	},
+	"wallis-and-futuna": {
+		"label": "Wallis and Futuna",
+		"group": "Countries",
+		"file": "wallis-and-futuna.json",
+		"regions": 3,
+		"projection": "mercator",
+		"iso": "WF"
+	},
+	"yemen": {
+		"label": "Yemen",
+		"group": "Countries",
+		"file": "yemen.json",
+		"regions": 21,
+		"projection": "mercator",
+		"iso": "YE"
+	},
+	"zambia": {
+		"label": "Zambia",
+		"group": "Countries",
+		"file": "zambia.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "ZM"
+	},
+	"zimbabwe": {
+		"label": "Zimbabwe",
+		"group": "Countries",
+		"file": "zimbabwe.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "ZW"
+	},
+	"australia-lgas": {
+		"label": "Australia (local government areas)",
+		"group": "Detailed maps",
+		"file": "australia-lgas.json",
+		"regions": 545,
+		"projection": "conicConformal",
+		"iso": "AU"
+	},
+	"canada-economic-regions": {
+		"label": "Canada (economic regions)",
+		"group": "Detailed maps",
+		"file": "canada-economic-regions.json",
+		"regions": 76,
+		"projection": "conicConformal",
+		"iso": "CA"
+	},
+	"france-departments": {
+		"label": "France (departments)",
+		"group": "Detailed maps",
+		"file": "france-departments.json",
+		"regions": 96,
+		"projection": "mercator",
+		"iso": "FR"
+	},
+	"germany-districts": {
+		"label": "Germany (districts)",
+		"group": "Detailed maps",
+		"file": "germany-districts.json",
+		"regions": 428,
+		"projection": "mercator",
+		"iso": "DE"
+	},
+	"india-districts": {
+		"label": "India (districts)",
+		"group": "Detailed maps",
+		"file": "india-districts.json",
+		"regions": 735,
+		"projection": "conicConformal",
+		"iso": "IN"
+	},
+	"italy-provinces": {
+		"label": "Italy (provinces)",
+		"group": "Detailed maps",
+		"file": "italy-provinces.json",
+		"regions": 110,
+		"projection": "mercator",
+		"iso": "IT"
+	},
+	"new-zealand-districts": {
+		"label": "New Zealand (districts)",
+		"group": "Detailed maps",
+		"file": "new-zealand-districts.json",
+		"regions": 88,
+		"projection": "mercator",
+		"iso": "NZ"
+	},
+	"philippines-provinces": {
+		"label": "Philippines (provinces)",
+		"group": "Detailed maps",
+		"file": "philippines-provinces.json",
+		"regions": 83,
+		"projection": "mercator",
+		"iso": "PH"
+	},
+	"spain-provinces": {
+		"label": "Spain (provinces)",
+		"group": "Detailed maps",
+		"file": "spain-provinces.json",
+		"regions": 52,
+		"projection": "mercator",
+		"iso": "ES"
+	},
+	"united-kingdom-districts": {
+		"label": "United Kingdom (local authorities)",
+		"group": "Detailed maps",
+		"file": "united-kingdom-districts.json",
+		"regions": 216,
+		"projection": "mercator",
+		"iso": "GB"
+	},
+	"mexico-municipalities-agu": {
+		"label": "Aguascalientes (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-agu.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "MX-AGU"
+	},
+	"mexico-municipalities-bcn": {
+		"label": "Baja California (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-bcn.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "MX-BCN"
+	},
+	"mexico-municipalities-bcs": {
+		"label": "Baja California Sur (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-bcs.json",
+		"regions": 5,
+		"projection": "mercator",
+		"iso": "MX-BCS"
+	},
+	"mexico-municipalities-cam": {
+		"label": "Campeche (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-cam.json",
+		"regions": 11,
+		"projection": "mercator",
+		"iso": "MX-CAM"
+	},
+	"mexico-municipalities-chp": {
+		"label": "Chiapas (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-chp.json",
+		"regions": 118,
+		"projection": "mercator",
+		"iso": "MX-CHP"
+	},
+	"mexico-municipalities-chh": {
+		"label": "Chihuahua (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-chh.json",
+		"regions": 67,
+		"projection": "mercator",
+		"iso": "MX-CHH"
+	},
+	"mexico-municipalities-coa": {
+		"label": "Coahuila (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-coa.json",
+		"regions": 38,
+		"projection": "mercator",
+		"iso": "MX-COA"
+	},
+	"mexico-municipalities-col": {
+		"label": "Colima (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-col.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "MX-COL"
+	},
+	"mexico-municipalities-dur": {
+		"label": "Durango (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-dur.json",
+		"regions": 39,
+		"projection": "mercator",
+		"iso": "MX-DUR"
+	},
+	"mexico-municipalities-gua": {
+		"label": "Guanajuato (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-gua.json",
+		"regions": 46,
+		"projection": "mercator",
+		"iso": "MX-GUA"
+	},
+	"mexico-municipalities-gro": {
+		"label": "Guerrero (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-gro.json",
+		"regions": 86,
+		"projection": "mercator",
+		"iso": "MX-GRO"
+	},
+	"mexico-municipalities-hid": {
+		"label": "Hidalgo (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-hid.json",
+		"regions": 84,
+		"projection": "mercator",
+		"iso": "MX-HID"
+	},
+	"mexico-municipalities-jal": {
+		"label": "Jalisco (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-jal.json",
+		"regions": 126,
+		"projection": "mercator",
+		"iso": "MX-JAL"
+	},
+	"mexico-municipalities-cmx": {
+		"label": "Mexico City (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-cmx.json",
+		"regions": 14,
+		"projection": "mercator",
+		"iso": "MX-CMX"
+	},
+	"mexico-municipalities-mic": {
+		"label": "Michoacán (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-mic.json",
+		"regions": 113,
+		"projection": "mercator",
+		"iso": "MX-MIC"
+	},
+	"mexico-municipalities-mor": {
+		"label": "Morelos (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-mor.json",
+		"regions": 35,
+		"projection": "mercator",
+		"iso": "MX-MOR"
+	},
+	"mexico-municipalities-nay": {
+		"label": "Nayarit (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-nay.json",
+		"regions": 19,
+		"projection": "mercator",
+		"iso": "MX-NAY"
+	},
+	"mexico-municipalities-nle": {
+		"label": "Nuevo León (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-nle.json",
+		"regions": 51,
+		"projection": "mercator",
+		"iso": "MX-NLE"
+	},
+	"mexico-municipalities-oax": {
+		"label": "Oaxaca (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-oax.json",
+		"regions": 559,
+		"projection": "mercator",
+		"iso": "MX-OAX"
+	},
+	"mexico-municipalities-pue": {
+		"label": "Puebla (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-pue.json",
+		"regions": 223,
+		"projection": "mercator",
+		"iso": "MX-PUE"
+	},
+	"mexico-municipalities-que": {
+		"label": "Querétaro (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-que.json",
+		"regions": 18,
+		"projection": "mercator",
+		"iso": "MX-QUE"
+	},
+	"mexico-municipalities-roo": {
+		"label": "Quintana Roo (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-roo.json",
+		"regions": 10,
+		"projection": "mercator",
+		"iso": "MX-ROO"
+	},
+	"mexico-municipalities-slp": {
+		"label": "San Luis Potosí (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-slp.json",
+		"regions": 58,
+		"projection": "mercator",
+		"iso": "MX-SLP"
+	},
+	"mexico-municipalities-sin": {
+		"label": "Sinaloa (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-sin.json",
+		"regions": 18,
+		"projection": "mercator",
+		"iso": "MX-SIN"
+	},
+	"mexico-municipalities-son": {
+		"label": "Sonora (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-son.json",
+		"regions": 72,
+		"projection": "mercator",
+		"iso": "MX-SON"
+	},
+	"mexico-municipalities-mex": {
+		"label": "State of Mexico (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-mex.json",
+		"regions": 127,
+		"projection": "mercator",
+		"iso": "MX-MEX"
+	},
+	"mexico-municipalities-tab": {
+		"label": "Tabasco (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-tab.json",
+		"regions": 17,
+		"projection": "mercator",
+		"iso": "MX-TAB"
+	},
+	"mexico-municipalities-tam": {
+		"label": "Tamaulipas (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-tam.json",
+		"regions": 43,
+		"projection": "mercator",
+		"iso": "MX-TAM"
+	},
+	"mexico-municipalities-tla": {
+		"label": "Tlaxcala (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-tla.json",
+		"regions": 59,
+		"projection": "mercator",
+		"iso": "MX-TLA"
+	},
+	"mexico-municipalities-ver": {
+		"label": "Veracruz (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-ver.json",
+		"regions": 211,
+		"projection": "mercator",
+		"iso": "MX-VER"
+	},
+	"mexico-municipalities-yuc": {
+		"label": "Yucatán (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-yuc.json",
+		"regions": 106,
+		"projection": "mercator",
+		"iso": "MX-YUC"
+	},
+	"mexico-municipalities-zac": {
+		"label": "Zacatecas (municipalities)",
+		"group": "Mexico municipalities",
+		"file": "mexico-municipalities-zac.json",
+		"regions": 58,
+		"projection": "mercator",
+		"iso": "MX-ZAC"
+	}
+}

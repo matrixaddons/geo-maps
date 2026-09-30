@@ -1,0 +1,155 @@
+.mm-loc {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 20px;
+
+	@media (max-width: 1100px) {
+		grid-template-columns: 1fr;
+	}
+}
+
+.mm-field {
+	margin: 0 0 10px;
+
+	label {
+		display: block;
+		margin-bottom: 4px;
+		font-weight: 600;
+	}
+
+	input[type="text"],
+	input[type="tel"],
+	input[type="email"],
+	input[type="url"],
+	input[type="date"],
+	select {
+		width: 100%;
+		min-height: 40px;
+		padding: 6px 12px;
+		border: 1px solid #cbd5e1;
+		border-radius: 8px;
+		color: #0f172a;
+		font-size: 14px;
+
+		&:focus {
+			border-color: #2563eb;
+			box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+		}
+	}
+
+	label {
+		color: #0f172a;
+		font-size: 13px;
+	}
+}
+
+.mm-hours-edit input[type="time"],
+.mm-details-edit input,
+#mm-special input {
+	min-height: 36px;
+	border: 1px solid #cbd5e1;
+	border-radius: 8px;
+}
+
+.mm-loc-inline {
+	display: inline-flex !important;
+	align-items: center;
+	gap: 6px;
+	margin-left: 8px;
+	font-weight: 400 !important;
+}
+
+.mm-loc__coords {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+}
+
+.mm-loc__geocode {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.mm-loc__canvas {
+	width: 100%;
+	height: 420px;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+}
+
+.mm-hours-edit {
+	th {
+		width: 110px;
+		vertical-align: middle;
+	}
+
+	.mm-slot {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		margin-right: 12px;
+	}
+
+	.button-link {
+		margin-left: 8px;
+	}
+
+	// Phones: day name above, each opening slot on its own full-width line.
+	@media (max-width: 600px) {
+		th,
+		td {
+			display: block;
+			width: auto;
+		}
+
+		th {
+			padding-bottom: 0;
+			font-weight: 600;
+		}
+
+		.mm-slot {
+			display: flex;
+			margin: 0 0 6px;
+		}
+
+		.mm-slot input[type="time"] {
+			flex: 1 1 0;
+			min-width: 0;
+		}
+
+		.button-link:first-of-type {
+			margin-left: 0;
+		}
+	}
+}
+
+#mm-special td {
+	vertical-align: middle;
+}
+
+.mm-details-edit {
+	border: 0;
+	box-shadow: none;
+
+	td {
+		padding: 4px 8px 4px 0;
+		vertical-align: middle;
+	}
+
+	td:first-child {
+		width: 32%;
+	}
+}
+
+.mm-details__actions {
+	width: 1%;
+	white-space: nowrap;
+}
+
+// "Copy to the next days": a big enough target (WCAG 2.5.8).
+.mm-hours-edit .mm-copy-down {
+	display: inline-flex;
+	align-items: center;
+	min-height: 24px;
+}
