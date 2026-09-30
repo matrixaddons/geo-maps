@@ -90,7 +90,7 @@ export function RegionMapPicker( { value, onChange } ) {
 			onChange={ ( v ) => v && onChange( v ) }
 			help={
 				// translators: %d: number of maps
-				sprintf( __( '%d maps: the world, continents, US states and counties, the regions of every country and detailed maps (departments, provinces, districts). Type to search.', 'geo-maps' ), options.length )
+				sprintf( __( '%d maps: the world, continents, US states and counties, the regions of 200+ countries and detailed maps (departments, provinces, districts). Type to search.', 'geo-maps' ), options.length )
 			}
 		/>
 	);
