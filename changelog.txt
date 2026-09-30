@@ -1,3 +1,6 @@
+= 2.0.1 =
+- Improved - Built-in help, settings texts and readme match the plugin; online documentation link; videos in the readme
+
 = 2.0.0 =
 - New - MatrixMap: map builder, store locator with geolocation, region maps, maps without an API key (see readme.txt for details)
 - New - Import from WP Go Maps, MapPress, WP Maps, WP Store Locator and Agile Store Locator; Leaflet Map and WP Map Block compatibility

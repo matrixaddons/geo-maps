@@ -4,7 +4,7 @@ Tags: maps, google maps, openstreetmap, store locator, interactive map
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -15,6 +15,8 @@ Maps that work without an API key: a visual map builder, a store locator with "n
 **[Live demo](https://playground.wordpress.net/?blueprint-url=https://ps.w.org/geo-maps/assets/blueprints/blueprint.json) | [Website](https://matrixaddons.com/plugins/matrixmap/) | [Features](https://matrixaddons.com/plugins/matrixmap/#features) | [Free vs Pro](https://matrixaddons.com/plugins/matrixmap/#compare) | [MatrixMap Pro](https://matrixaddons.com/plugins/matrixmap/#pro) | [Pricing](https://matrixaddons.com/plugins/matrixmap/#pricing) | [FAQ](https://matrixaddons.com/plugins/matrixmap/#faq) | [Documentation](https://matrixaddons.com/plugins/matrixmap/docs/) | [Support](https://wordpress.org/support/plugin/geo-maps/)**
 
 MatrixMap puts maps on your site in minutes, with **no API key, no account and no monthly bill**. Build a map with a visual editor, add a store locator that finds the nearest locations, or colour a world or country map with your own data. Everything is keyboard and screen reader accessible, and nothing loads until a visitor needs it. See it on the [MatrixMap website](https://matrixaddons.com/plugins/matrixmap/) or try the [live demo](https://playground.wordpress.net/?blueprint-url=https://ps.w.org/geo-maps/assets/blueprints/blueprint.json) right in your browser.
+
+https://www.youtube.com/watch?v=v6zfepSNTt8
 
 = Why MatrixMap? =
 
@@ -79,6 +81,8 @@ MatrixMap imports your maps from **WP Go Maps**, **MapPress**, **WP Maps** and *
 = MatrixMap Pro =
 
 Everything above is free, with no limits on maps, places or locations. **[MatrixMap Pro](https://matrixaddons.com/plugins/matrixmap/#pro)** is an optional add-on for businesses that want their maps to bring in customers. It adds:
+
+https://www.youtube.com/watch?v=cWmUX5fn68k
 
 **Store locator and locations**
 
@@ -248,6 +252,10 @@ The readable JavaScript and SCSS source is in `assets/src` and is built with `@w
 Bundled libraries: MapLibre GL JS (BSD-3-Clause), Leaflet (BSD-2-Clause), Supercluster (ISC), d3-geo (ISC), @tmcw/togeojson (BSD-2-Clause) and Lucide icons (ISC). Region maps are built from Natural Earth data (public domain) and US Census county boundaries (public domain, via us-atlas, ISC). Detailed maps use open government data via geoBoundaries: Survey Department of Nepal / OCHA (CC BY 3.0 IGO), UK Office for National Statistics (Open Government Licence v3.0), © GeoBasis-DE / BKG (dl-de/by-2-0), Statistics Canada (Open Government Licence – Canada), Australian Bureau of Statistics (CC BY 4.0), Stats NZ (CC BY 4.0), World Bank / INEGI (CC BY 4.0) and lgdirectory.gov.in (ODbL). See `assets/regions/LICENSE-DATA.txt`.
 
 == Changelog ==
+
+= 2.0.1 =
+* Improved: the built-in help, settings texts and readme match the plugin (category filter buttons, supported consent plugins including iubenda, 200+ country maps, how "near me" search works).
+* New: a link to the online documentation on the Docs screen, and videos of MatrixMap and MatrixMap Pro in the readme.
 
 = 2.0.0 =
 MatrixMaps is now **MatrixMap**, rebuilt from the ground up. All 1.x maps, shortcodes and blocks keep working.
