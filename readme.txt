@@ -12,7 +12,7 @@ Maps that work without an API key: a visual map builder, a store locator with "n
 
 == Description ==
 
-**[Live demo](https://playground.wordpress.net/?blueprint-url=https://ps.w.org/geo-maps/assets/blueprints/blueprint.json) | [Website](https://matrixaddons.com/plugins/matrixmap/) | [Features](https://matrixaddons.com/plugins/matrixmap/#features) | [Free vs Pro](https://matrixaddons.com/plugins/matrixmap/#compare) | [MatrixMap Pro](https://matrixaddons.com/plugins/matrixmap/#pro) | [Pricing](https://matrixaddons.com/plugins/matrixmap/#pricing) | [FAQ](https://matrixaddons.com/plugins/matrixmap/#faq) | [Support](https://wordpress.org/support/plugin/geo-maps/)**
+**[Live demo](https://playground.wordpress.net/?blueprint-url=https://ps.w.org/geo-maps/assets/blueprints/blueprint.json) | [Website](https://matrixaddons.com/plugins/matrixmap/) | [Features](https://matrixaddons.com/plugins/matrixmap/#features) | [Free vs Pro](https://matrixaddons.com/plugins/matrixmap/#compare) | [MatrixMap Pro](https://matrixaddons.com/plugins/matrixmap/#pro) | [Pricing](https://matrixaddons.com/plugins/matrixmap/#pricing) | [FAQ](https://matrixaddons.com/plugins/matrixmap/#faq) | [Documentation](https://matrixaddons.com/plugins/matrixmap/docs/) | [Support](https://wordpress.org/support/plugin/geo-maps/)**
 
 MatrixMap puts maps on your site in minutes, with **no API key, no account and no monthly bill**. Build a map with a visual editor, add a store locator that finds the nearest locations, or colour a world or country map with your own data. Everything is keyboard and screen reader accessible, and nothing loads until a visitor needs it. See it on the [MatrixMap website](https://matrixaddons.com/plugins/matrixmap/) or try the [live demo](https://playground.wordpress.net/?blueprint-url=https://ps.w.org/geo-maps/assets/blueprints/blueprint.json) right in your browser.
 
@@ -51,7 +51,7 @@ Maps use free OpenStreetMap-based map styles (from OpenFreeMap) out of the box. 
 
 = Privacy, speed and accessibility =
 
-* **GDPR-friendly loading:** with a consent plugin (WP Consent API, Cookiebot, CookieYes, Borlabs), maps wait for consent. Visitors can also load a single map with one click.
+* **GDPR-friendly loading:** with a consent plugin (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs, iubenda), maps wait for consent. Visitors can also load a single map with one click.
 * **Nothing on pages without a map.** On pages with a map, a 2 KB loader waits until the map scrolls into view and then loads only what that map needs.
 * **Accessible:** markers are real buttons, popups can be used with the keyboard, and each map comes with a text list of its places. Region maps include a data table.
 * **No scroll-jacking:** on mobile the page scrolls normally and two fingers move the map; on desktop, Ctrl + scroll zooms.
@@ -68,7 +68,7 @@ MatrixMap imports your maps from **WP Go Maps**, **MapPress**, **WP Maps** and *
 = Also included =
 
 * Clustering for maps with many places
-* Location categories with colours, and filter chips
+* Location categories with colours, and category filter buttons
 * Popup text with simple formatting (bold, italic, links, lists)
 * CSV import with column matching, and CSV and GeoJSON export
 * Special opening hours (holidays) and temporary closures
@@ -140,7 +140,7 @@ MatrixMap stores no visitor data and sets no cookies. Map tiles come from an out
 
 = How does "near me" work? =
 
-When a visitor clicks **Use my location**, the browser asks them for permission and gives the position to the page. It is used to sort results and is not sent to or stored on your server. Without a click, the locator can start near the visitor's city if your CDN provides it (see "Built around location").
+When a visitor clicks **Use my location**, the browser asks them for permission and gives the position to the page. The page sends it to your site's own search endpoint to find the nearest locations; it is not stored and not sent to any outside service. Without a click, the locator can start near the visitor's city if your CDN provides it (see "Built around location").
 
 = Which address search service is used? =
 
@@ -152,7 +152,7 @@ Up to 5,000 places per map, and thousands of store locator locations. Maps with 
 
 = Can I show a map of only my country? =
 
-Yes. Add a Region Map block and pick one of 302 maps: the world, continents, US states and counties, the states, provinces and regions of almost any country, or a detailed map (departments, provinces, districts, municipalities). You can also start the map zoomed in on the regions you choose, or hide the regions you don't use.
+Yes. Add a Region Map block and pick one of 302 maps: the world, continents, US states and counties, the states, provinces and regions of 200+ countries, or a detailed map (departments, provinces, districts, municipalities). You can also start the map zoomed in on the regions you choose, or hide the regions you don't use.
 
 = Can I move maps to another site? =
 
@@ -184,7 +184,7 @@ Yes, network-wide or per site. Each site keeps its own maps, locations and setti
 
 = Where is the documentation? =
 
-Inside WordPress: **MatrixMap → Docs** has a searchable guide covering setup, every feature, troubleshooting, privacy and the developer hooks. Settings screens link to the relevant page with "Learn more". For help, open a topic in the [support forum](https://wordpress.org/support/plugin/geo-maps/).
+Online: the [MatrixMap documentation](https://matrixaddons.com/plugins/matrixmap/docs/). Inside WordPress: **MatrixMap → Docs** has a searchable guide covering setup, every feature, troubleshooting, privacy and the developer hooks. Settings screens link to the relevant page with "Learn more". For help, open a topic in the [support forum](https://wordpress.org/support/plugin/geo-maps/).
 
 = What happens to my data if I delete the plugin? =
 
@@ -195,7 +195,7 @@ By default your maps, locations and settings are kept, so reinstalling brings ev
 1. The store locator: search by address or “near me”, with distances, opening hours and one-tap directions.
 2. Region maps from your data: 302 ready-made maps, values pasted from a spreadsheet, a live preview.
 3. Interactive data maps with tooltips, legends, zoom and an accessible data table.
-4. Every US state and county — and the regions of every country — with labels and links.
+4. Every US state and county — and the regions of 200+ countries — with labels and links.
 5. The visual map builder: markers, shapes, styles, clustering, categories and the locator, with a live preview.
 6. Add maps with the MatrixMap blocks, a shortcode or the Elementor widget.
 7. Fast and mobile-friendly: maps load only where they are used and adapt to small screens.
@@ -266,7 +266,7 @@ MatrixMaps is now **MatrixMap**, rebuilt from the ground up. All 1.x maps, short
 
 **Region maps**
 
-* New: 302 ready-made maps — the world, continents, US states and every US county, the regions of every country, and detailed maps (departments, provinces, districts, Mexican municipalities).
+* New: 302 ready-made maps — the world, continents, US states and every US county, the regions of 200+ countries, and detailed maps (departments, provinces, districts, Mexican municipalities).
 * New: colour regions from your data, bubbles, legends, labels, region groups, markers, lines, a region finder, tooltips, details panels, deep links (?mm_region=) and an accessible data table.
 
 **Everywhere**
@@ -274,7 +274,7 @@ MatrixMaps is now **MatrixMap**, rebuilt from the ground up. All 1.x maps, short
 * New: Map, Store Locator, Region Map and Store Search blocks, shortcodes and an Elementor widget.
 * New: one MatrixMap admin — a Dashboard with a setup checklist and health check, Settings with search, Import & Tools, and built-in documentation (MatrixMap → Docs).
 * New: switch from WP Go Maps, MapPress, WP Maps, Interactive Geo Maps (MapGeo), WP Store Locator, Agile Store Locator, Leaflet Map and WP Map Block.
-* New: privacy-friendly loading — maps can wait for consent (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs); nothing loads on pages without a map.
+* New: privacy-friendly loading — maps can wait for consent (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs, iubenda); nothing loads on pages without a map.
 * Accessibility: keyboard-operable maps, regions and popups, text alternatives and screen-reader announcements.
 * Performance: large location sets load a compact index and details on demand; locators download only search results; caches rebuild in the background.
 * Security: hardened uploads, rate limits that can't be bypassed with spoofed IP headers, API keys only sent to pages that need them, and private data kept out of public endpoints.

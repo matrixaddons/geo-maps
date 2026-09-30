@@ -49,7 +49,7 @@ final class Compare
                 array(__('Analytics: searches, directions, calls, clicks and a demand map', 'geo-maps'), false, true),
             ),
             __('Region maps', 'geo-maps') => array(
-                array(__('302 maps: the world, US states and counties, every country’s regions and detailed maps', 'geo-maps'), true, true),
+                array(__('302 maps: the world, US states and counties, the regions of 200+ countries and detailed maps', 'geo-maps'), true, true),
                 array(__('Colour by value, legends, labels, bubbles, groups, markers and a data table', 'geo-maps'), true, true),
                 array(__('Click a region to open a link or its details', 'geo-maps'), true, true),
                 array(__('Click actions: picture gallery, video, page or web page in a lightbox', 'geo-maps'), false, true),

@@ -61,7 +61,10 @@ final class Docs
         $base = admin_url('admin.php?page=' . self::SLUG);
 
         echo '<div class="wrap mm-page mm-docs">';
-        UI::page_head(__('Docs', 'geo-maps'), __('How MatrixMap works, step by step — from your first map to store locators, data maps and the developer reference.', 'geo-maps'));
+        $online = '<a class="mm-btn mm-btn--ghost mm-btn--sm" href="' . esc_url('https://matrixaddons.com/plugins/matrixmap/docs/') . '" target="_blank" rel="noopener">'
+            . UI::icon('external', 16) . esc_html__('Full documentation online', 'geo-maps')
+            . '<span class="screen-reader-text"> ' . esc_html__('(opens in a new tab)', 'geo-maps') . '</span></a>';
+        UI::page_head(__('Docs', 'geo-maps'), __('How MatrixMap works, step by step — from your first map to store locators, data maps and the developer reference.', 'geo-maps'), $online);
 
         echo '<div class="mm-docs__search" role="search"><label class="screen-reader-text" for="mm-docs-q">' . esc_html__('Search the docs', 'geo-maps') . '</label>'
             . UI::icon('search', 18) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
@@ -253,7 +256,7 @@ final class Docs
             array('h', 'howto-move', __('Copy maps to another site', 'geo-maps')),
             array('p', __('Export the maps under <strong>Import & Tools → Export</strong> (or use the Export link on a map in the Maps list) and import the file on the other site. Imported maps arrive as drafts. Pictures from the Media Library are not included; locations are exported separately as CSV or GeoJSON.', 'geo-maps')),
             array('h', 'howto-privacy', __('Load maps only after consent', 'geo-maps')),
-            array('p', __('Settings → Privacy & consent. With a supported consent plugin active, maps that load tiles from another server wait for consent and show a short placeholder. You can also make every map “click to load”. Region maps never need consent because they use no outside service.', 'geo-maps')),
+            array('p', __('Settings → Privacy & consent. With a supported consent plugin active (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs or iubenda), maps that load tiles from another server wait for consent and show a short placeholder. You can also make every map “click to load”. Region maps never need consent because they use no outside service.', 'geo-maps')),
             array('h', 'howto-builders', __('Add a map in a page builder', 'geo-maps')),
             array('p', __('Gutenberg: the MatrixMap, Store Locator, Region Map and Store Search blocks. Elementor: the MatrixMap widget. Any builder: the shortcode from the map’s top bar. MatrixMap Pro adds elements for Bricks, Divi and WPBakery.', 'geo-maps')),
             array('h', 'howto-pro', __('With MatrixMap Pro', 'geo-maps')),
@@ -280,8 +283,8 @@ final class Docs
             array('ul', array(
                 __('Add a place by address, by coordinates (e.g. <code>48.858, 2.294</code>) or by clicking the map; drag a marker to fine-tune it.', 'geo-maps'),
                 __('Each place has a title, popup text (bold, italic, links, lists), a picture, a phone number, a button link, and a marker style (pin, dot, picture or icon; colour and size).', 'geo-maps'),
-                __('<strong>Categories</strong> group places; visitors can filter them with chips, a list or check boxes.', 'geo-maps'),
-                __('Settings → <strong>List and filters</strong> adds a list of places next to the map — it also helps keyboard and screen reader users. <strong>Clustering</strong> groups nearby places when there are many.', 'geo-maps'),
+                __('<strong>Categories</strong> group places; visitors can filter them with category filter buttons.', 'geo-maps'),
+                __('Settings → <strong>List and filters</strong> adds a list of places beside or below the map — it also helps keyboard and screen reader users — with an optional search box and category filter buttons. <strong>Clustering</strong> groups nearby places when there are many.', 'geo-maps'),
                 __('Places from <strong>Locations</strong> can be added to any map (Settings → Locations library).', 'geo-maps'),
             )),
             array('h', 'maps-shapes', __('Shapes and map files', 'geo-maps')),
@@ -481,7 +484,7 @@ final class Docs
                 array('<code>matrixmap_location_marker</code>', __('Filter the marker built from a location (add fields for the front end).', 'geo-maps')),
                 array('<code>matrixmap_region_maps</code>', __('Add or change region maps in the map library.', 'geo-maps')),
                 array('<code>matrixmap_pre_geocode</code>', __('Short-circuit an address lookup (custom providers, tests).', 'geo-maps')),
-                array('<code>matrixmap_client_ip</code>', __('Decide which request header holds the visitor’s IP address behind a proxy.', 'geo-maps')),
+                array('<code>matrixmap_client_ip</code>', __('Filter the visitor IP address used for rate limits.', 'geo-maps')),
                 array('<code>matrixmap_pro_url</code>', __('Change the “Get MatrixMap Pro” link.', 'geo-maps')),
                 array('<code>matrixmap_settings_sections</code>, <code>matrixmap_tools_sections</code>, <code>matrixmap_admin_nav</code>', __('Add sections and navigation to the admin screens.', 'geo-maps')),
             )),
@@ -550,7 +553,7 @@ final class Docs
             array('h', 'faq-old', __('I used MatrixMaps 1.x. Will my maps break?', 'geo-maps')),
             array('p', __('No. 1.x maps and the <code>[geo_maps]</code> shortcode keep working, and the old data is not deleted.', 'geo-maps')),
             array('h', 'faq-multilingual', __('Does it work with WPML or Polylang?', 'geo-maps')),
-            array('p', __('MatrixMap ships a wpml-config.xml so maps and locations can be translated; map labels follow the site language where the map style supports it.', 'geo-maps')),
+            array('p', __('MatrixMap ships a wpml-config.xml so maps and locations can be translated.', 'geo-maps')),
             array('h', 'faq-uninstall', __('What happens when I uninstall?', 'geo-maps')),
             array('p', __('See Security & privacy → Uninstalling. Deactivating never deletes anything.', 'geo-maps')),
         );
@@ -572,7 +575,7 @@ final class Docs
                 __('The free plugin stores nothing about visitors and sets no cookies.', 'geo-maps'),
             )),
             array('h', 'privacy-services', __('Outside services', 'geo-maps')),
-            array('p', __('A map that shows tiles makes the visitor’s browser download them from the provider you chose (OpenFreeMap by default; OpenStreetMap, Google or another provider if you choose it). That provider receives the visitor’s IP address and browser details, as with any web request — which is why maps can wait for consent. Address searches are made by your server to the search service you chose. Region maps use no outside service.', 'geo-maps')),
+            array('p', __('A map that shows tiles makes the visitor’s browser download them from the provider you chose (OpenFreeMap by default; OpenStreetMap, Google or another provider if you choose it). That provider receives the visitor’s IP address and browser details, as with any web request — which is why maps can wait for consent. Address searches are made by your server to the search service you chose. When a visitor clicks “Use my location”, the browser asks first; the position is sent only to your site’s own search endpoint to find the nearest locations, and is not stored. Region maps use no outside service.', 'geo-maps')),
             array('h', 'privacy-pro', __('With MatrixMap Pro', 'geo-maps')),
             array('ul', array(
                 __('<strong>Analytics</strong> is off until you switch it on (MatrixMap → Analytics or Settings → Analytics). It keeps anonymous daily totals only: no cookies and no IP addresses; search areas are rounded to about 11 km.', 'geo-maps'),

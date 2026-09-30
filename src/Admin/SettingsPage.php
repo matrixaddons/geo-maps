@@ -430,7 +430,7 @@ final class SettingsPage
     public static function section_privacy()
     {
         UI::card_start(__('Consent', 'geo-maps'), __('Map tiles come from a third-party server, which sees the visitor’s IP address.', 'geo-maps'));
-        UI::row(__('Load maps', 'geo-maps'), self::select('consent_mode', array('auto' => __('After consent when a consent plugin is installed (recommended)', 'geo-maps'), 'click' => __('Only after the visitor clicks “Load map”', 'geo-maps'), 'off' => __('Immediately', 'geo-maps'))), __('Works with WP Consent API, Complianz, Cookiebot, CookieYes and Borlabs; visitors can also load a single map with one click.', 'geo-maps'), 'mm-consent_mode');
+        UI::row(__('Load maps', 'geo-maps'), self::select('consent_mode', array('auto' => __('After consent when a consent plugin is installed (recommended)', 'geo-maps'), 'click' => __('Only after the visitor clicks “Load map”', 'geo-maps'), 'off' => __('Immediately', 'geo-maps'))), __('Works with WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs and iubenda; visitors can also load a single map with one click.', 'geo-maps'), 'mm-consent_mode');
         UI::row(__('Consent category', 'geo-maps'), self::select('consent_category', array('marketing' => __('Marketing', 'geo-maps'), 'preferences' => __('Preferences', 'geo-maps'), 'statistics' => __('Statistics', 'geo-maps'), 'functional' => __('Functional', 'geo-maps'))), __('The category your consent plugin uses for maps.', 'geo-maps'), 'mm-consent_category');
         UI::card_end();
     }
