@@ -14,6 +14,17 @@ Maps that work without an API key: a visual map builder, a store locator with "n
 
 MatrixMap puts maps on your site in minutes, with **no API key, no account and no monthly bill**. Build a map with a visual editor, add a store locator that finds the nearest locations, or colour a world or country map with your own data. Everything is keyboard and screen reader accessible, and nothing loads until a visitor needs it.
 
+= Why MatrixMap? =
+
+* **Free where others charge:** the store locator, 302 region maps (including every US county), CSV import and plugin importers are all in the free plugin, with no limits on maps, places or locations and no MatrixMap branding on your maps.
+* **No API key, no billing account:** maps and address search work the moment you activate the plugin.
+* **Built for real sites:** privacy-friendly loading, keyboard and screen-reader support, and a 2 KB loader that only runs on pages with a map.
+* **Easy to switch:** bring your maps and stores over from eight popular map and store locator plugins without editing a page.
+
+= Made for =
+
+Store and dealer locators, franchises and chains, restaurants and cafés, real estate and property listings, tours and travel routes, events and venues, service areas and sales territories, and data stories such as election results, sales by state or members by country.
+
 = Three kinds of map =
 
 * **Maps with places.** Search for an address or click the map to drop a pin, then add a title, text, a photo, a phone number and a link. Group places into categories that visitors can filter. Draw areas, routes and circles, or add a GPX, KML or GeoJSON file.
@@ -62,7 +73,7 @@ MatrixMap imports your maps from **WP Go Maps**, **MapPress**, **WP Maps** and *
 
 = MatrixMap Pro =
 
-Everything above is free, with no limits on maps, places or locations. [MatrixMap Pro](https://matrixaddons.com/plugins/matrixmap/) is an optional add-on for businesses that want more from their locator and data maps:
+Everything above is free, with no limits on maps, places or locations. [MatrixMap Pro](https://matrixaddons.com/plugins/matrixmap/#pro) is an optional add-on for businesses that want more from their locator and data maps:
 
 * **Directions on your own map** – driving, walking and cycling routes with turn-by-turn steps, planned tours and elevation profiles.
 * **Locator analytics** – searches, directions, calls and clicks per location, and a map of where people look but you have no store. Anonymous, no cookies.
@@ -71,7 +82,9 @@ Everything above is free, with no limits on maps, places or locations. [MatrixMa
 * **More from region maps** – click actions (gallery, video, page), drilldown from the world to states and counties, custom SVG/GeoJSON maps, and values from your posts or a Google Sheet.
 * **Automation and integrations** – scheduled sync from Google Sheets, CSV or JSON, maps from your posts, WooCommerce "Where to buy", Bricks, Divi and WPBakery elements, and WP-CLI.
 
-Compare the editions under **MatrixMap → Free vs Pro** in your dashboard, or see [plans and pricing](https://matrixaddons.com/plugins/matrixmap/#pricing).
+Plans start at $49 a year for one site (Plus: 5 sites, Agency: 25 sites), or pay once with a lifetime licence, with a 14-day money-back guarantee. Pro installs next to the free plugin, keeps your maps as they are, and keeps working if a licence lapses; the licence brings updates and support.
+
+Compare every feature under **MatrixMap → Free vs Pro** in your dashboard or in the [full Free vs Pro comparison](https://matrixaddons.com/plugins/matrixmap/#compare), and see [plans and pricing](https://matrixaddons.com/plugins/matrixmap/#pricing).
 
 = Upgrading from MatrixMaps 1.x =
 
@@ -121,11 +134,27 @@ Yes. Nothing needs to be changed, and your 1.x data is kept.
 
 = What is the difference between MatrixMap and MatrixMap Pro? =
 
-The free plugin is complete: unlimited maps, the store locator, all 302 region maps, imports and exports. [MatrixMap Pro](https://matrixaddons.com/plugins/matrixmap/) adds directions on your map, analytics, location pages, dealer networks, drilldown and automation. Pro installs next to the free plugin and your maps stay as they are. See **MatrixMap → Free vs Pro** for the full list.
+The free plugin is complete: unlimited maps, the store locator, all 302 region maps, imports and exports. [MatrixMap Pro](https://matrixaddons.com/plugins/matrixmap/#pro) adds directions on your map, analytics, location pages, dealer networks, drilldown and automation. Pro installs next to the free plugin and your maps stay as they are. See **MatrixMap → Free vs Pro** in your dashboard or the [comparison on our website](https://matrixaddons.com/plugins/matrixmap/#compare) for the full list.
+
+= Does it work with Elementor and other page builders? =
+
+Yes. Use the MatrixMap widget in Elementor, the blocks in the block editor, or a shortcode such as `[matrixmap id="123"]` in any page builder or classic editor. MatrixMap Pro adds native Bricks, Divi and WPBakery elements.
+
+= Can I use my Google My Maps, KML, GPX or GeoJSON files? =
+
+Yes. In Google My Maps choose "Export to KML/KMZ" and tick "Export to a .KML file" (KMZ archives aren't supported), or use any GPX, KML or GeoJSON file, and add it to a map as a layer. Uploaded files are checked before they are accepted.
+
+= Does it work with caching and optimisation plugins? =
+
+Yes. With WP Rocket, LiteSpeed Cache, Perfmatters, SiteGround Optimizer, Autoptimize and FlyingPress, MatrixMap automatically excludes its small loader from their "delay", "defer" and "combine JavaScript" features, so maps don't go blank.
+
+= Does it support multisite? =
+
+Yes, network-wide or per site. Each site keeps its own maps, locations and settings.
 
 = Where is the documentation? =
 
-Inside WordPress: **MatrixMap → Docs** has a searchable guide covering setup, every feature, troubleshooting, privacy and the developer hooks. Settings screens link to the relevant page with "Learn more".
+Inside WordPress: **MatrixMap → Docs** has a searchable guide covering setup, every feature, troubleshooting, privacy and the developer hooks. Settings screens link to the relevant page with "Learn more". For help, open a topic in the [support forum](https://wordpress.org/support/plugin/geo-maps/).
 
 = What happens to my data if I delete the plugin? =
 
