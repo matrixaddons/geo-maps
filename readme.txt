@@ -4,7 +4,7 @@ Tags: maps, google maps, openstreetmap, store locator, interactive map
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.0.1
+Stable tag: 2.1.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -65,7 +65,7 @@ Start from a ready-made template (one location, places with a list, a route, a s
 
 = Switching from another map plugin? =
 
-MatrixMap imports your maps from **WP Go Maps**, **MapPress**, **WP Maps** and **Interactive Geo Maps (MapGeo)**, and your stores from **WP Store Locator** and **Agile Store Locator**. It can also show **Leaflet Map** shortcodes and **WP Map Block** blocks. The other plugin's data is only read, never changed. When you deactivate the old plugin, its shortcodes and blocks show the MatrixMap version, so no page needs editing.
+MatrixMap imports your maps from **WP Go Maps**, **MapPress**, **WP Maps** and **Interactive Geo Maps (MapGeo)** and **Maps Marker Pro / Leaflet Maps Marker**, and your stores from **WP Store Locator** and **Agile Store Locator**. It can also show **Leaflet Map** shortcodes and **WP Map Block** blocks. The other plugin's data is only read, never changed. When you deactivate the old plugin, its shortcodes and blocks show the MatrixMap version, so no page needs editing.
 
 = Also included =
 
@@ -76,6 +76,10 @@ MatrixMap imports your maps from **WP Go Maps**, **MapPress**, **WP Maps** and *
 * Special opening hours (holidays) and temporary closures
 * Map styles, marker colours, icons and your own marker images
 * Full-screen button, "show my location" button and scale bar
+* Category legend, popup layouts, builder undo/redo and one-click sample data
+* Locator radius circle, sorting, "Copy link" and short `?near=` links
+* Embed maps on other websites (opt-in), and "Create page with this map"
+* Over 50,000 locations: only the visible area loads; resumable CSV imports
 * Developer hooks and a REST API
 
 = MatrixMap Pro =
@@ -111,8 +115,10 @@ https://www.youtube.com/watch?v=cWmUX5fn68k
 
 * **[Scheduled data sync](https://matrixaddons.com/plugins/matrixmap/#pro)** – keep locations in step with a Google Sheet, CSV or JSON feed, with preview, log and email alerts.
 * **[Maps from your posts](https://matrixaddons.com/plugins/matrixmap/#pro)** – any post type with coordinates, an ACF map field or an address, plus a Posts map block for the Query Loop.
+* **[Privacy Plus, static map images and map comparison](https://matrixaddons.com/plugins/matrixmap/#pro)** – tiles served from your own site or a self-hosted basemap (no consent banner needed), PNG snapshots for emails and social sharing, and a before/after slider for two maps.
 * **[Routes, tours, heatmaps and a 3D globe](https://matrixaddons.com/plugins/matrixmap/#pro)** – planned routes through your places with elevation profiles, density heatmaps and a globe view.
 * **[WooCommerce "Where to buy"](https://matrixaddons.com/plugins/matrixmap/#pro)** – a store finder on product pages that lists only the stores stocking that product, with stock badges.
+* **[Teams, multisite and more](https://matrixaddons.com/plugins/matrixmap/#pro)** – approvals, revisions and an activity log, network settings, WooCommerce pickup at checkout, forms to locations, 3D maps and a style editor.
 * **[Page builders and WP-CLI](https://matrixaddons.com/plugins/matrixmap/#pro)** – Bricks, Divi and WPBakery elements, and `wp matrixmap` commands for imports, exports and sync.
 * **[Updates and email support](https://matrixaddons.com/plugins/matrixmap/#pro)** – one-click updates and email support with your licence (priority support on Agency).
 
@@ -253,6 +259,27 @@ Bundled libraries: MapLibre GL JS (BSD-3-Clause), Leaflet (BSD-2-Clause), Superc
 
 == Changelog ==
 
+= 2.1.0 =
+* New: one-click sample data on the Dashboard (10 locations, a store locator, a places map and a data map), removed again with one click.
+* New: builder undo and redo (buttons and Ctrl/⌘ + Z), and Ctrl/⌘ + S to save.
+* New: a category legend on maps, and popup layouts (card, photo beside the text, compact). Off for existing maps.
+* New: store locator options to draw the search radius, sort results (distance, name, open now) and copy a link to the results; `?near=` short links.
+* New: "Create page with this map" in the builder and the Maps list.
+* New: embed a map on another website (Settings → Advanced, off by default).
+* New: importer for Maps Marker Pro and Leaflet Maps Marker.
+* New: setting to hide password-protected locations from maps and the locator.
+* New: capabilities for viewing analytics and moderating submissions, for custom roles.
+* New: Site Health checks and information, and suggested privacy policy text.
+* Improved: maps and locators with more than 50,000 locations load only the visible area; Site Health warns above that size.
+* Improved: large CSV imports are stored in chunks and can be resumed after an interruption; old unfinished imports are cleaned up daily.
+* Improved: address search no longer lists the same place twice.
+* Improved: right-to-left languages on maps, locators and region maps; clustering in the builder preview.
+* Improved: works with WordPress 6.5 and alongside other plugins that load Leaflet.
+* Improved: keyboard and screen reader fixes; map buttons step aside when a popup needs the room; importer tables scroll on phones.
+* Fixed: the "Reference ID" CSV column was not recognised, so re-imports could create duplicates.
+* Fixed: a full uninstall now removes every MatrixMap capability and unfinished import.
+* Security and reliability: stricter checks on imports, REST requests and rate limits.
+
 = 2.0.1 =
 * Improved: the built-in help, settings texts and readme match the plugin (category filter buttons, supported consent plugins including iubenda, 200+ country maps, how "near me" search works).
 * New: a link to the online documentation on the Docs screen, and videos of MatrixMap and MatrixMap Pro in the readme.
@@ -308,6 +335,9 @@ MatrixMaps is now **MatrixMap**, rebuilt from the ground up. All 1.x maps, short
 * Initial release.
 
 == Upgrade Notice ==
+
+= 2.1.0 =
+Sample data, builder undo/redo, map legends, locator sorting and sharing, embedding and many reliability fixes. Update MatrixMap Pro to 1.1.0 with it.
 
 = 2.0.0 =
 MatrixMaps becomes MatrixMap: a new map builder, a store locator and region maps, with no API key needed. Your existing maps keep working. Requires WordPress 6.5 and PHP 7.4.

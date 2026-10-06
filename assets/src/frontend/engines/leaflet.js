@@ -6,6 +6,13 @@ import 'leaflet/dist/leaflet.css';
 import registry from '../registry';
 import { flatStyle, styleProps } from './shared';
 
+// Leaflet always writes itself to window.L. When a theme or another plugin loaded its own
+// Leaflet first (often with add-ons such as marker clusters), give theirs back.
+L.noConflict();
+if ( ! window.L ) {
+	window.L = L;
+}
+
 /**
  * Cooperative gestures for Leaflet: Ctrl/⌘ + wheel to zoom, two fingers to pan on touch.
  *
@@ -91,6 +98,12 @@ function create( container, ctx ) {
 	} );
 
 	map.attributionControl.setPrefix( '<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>' );
+
+	// Scale bar (Settings → Controls), in the site's distance units.
+	if ( payload.controls && payload.controls.scale ) {
+		const miles = ( payload.units || ( ctx.settings && ctx.settings.units ) ) === 'mi';
+		L.control.scale( { position: payload.controls.position === 'bottom-left' ? 'bottomright' : 'bottomleft', metric: ! miles, imperial: miles } ).addTo( map );
+	}
 
 	const tiles = L.tileLayer( src.url || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		subdomains: src.subdomains || 'abc',

@@ -54,6 +54,9 @@ final class Installer
 
         update_option('geo_maps_version', MATRIXMAP_VERSION);
 
+        // Left by an earlier uninstall for MatrixMap Pro; MatrixMap is back, so it no longer applies.
+        delete_option('matrixmap_pro_delete_data');
+
         if (!wp_next_scheduled('matrixmap_daily')) {
             wp_schedule_event(time() + HOUR_IN_SECONDS, 'daily', 'matrixmap_daily');
         }
@@ -75,13 +78,53 @@ final class Installer
     }
 
     /**
+     * Ask for a table check in the background (at most once an hour).
+     */
+    public static function schedule_repair()
+    {
+        if (!get_transient('matrixmap_repair_tried') && !wp_next_scheduled('matrixmap_repair_tables')) {
+            set_transient('matrixmap_repair_tried', 1, HOUR_IN_SECONDS);
+            wp_schedule_single_event(time(), 'matrixmap_repair_tables');
+        }
+    }
+
+    /**
+     * Recreate missing tables, and refill the location index when it was missing.
+     * Runs daily and after a query found a table missing.
+     *
+     * @return string[] Tables that were missing.
+     */
+    public static function repair()
+    {
+        global $wpdb;
+
+        $missing = array();
+        foreach (array(GeoIndex::table(), GeocodeCache::table()) as $table) {
+            if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table))) !== $table) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+                $missing[] = $table;
+            }
+        }
+
+        if ($missing) {
+            self::tables();
+            if (in_array(GeoIndex::table(), $missing, true)) {
+                GeoIndex::rebuild();
+            }
+        }
+
+        return $missing;
+    }
+
+    /**
      * Deactivation.
      */
     public static function deactivate($network_wide = false)
     {
         $clear = function () {
             wp_clear_scheduled_hook('matrixmap_daily');
+            wp_clear_scheduled_hook('matrixmap_repair_tables');
             wp_unschedule_hook('matrixmap_build_locations_cache'); // Background map-data builds (scheduled with arguments).
+            wp_unschedule_hook('matrixmap_leaflet_geocode'); // Leaflet Map compatibility: address lookups queued in the background.
         };
 
         if (is_multisite() && $network_wide) {

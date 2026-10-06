@@ -22,6 +22,9 @@ final class Upgrader
         add_action('init', array(__CLASS__, 'maybe_upgrade'), 5);
         add_action('init', array(__CLASS__, 'ensure_cron'), 20);
         add_action('wp_initialize_site', array(Installer::class, 'new_site'), 20);
+        // Missing tables (failed migration, partial restore) are recreated without waiting for an admin.
+        add_action('matrixmap_repair_tables', array(Installer::class, 'repair'));
+        add_action('matrixmap_daily', array(Installer::class, 'repair'));
     }
 
     /**

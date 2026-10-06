@@ -161,6 +161,7 @@ final class Renderer
             'cluster' => $config['cluster'],
             'list' => $config['list'],
             'filter' => $config['filter'],
+            'legend' => isset($config['legend']) ? $config['legend'] : array('enabled' => false),
             'directions' => $config['directions'],
             'consent' => '' !== $config['consent'] ? $config['consent'] : (string) Settings::get('consent_mode'),
             'categories' => $config['categories'],
@@ -198,6 +199,10 @@ final class Renderer
             $file = LocationsCache::url('lean', RestController::geojson_categories(self::query_arg($location_markers, 'categories')));
             if ('' !== $file) {
                 $payload['leanFile'] = $file;
+            }
+            // More locations than one file holds: the map loads the visible area as it moves.
+            if (LocationsCache::over_cap()) {
+                $payload['leanViewport'] = true;
             }
         } else {
             $markers = array_merge($markers, $location_markers);
@@ -255,10 +260,29 @@ final class Renderer
          */
         $payload = apply_filters('matrixmap_payload', $payload, $config, $ctx);
 
+        if ('off' !== $payload['consent']) {
+            /**
+             * Filters whether this map needs the visitor's consent before it loads.
+             *
+             * Return false when no third party is contacted (for example when
+             * MatrixMap Pro serves the tiles from this site): the map then loads
+             * without the consent placeholder, whatever the consent setting.
+             *
+             * @param bool $needs Default true.
+             * @param array $payload Front-end payload (after matrixmap_payload).
+             * @param array $config Map config.
+             * @param array $ctx Context.
+             * @since 2.1.0
+             */
+            if (!apply_filters('matrixmap_needs_consent', true, $payload, $config, $ctx)) {
+                $payload['consent'] = 'off';
+            }
+        }
+
         // The lean index stands in for dataUrl; an add-on that dropped dataUrl (e.g. its own
         // marker list) must not get every location back through it.
         if (empty($payload['dataUrl'])) {
-            unset($payload['leanUrl'], $payload['leanFile'], $payload['detailsUrl']);
+            unset($payload['leanUrl'], $payload['leanFile'], $payload['leanViewport'], $payload['detailsUrl']);
         }
 
         // Add-on data (ext) is for add-ons' filters above; it never needs to reach the page.
@@ -402,8 +426,20 @@ final class Renderer
 
         $query = array('post_type' => LocationPostType::POST_TYPE, 'post_status' => 'publish', 'fields' => 'ids', 'no_found_rows' => false, 'posts_per_page' => self::INLINE_LIMIT, 'orderby' => 'title', 'order' => 'ASC');
 
+        if (Settings::hide_protected()) {
+            $query['has_password'] = false;
+        }
+
         if ('categories' === $source && $cats) {
             $query['tax_query'] = array(array('taxonomy' => LocationPostType::TAXONOMY, 'field' => 'term_id', 'terms' => $cats)); // phpcs:ignore WordPress.DB.SlowDBQuery
+        }
+
+        // More than INLINE_LIMIT places: the map loads them from the JSON cache. A quick look for
+        // place number INLINE_LIMIT + 1 tells, without sorting and counting every location.
+        $more = new \WP_Query(array_merge($query, array('no_found_rows' => true, 'orderby' => 'none', 'posts_per_page' => 1, 'offset' => self::INLINE_LIMIT)));
+
+        if ($more->posts) {
+            return add_query_arg(array('categories' => 'categories' === $source ? implode(',', $cats) : ''), rest_url('matrixmap/v1/locations.geojson'));
         }
 
         $q = new \WP_Query($query);
@@ -528,12 +564,23 @@ final class Renderer
     private static function facade($config, $payload)
     {
         if ('region' === $config['type']) {
-            return '<div class="matrixmap__facade matrixmap__facade--loading" aria-hidden="true"></div>';
+            return apply_filters('matrixmap_facade', '<div class="matrixmap__facade matrixmap__facade--loading" aria-hidden="true"></div>', $config, $payload);
         }
 
         $provider = 'google' === $payload['engine'] ? 'Google Maps' : ('leaflet' === $payload['engine'] ? __('the map tile provider', 'geo-maps') : 'OpenFreeMap');
 
-        return '<div class="matrixmap__facade" data-provider="' . esc_attr($provider) . '"><div class="matrixmap__facade-inner"></div></div>';
+        $html = '<div class="matrixmap__facade" data-provider="' . esc_attr($provider) . '"><div class="matrixmap__facade-inner"></div></div>';
+
+        /**
+         * Filters the placeholder shown where a map will load (MatrixMap Pro puts a
+         * static image of the map here). Must keep the .matrixmap__facade element.
+         *
+         * @param string $html Placeholder HTML (escaped).
+         * @param array $config Map config.
+         * @param array $payload Front-end payload.
+         * @since 2.1.0
+         */
+        return apply_filters('matrixmap_facade', $html, $config, $payload);
     }
 
     /**
@@ -623,6 +670,32 @@ final class Renderer
              AND (post_content LIKE '%<!-- wp:matrixmaps/locator%' OR post_content LIKE '%[matrixmap_locator%')
              ORDER BY post_type = 'page' DESC, menu_order ASC, ID ASC LIMIT 1"
         );
+
+        // A saved store locator map on a page (the "Store locator" starting point: [matrixmap id="12"] or the MatrixMap block).
+        if (!$id) {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+            $maps = array_map('intval', (array) $wpdb->get_col($wpdb->prepare(
+                "SELECT pm.post_id FROM {$wpdb->postmeta} pm INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+                 WHERE pm.meta_key = %s AND pm.meta_value LIKE %s AND p.post_type = %s AND p.post_status = 'publish' LIMIT 20",
+                MapConfig::META_KEY,
+                '%"type":"locator"%',
+                MapPostType::POST_TYPE
+            )));
+
+            foreach ($maps as $map_id) {
+                $like = array('%[matrixmap id="' . $map_id . '"%', '%[matrixmap id=' . $map_id . ']%', '%[matrixmap id=' . $map_id . ' %', '%"map_id":' . $map_id . '}%', '%"map_id":' . $map_id . ',%');
+                // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- five LIKE values in $like.
+                $id = (int) $wpdb->get_var($wpdb->prepare(
+                    "SELECT ID FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type IN ('page','post')
+                     AND (post_content LIKE %s OR post_content LIKE %s OR post_content LIKE %s OR post_content LIKE %s OR post_content LIKE %s)
+                     ORDER BY post_type = 'page' DESC, menu_order ASC, ID ASC LIMIT 1",
+                    $like
+                ));
+                if ($id) {
+                    break;
+                }
+            }
+        }
 
         /**
          * Filters the store locator page used by the Store Search block.

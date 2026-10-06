@@ -117,9 +117,13 @@ final class Wizard
             <?php foreach ($lines as $line) : ?>
                 <p><?php echo esc_html($line); ?></p>
             <?php endforeach; ?>
-            <p>
+            <?php // Inline layout: this notice also shows on screens without the MatrixMap admin styles. ?>
+            <p style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px">
+                <?php $first = true; ?>
                 <?php foreach ($links as $url => $label) : ?>
-                    <a class="button button-primary" href="<?php echo esc_url($url); ?>"><?php echo esc_html($label); ?></a>
+                    <?php // One main action; the others are secondary. ?>
+                    <a class="button<?php echo $first ? ' button-primary' : ''; ?>" href="<?php echo esc_url($url); ?>"><?php echo esc_html($label); ?></a>
+                    <?php $first = false; ?>
                 <?php endforeach; ?>
                 <a class="button-link" href="<?php echo esc_url($dismiss); ?>"><?php esc_html_e('Dismiss', 'geo-maps'); ?></a>
             </p>

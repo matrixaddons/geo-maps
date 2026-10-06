@@ -51,6 +51,12 @@ function Edit( { attributes, setAttributes } ) {
 				setIsNew( true );
 				setEditing( true );
 			} )
+			.catch( ( err ) => {
+				const notices = window.wp && window.wp.data && window.wp.data.dispatch( 'core/notices' );
+				if ( notices ) {
+					notices.createErrorNotice( ( err && err.message ) || __( 'The map could not be created.', 'geo-maps' ), { type: 'snackbar' } );
+				}
+			} )
 			.finally( () => setCreating( false ) );
 	};
 

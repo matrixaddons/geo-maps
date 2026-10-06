@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from '@wordpress/element';
 import { Spinner } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
+import { applyFilters } from '@wordpress/hooks';
 
 export default function LivePreview( { config, highlight = '', onRegionClick } ) {
 	const ref = useRef();
@@ -53,13 +54,30 @@ export default function LivePreview( { config, highlight = '', onRegionClick } )
 					if ( cancelled || ! ref.current ) {
 						return;
 					}
-					const payload = Object.assign( {}, res.payload, { consent: 'off' } );
+					/**
+					 * Filters the preview's map payload before it is mounted.
+					 *
+					 * Add-ons put their unsaved per-map settings here, so the preview shows
+					 * them as visitors will (e.g. MatrixMap Pro's result template: payload.pro.results).
+					 *
+					 * @param {Object} payload Payload (as Renderer::payload() returns it).
+					 * @param {Object} config  The config being edited.
+					 */
+					const payload = applyFilters( 'matrixmap.preview.payload', Object.assign( {}, res.payload, { consent: 'off' } ), config );
 					ref.current.innerHTML = '';
 					const el = document.createElement( 'div' );
 					el.className = 'matrixmap matrixmap--' + payload.type;
 					el.setAttribute( 'data-matrixmap', '' );
 					el.style.setProperty( '--mm-height', payload.type === 'region' ? 'auto' : '480px' );
-					el.innerHTML = '<div class="matrixmap__stage" role="region" aria-label="' + __( 'Preview', 'geo-maps' ) + '"><div class="matrixmap__facade"></div></div>';
+					// Built with DOM calls: a translated label may contain quotes.
+					const stage = document.createElement( 'div' );
+					stage.className = 'matrixmap__stage';
+					stage.setAttribute( 'role', 'region' );
+					stage.setAttribute( 'aria-label', __( 'Preview', 'geo-maps' ) );
+					const facade = document.createElement( 'div' );
+					facade.className = 'matrixmap__facade';
+					stage.appendChild( facade );
+					el.appendChild( stage );
 					const script = document.createElement( 'script' );
 					script.type = 'application/json';
 					script.className = 'matrixmap__data';
@@ -70,6 +88,7 @@ export default function LivePreview( { config, highlight = '', onRegionClick } )
 						window.MatrixMapLoader.init( ref.current );
 					}
 				} )
+				.catch( () => {} ) // Keeps the last preview; the next change tries again.
 				.finally( () => ! cancelled && setBusy( false ) );
 		}, 400 );
 		return () => {

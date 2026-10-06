@@ -127,6 +127,11 @@ final class GeoIndex
             }
         }
 
+        // Password-protected locations stay out of the locator when Settings → Locations says so.
+        if ('location' === $args['type'] && \MatrixMap\Settings\Settings::hide_protected()) {
+            $where[] = "EXISTS (SELECT 1 FROM {$wpdb->posts} pp WHERE pp.ID = {$table}.object_id AND pp.post_password = '')";
+        }
+
         if (is_array($args['ids'])) {
             $ids = array_filter(array_map('absint', $args['ids']));
 
@@ -172,6 +177,12 @@ final class GeoIndex
 
         $rows = $wpdb->get_results($sql, ARRAY_A); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- every part prepared above; IDs are absint().
 
+        // The index table is gone (a failed migration, a partial restore): the store locator
+        // would find nothing. Recreate and refill it in the background.
+        if ('' !== $wpdb->last_error && false !== stripos($wpdb->last_error, $table)) {
+            \MatrixMap\Install\Installer::schedule_repair();
+        }
+
         return array_map(function ($row) {
             return array('object_id' => (int) $row['object_id'], 'distance' => round((float) $row['distance'], 3));
         }, is_array($rows) ? $rows : array());
@@ -207,22 +218,30 @@ final class GeoIndex
         $wpdb->query($wpdb->prepare('DELETE FROM %i WHERE object_type = %s', self::table(), 'location')); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 
         $count = 0;
-        $page = 1;
+        $after = 0;
 
+        // 500 locations at a time by ID: their meta in one query, one insert, and memory freed
+        // after each batch (no growing cache, no re-sorting every location for each page).
         do {
-            $ids = get_posts(array('post_type' => LocationPostType::POST_TYPE, 'post_status' => 'publish', 'fields' => 'ids', 'posts_per_page' => 500, 'paged' => $page, 'no_found_rows' => true));
+            $ids = array_map('intval', (array) $wpdb->get_col($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_status = 'publish' AND ID > %d ORDER BY ID ASC LIMIT 500", LocationPostType::POST_TYPE, $after))); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+            update_meta_cache('post', $ids);
+            $rows = array();
 
             foreach ($ids as $id) {
+                $after = $id;
                 $lat = get_post_meta($id, 'mm_lat', true);
                 $lng = get_post_meta($id, 'mm_lng', true);
 
                 if (is_numeric($lat) && is_numeric($lng)) {
-                    self::put('location', $id, (float) $lat, (float) $lng);
+                    $rows[] = $wpdb->prepare('(%s, %d, %f, %f)', 'location', $id, (float) $lat, (float) $lng);
                     $count++;
                 }
+                wp_cache_delete($id, 'post_meta');
             }
 
-            $page++;
+            if ($rows) {
+                $wpdb->query('REPLACE INTO ' . self::table() . ' (object_type, object_id, lat, lng) VALUES ' . implode(',', $rows)); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.NotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- every row is prepared above.
+            }
         } while (count($ids) === 500);
 
         return $count;

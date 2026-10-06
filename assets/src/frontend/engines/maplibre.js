@@ -21,9 +21,14 @@ function create( container, ctx ) {
 	const handlers = {};
 	const emit = ( ev, data ) => ( handlers[ ev ] || [] ).forEach( ( fn ) => fn( data ) );
 
+	// Add-ons may prepare MapLibre first (window.MatrixMap.prepareEngine: functions that may
+	// return a promise, e.g. MatrixMap Pro registering the pmtiles:// protocol). The style is
+	// set once they are done, so their protocol handlers see every tile request.
+	const prepare = ( ( window.MatrixMap && window.MatrixMap.prepareEngine ) || [] ).map( ( fn ) => Promise.resolve().then( () => fn( 'maplibre', maplibregl, ctx ) ).catch( () => null ) );
+
 	const map = new maplibregl.Map( {
 		container,
-		style: payload.style.url,
+		style: prepare.length ? undefined : payload.style.url,
 		center: [ view.lng || 0, view.lat || 20 ],
 		zoom: Math.max( 0, ( view.zoom || 2 ) - 1 ),
 		minZoom: Math.max( 0, ( view.minZoom || 0 ) - 1 ),
@@ -47,6 +52,12 @@ function create( container, ctx ) {
 
 	map.touchZoomRotate.disableRotation();
 	map.keyboard.enable();
+
+	// Scale bar (Settings → Controls), in the site's distance units.
+	if ( payload.controls && payload.controls.scale ) {
+		const miles = ( payload.units || ( ctx.settings && ctx.settings.units ) ) === 'mi';
+		map.addControl( new maplibregl.ScaleControl( { unit: miles ? 'imperial' : 'metric' } ), payload.controls.position === 'bottom-left' ? 'bottom-right' : 'bottom-left' );
+	}
 
 	// MapLibre marks every canvas as a "Map" region; the surrounding stage is already the
 	// named region, so the canvas becomes the keyboard-operable map inside it.
@@ -74,6 +85,10 @@ function create( container, ctx ) {
 		const status = e && e.error && e.error.status;
 		emit( 'error', status ? 'Map data request failed (HTTP ' + status + '): ' + ( e.sourceId || '' ) : msg );
 	} );
+
+	if ( prepare.length ) {
+		Promise.all( prepare ).then( () => map.setStyle( payload.style.url ) );
+	}
 
 	const loaded = new Promise( ( resolve ) => {
 		if ( map.loaded() ) {
@@ -109,6 +124,12 @@ function create( container, ctx ) {
 				content.setAttribute( 'role', 'dialog' );
 				content.setAttribute( 'aria-label', opts.label );
 			}
+			// Small maps (phones): never wider than the map itself.
+			const box = map.getContainer().getBoundingClientRect();
+			const cap = Math.max( 180, Math.floor( box.width - 64 ) ); // Content box: leaves room for the popup's padding and a margin.
+			if ( content.style && ( ! content.style.maxWidth || parseFloat( content.style.maxWidth ) > cap ) ) {
+				content.style.maxWidth = cap + 'px';
+			}
 			const popup = new maplibregl.Popup( {
 				offset: opts.offset ? { bottom: [ 0, -opts.offset ], top: [ 0, 0 ], left: [ 0, -opts.offset / 2 ], right: [ 0, -opts.offset / 2 ], center: [ 0, 0 ] } : 8,
 				maxWidth: 'none',
@@ -119,8 +140,78 @@ function create( container, ctx ) {
 				.setLngLat( [ lng, lat ] )
 				.setDOMContent( content )
 				.addTo( map );
+			// Pan so the whole popup is inside the map (MapLibre doesn't, unlike Leaflet and Google).
+			// Re-checked when the content grows (details loading, add-on buttons).
+			const underPopup = [];
+			const fit = () => {
+				const el = popup.getElement && popup.getElement();
+				if ( ! el || ! popup.isOpen() ) {
+					return;
+				}
+				const r = el.getBoundingClientRect();
+				const c = map.getContainer().getBoundingClientRect();
+				const pad = 10;
+				let dx = 0;
+				let dy = 0;
+				// Too big to fit: show its start (title and close button) rather than its end.
+				if ( r.width > c.width - pad * 2 ) {
+					dx = r.left - c.left - pad;
+				} else {
+					dx = r.left < c.left + pad ? r.left - c.left - pad : r.right > c.right - pad ? r.right - c.right + pad : 0;
+				}
+				if ( r.height > c.height - pad * 2 ) {
+					dy = r.top - c.top - pad;
+				} else {
+					dy = r.top < c.top + pad ? r.top - c.top - pad : r.bottom > c.bottom - pad ? r.bottom - c.bottom + pad : 0;
+				}
+				// Keep it clear of the map buttons too (they sit above the map, so they would cover it).
+				const stage = map.getContainer().parentElement;
+				( stage ? stage.querySelectorAll( '.mm-ctl' ) : [] ).forEach( ( ctl ) => {
+					const k = ctl.getBoundingClientRect();
+					const L = r.left - dx;
+					const R = r.right - dx;
+					const T = r.top - dy;
+					const B = r.bottom - dy;
+					if ( ! k.width || R <= k.left || L >= k.right || B <= k.top || T >= k.bottom ) {
+						return;
+					}
+					const left = R - k.left + 6; // Move the popup left of the buttons...
+					const right = k.right - L + 6; // ...or right of them...
+					const down = k.bottom - T + 6; // ...or below them.
+					if ( L - left >= c.left + pad ) {
+						dx += left;
+					} else if ( R + right <= c.right - pad ) {
+						dx -= right;
+					} else if ( B + down <= c.bottom - pad ) {
+						dy -= down;
+					} else {
+						// No room on a small map: the buttons step aside (dimmed, not clickable) until
+						// the popup closes, so they cannot cover its close button.
+						ctl.classList.add( 'is-under-popup' );
+						underPopup.push( ctl );
+					}
+				} );
+				if ( Math.abs( dx ) > 1 || Math.abs( dy ) > 1 ) {
+					map.panBy( [ dx, dy ], { duration: reducedMotion() ? 0 : 300 } );
+				}
+			};
+			window.requestAnimationFrame( fit );
+			let ro = null;
+			if ( typeof window.ResizeObserver === 'function' ) {
+				let last = 0;
+				ro = new window.ResizeObserver( () => {
+					const hgt = content.offsetHeight;
+					if ( hgt !== last ) {
+						last = hgt;
+						window.requestAnimationFrame( fit );
+					}
+				} );
+				ro.observe( content );
+				popup.on( 'close', () => ro.disconnect() );
+			}
 			let closed = false;
 			popup.on( 'close', () => {
+				underPopup.splice( 0 ).forEach( ( ctl ) => ctl.classList.remove( 'is-under-popup' ) );
 				if ( ! closed ) {
 					closed = true;
 					if ( opts.onClose ) {

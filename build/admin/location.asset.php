@@ -2,5 +2,5 @@
 	'dependencies' => array('matrixmap-maplibre'
 		
 	),
-	'version' => 'cee94a9c04add5ef9856'
+	'version' => 'db916ff360c08ae23e77'
 );

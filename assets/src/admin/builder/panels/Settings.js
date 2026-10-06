@@ -58,6 +58,7 @@ export default function Settings( { config, update, useCurrentView } ) {
 						<ToggleControl __nextHasNoMarginBottom label={ __( 'Zoom buttons', 'geo-maps' ) } checked={ config.controls.zoom } onChange={ ( v ) => set( 'controls', { zoom: v } ) } />
 						<ToggleControl __nextHasNoMarginBottom label={ __( '“Show my location” button', 'geo-maps' ) } checked={ config.controls.locate } onChange={ ( v ) => set( 'controls', { locate: v } ) } />
 						<ToggleControl __nextHasNoMarginBottom label={ __( 'Full screen button', 'geo-maps' ) } checked={ config.controls.fullscreen } onChange={ ( v ) => set( 'controls', { fullscreen: v } ) } />
+						<ToggleControl __nextHasNoMarginBottom label={ __( 'Scale bar', 'geo-maps' ) } checked={ !! config.controls.scale } onChange={ ( v ) => set( 'controls', { scale: v } ) } />
 						<SelectControl
 							__nextHasNoMarginBottom
 							label={ __( 'Mouse wheel', 'geo-maps' ) }
@@ -98,6 +99,17 @@ export default function Settings( { config, update, useCurrentView } ) {
 							] }
 							onChange={ ( v ) => set( 'popup', { trigger: v } ) }
 						/>
+						<SelectControl
+							__nextHasNoMarginBottom
+							label={ __( 'Popup layout', 'geo-maps' ) }
+							value={ config.popup.layout || 'card' }
+							options={ [
+								{ label: __( 'Card: photo on top', 'geo-maps' ), value: 'card' },
+								{ label: __( 'Side by side: photo beside the text', 'geo-maps' ), value: 'side' },
+								{ label: __( 'Compact: title, status and buttons only', 'geo-maps' ), value: 'minimal' },
+							] }
+							onChange={ ( v ) => set( 'popup', { layout: v } ) }
+						/>
 						<RangeControl __nextHasNoMarginBottom label={ __( 'Popup width (px)', 'geo-maps' ) } min={ 180 } max={ 520 } value={ config.popup.maxWidth } onChange={ ( v ) => set( 'popup', { maxWidth: v } ) } />
 						<ToggleControl __nextHasNoMarginBottom label={ __( 'Directions button (Google Maps, Apple Maps, Waze)', 'geo-maps' ) } checked={ config.directions.enabled } onChange={ ( v ) => set( 'directions', { enabled: v } ) } />
 					</PanelBody>
@@ -120,6 +132,21 @@ export default function Settings( { config, update, useCurrentView } ) {
 							</>
 						) : null }
 						<ToggleControl __nextHasNoMarginBottom label={ __( 'Category filter buttons', 'geo-maps' ) } checked={ config.filter.enabled } onChange={ ( v ) => set( 'filter', { enabled: v } ) } />
+						<ToggleControl __nextHasNoMarginBottom label={ __( 'Category legend on the map', 'geo-maps' ) } help={ __( 'A small key with each category’s colour and name.', 'geo-maps' ) } checked={ !! ( config.legend && config.legend.enabled ) } onChange={ ( v ) => set( 'legend', { enabled: v } ) } />
+						{ config.legend && config.legend.enabled ? (
+							<SelectControl
+								__nextHasNoMarginBottom
+								label={ __( 'Legend position', 'geo-maps' ) }
+								value={ config.legend.position || 'bottom-left' }
+								options={ [
+									{ label: __( 'Bottom left', 'geo-maps' ), value: 'bottom-left' },
+									{ label: __( 'Bottom right', 'geo-maps' ), value: 'bottom-right' },
+									{ label: __( 'Top left', 'geo-maps' ), value: 'top-left' },
+									{ label: __( 'Top right', 'geo-maps' ), value: 'top-right' },
+								] }
+								onChange={ ( v ) => set( 'legend', { position: v } ) }
+							/>
+						) : null }
 					</PanelBody>
 
 					<PanelBody title={ __( 'Clustering', 'geo-maps' ) } initialOpen={ false }>

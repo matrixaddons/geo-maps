@@ -6,7 +6,7 @@
  */
 import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from '@wordpress/element';
 import { Button, Spinner, Notice, ToggleControl } from '@wordpress/components';
-import { applyFilters, addAction, removeAction } from '@wordpress/hooks';
+import { applyFilters, addAction, doAction, removeAction } from '@wordpress/hooks';
 import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf } from '@wordpress/i18n';
 import PreviewMap from './PreviewMap';
@@ -37,6 +37,11 @@ export default function MapBuilder( { mapId, mode = 'page', isNew = false, templ
 	const [ drawing, setDrawing ] = useState( null );
 	const [ adding, setAdding ] = useState( false );
 	const [ device, setDevice ] = useState( 'desktop' );
+	// Undo/redo: the config before each change (Ctrl/⌘+Z, Ctrl/⌘+Shift+Z or Ctrl+Y; the
+	// buttons in the preview bar). Changes within 600 ms (typing) count as one step.
+	const history = useRef( { past: [], future: [], last: 0 } );
+	const [ histTick, setHistTick ] = useState( 0 );
+	const saveRef = useRef( null );
 
 	// Esc stops "add place" mode.
 	useEffect( () => {
@@ -103,7 +108,7 @@ export default function MapBuilder( { mapId, mode = 'page', isNew = false, templ
 			const urls = {};
 			items.forEach( ( it ) => ( urls[ it.id ] = ( it.media_details && it.media_details.sizes && it.media_details.sizes.thumbnail && it.media_details.sizes.thumbnail.source_url ) || it.source_url ) );
 			setConfig( ( c ) => Object.assign( {}, c, { markers: c.markers.map( ( m ) => ( m.icon && m.icon.image && urls[ m.icon.image ] ? Object.assign( {}, m, { icon: Object.assign( {}, m.icon, { url: urls[ m.icon.image ] } ) } ) : m ) ) } ) );
-		} );
+		} ).catch( () => {} ); // Icons keep their placeholder.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ config && config.markers.length ] );
 
@@ -136,15 +141,73 @@ export default function MapBuilder( { mapId, mode = 'page', isNew = false, templ
 		( patch ) => {
 			setConfig( ( c ) => {
 				const next = Object.assign( {}, c, typeof patch === 'function' ? patch( c ) : patch );
+				const hst = history.current;
+				const now = Date.now();
+				if ( c && hst.past[ hst.past.length - 1 ] !== c && now - hst.last > 600 ) {
+					hst.past = hst.past.slice( -49 ).concat( [ c ] );
+				}
+				hst.future = [];
+				hst.last = now;
 				if ( onChange ) {
 					onChange( next );
 				}
 				return next;
 			} );
 			setDirty( true );
+			setHistTick( ( n ) => n + 1 );
 		},
 		[ onChange ]
 	);
+
+	const timeTravel = useCallback(
+		( from, to ) => {
+			const hst = history.current;
+			if ( ! hst[ from ].length ) {
+				return;
+			}
+			setConfig( ( c ) => {
+				const next = hst[ from ].pop();
+				hst[ to ].push( c );
+				hst.last = 0;
+				if ( onChange ) {
+					onChange( next );
+				}
+				return next;
+			} );
+			setDirty( true );
+			setHistTick( ( n ) => n + 1 );
+		},
+		[ onChange ]
+	);
+	const undo = useCallback( () => timeTravel( 'past', 'future' ), [ timeTravel ] );
+	const redo = useCallback( () => timeTravel( 'future', 'past' ), [ timeTravel ] );
+
+	// Keyboard shortcuts: Ctrl/⌘+S saves; Ctrl/⌘+Z and Ctrl/⌘+Shift+Z (or Ctrl+Y) undo and
+	// redo outside text fields, where the browser's own text undo keeps working.
+	useEffect( () => {
+		const onKey = ( e ) => {
+			if ( ! ( e.metaKey || e.ctrlKey ) || e.altKey ) {
+				return;
+			}
+			const k = String( e.key || '' ).toLowerCase();
+			const t = e.target || {};
+			const inField = /^(input|textarea|select)$/i.test( t.tagName || '' ) || t.isContentEditable;
+			if ( k === 's' ) {
+				e.preventDefault();
+				if ( saveRef.current ) {
+					saveRef.current();
+				}
+			} else if ( ! inField && k === 'z' && ! e.shiftKey ) {
+				e.preventDefault();
+				undo();
+			} else if ( ! inField && ( ( k === 'z' && e.shiftKey ) || k === 'y' ) ) {
+				e.preventDefault();
+				redo();
+			}
+		};
+		window.addEventListener( 'keydown', onKey );
+		return () => window.removeEventListener( 'keydown', onKey );
+	}, [ undo, redo ] );
 
 	const setMarker = useCallback( ( id, patch ) => update( ( c ) => ( { markers: c.markers.map( ( m ) => ( m.id === id ? Object.assign( {}, m, patch ) : m ) ) } ) ), [ update ] );
 
@@ -216,6 +279,18 @@ export default function MapBuilder( { mapId, mode = 'page', isNew = false, templ
 			.finally( () => setSaving( false ) );
 	};
 
+	// Ctrl/⌘+S: the page's Update/Publish button (page mode) or the REST save (modal mode).
+	saveRef.current = () => {
+		if ( mode === 'page' ) {
+			const btn = document.getElementById( 'publish' ) || document.getElementById( 'save-post' );
+			if ( btn ) {
+				btn.click();
+			}
+		} else if ( ! saving ) {
+			save();
+		}
+	};
+
 	const selectedMarker = useMemo( () => ( config && selected ? config.markers.find( ( m ) => m.id === selected ) : null ), [ config, selected ] );
 
 	if ( ! config ) {
@@ -274,7 +349,8 @@ export default function MapBuilder( { mapId, mode = 'page', isNew = false, templ
 	const current = tabs.find( ( t ) => t.name === tab ) || tabs[ 0 ];
 	const onRailKey = ( e ) => {
 		const i = tabs.findIndex( ( t ) => t.name === current.name );
-		const next = e.key === 'ArrowDown' ? tabs[ ( i + 1 ) % tabs.length ] : e.key === 'ArrowUp' ? tabs[ ( i - 1 + tabs.length ) % tabs.length ] : null;
+		const keys = { ArrowDown: tabs[ ( i + 1 ) % tabs.length ], ArrowUp: tabs[ ( i - 1 + tabs.length ) % tabs.length ], Home: tabs[ 0 ], End: tabs[ tabs.length - 1 ] };
+		const next = keys[ e.key ] || null;
 		if ( next ) {
 			e.preventDefault();
 			setTab( next.name );
@@ -384,7 +460,7 @@ export default function MapBuilder( { mapId, mode = 'page', isNew = false, templ
 								case 'places':
 									return (
 										<>
-											<Places config={ config } onSelect={ setSelected } onAdd={ addMarker } adding={ adding } setAdding={ setAdding } map={ mapRef } update={ update } canClick={ isMarkers } />
+											<Places config={ config } onSelect={ setSelected } onAdd={ addMarker } onUpdate={ setMarker } adding={ adding } setAdding={ setAdding } map={ mapRef } update={ update } canClick={ isMarkers } />
 											{ isMarkers ? <Categories config={ config } update={ update } /> : null }
 											{ config.type === 'region' ? <RegionMarkerStyle region={ config.region } set={ setRegion } count={ config.markers.length } /> : null }
 											{ config.type === 'region' ? <RegionLines region={ config.region } set={ setRegion } count={ config.markers.length } /> : null }
@@ -437,6 +513,10 @@ export default function MapBuilder( { mapId, mode = 'page', isNew = false, templ
 			<div className="mm-b__main">
 				<div className="mm-b__bar">
 					<div className="mm-b__bar-tools">
+						<span className="mm-b__history" role="group" aria-label={ __( 'Undo and redo', 'geo-maps' ) } data-tick={ histTick }>
+							<Button size="compact" variant="tertiary" icon="undo" label={ __( 'Undo (Ctrl+Z)', 'geo-maps' ) } showTooltip disabled={ ! history.current.past.length } onClick={ undo } />
+							<Button size="compact" variant="tertiary" icon="redo" label={ __( 'Redo (Ctrl+Shift+Z)', 'geo-maps' ) } showTooltip disabled={ ! history.current.future.length } onClick={ redo } />
+						</span>
 						{ isMarkers ? (
 							<>
 								<Button size="compact" variant={ adding ? 'primary' : 'secondary' } icon="location" aria-pressed={ adding } onClick={ () => {
@@ -499,7 +579,11 @@ export default function MapBuilder( { mapId, mode = 'page', isNew = false, templ
 							<PreviewMap config={ config } selectedId={ selected } onSelect={ ( id ) => {
 								setSelected( id );
 								setAdding( false );
-							} } onMove={ ( id, lat, lng ) => setMarker( id, { lat: +lat.toFixed( 7 ), lng: +lng.toFixed( 7 ) } ) } onMapClick={ onMapClick } drawing={ drawing } onReady={ ( m ) => ( mapRef.current = m ) } fitSignal={ fitSignal } />
+							} } onMove={ ( id, lat, lng ) => setMarker( id, { lat: +lat.toFixed( 7 ), lng: +lng.toFixed( 7 ) } ) } onMapClick={ onMapClick } drawing={ drawing } onReady={ ( m ) => {
+								mapRef.current = m;
+								// Add-ons (MatrixMap Pro: 3D, style editor) draw on the preview map too.
+								doAction( 'matrixmap.builder.preview', m, config );
+							} } fitSignal={ fitSignal } />
 						) : (
 							<LivePreview
 								config={ config }

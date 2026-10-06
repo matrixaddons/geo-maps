@@ -43,7 +43,7 @@ final class MapConfig
             'size' => array('height' => '480px', 'heightMobile' => '', 'width' => '100%'),
             'controls' => array('zoom' => true, 'fullscreen' => true, 'locate' => true, 'scale' => false, 'position' => 'top-right'),
             'interaction' => array('scrollZoom' => 'ctrl', 'drag' => true, 'gestures' => ''),
-            'popup' => array('trigger' => 'click', 'maxWidth' => 300),
+            'popup' => array('trigger' => 'click', 'maxWidth' => 300, 'layout' => 'card'),
             'markers' => array(),
             'categories' => array(),
             'shapes' => array(),
@@ -51,6 +51,8 @@ final class MapConfig
             'cluster' => array('enabled' => false, 'radius' => 60),
             'list' => array('enabled' => false, 'position' => 'side', 'search' => true),
             'filter' => array('enabled' => true, 'style' => 'chips'),
+            // A category legend over the map (colour + name). Off so existing maps keep their look.
+            'legend' => array('enabled' => false, 'position' => 'bottom-left'),
             'directions' => array('enabled' => true),
             'locations' => array('source' => 'none', 'categories' => array()),
             'consent' => '',
@@ -66,6 +68,13 @@ final class MapConfig
                 'countries' => '',
                 'suggest' => true,
                 'detailFilters' => array(),
+                // Visitor tools, off by default: a "Sort" choice (distance, name, open now first)
+                // and a "Copy link" button after a search.
+                'sort' => false,
+                'share' => false,
+                // Radius circle around the searched address. Off here so maps saved before it
+                // existed keep their look; the map editor turns it on for new locators (EditorData).
+                'circle' => false,
             ),
             'region' => array(
                 'map' => 'world',
@@ -345,6 +354,8 @@ final class MapConfig
         $c['popup'] = array(
             'trigger' => self::pick($p, 'trigger', array('click', 'hover'), 'click'),
             'maxWidth' => self::num($p, 'maxWidth', 160, 640, 300),
+            // card: photo on top (the original look); side: photo beside the text; minimal: title, status and buttons only.
+            'layout' => self::pick($p, 'layout', array('card', 'side', 'minimal'), 'card'),
         );
 
         $c['categories'] = self::categories(self::arr($raw, 'categories'));
@@ -365,6 +376,12 @@ final class MapConfig
 
         $f = self::arr($raw, 'filter');
         $c['filter'] = array('enabled' => self::bool($f, 'enabled', true), 'style' => self::pick($f, 'style', array('chips', 'select', 'checkbox'), 'chips'));
+
+        $lg = self::arr($raw, 'legend');
+        $c['legend'] = array(
+            'enabled' => self::bool($lg, 'enabled', false),
+            'position' => self::pick($lg, 'position', array('bottom-left', 'bottom-right', 'top-left', 'top-right'), 'bottom-left'),
+        );
 
         $dir = self::arr($raw, 'directions');
         $c['directions'] = array('enabled' => self::bool($dir, 'enabled', true));
@@ -598,6 +615,9 @@ final class MapConfig
             'layout' => self::pick($l, 'layout', array('side', 'side-right', 'stacked', 'grid'), 'side'),
             'countries' => isset($l['countries']) && is_scalar($l['countries']) ? strtoupper(preg_replace('/[^A-Za-z,]/', '', (string) $l['countries'])) : '',
             'suggest' => self::bool($l, 'suggest', true),
+            'circle' => self::bool($l, 'circle', false),
+            'sort' => self::bool($l, 'sort', false),
+            'share' => self::bool($l, 'share', false),
             'detailFilters' => array_slice(array_values(array_filter(array_map(function ($v) {
                 return is_scalar($v) ? mb_substr(sanitize_text_field((string) $v), 0, 60) : '';
             }, isset($l['detailFilters']) && is_array($l['detailFilters']) ? $l['detailFilters'] : array()))), 0, 5),

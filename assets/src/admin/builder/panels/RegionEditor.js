@@ -547,6 +547,8 @@ export function RegionAppearance( { region, set } ) {
 			<PanelBody title={ __( 'When a region is clicked', 'geo-maps' ) }>
 				<SelectControl
 					__nextHasNoMarginBottom
+					label={ __( 'When a region is clicked', 'geo-maps' ) }
+					hideLabelFromVision
 					value={ region.click || 'auto' }
 					options={ [
 						{ label: __( 'Open its link (if it has one)', 'geo-maps' ), value: 'auto' },

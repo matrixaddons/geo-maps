@@ -26,6 +26,7 @@ final class Blocks
      */
     public static function init()
     {
+        add_action('init', array(__CLASS__, 'jsx_runtime'), 1);
         add_action('init', array(__CLASS__, 'register'));
         add_filter('block_categories_all', array(__CLASS__, 'category'));
 
@@ -33,6 +34,23 @@ final class Blocks
         foreach (array('save_post_page', 'save_post_post', 'deleted_post', 'trashed_post') as $hook) {
             add_action($hook, array(__CLASS__, 'forget_locator_page'));
         }
+    }
+
+    /**
+     * WordPress 6.5 has no "react-jsx-runtime" script (added in 6.6), which the
+     * blocks and the map builder need: without it they never load. Register a
+     * small stand-in built on React when WordPress doesn't have one.
+     */
+    public static function jsx_runtime()
+    {
+        $scripts = wp_scripts();
+
+        if ($scripts->query('react-jsx-runtime', 'registered')) {
+            return;
+        }
+
+        $scripts->add('react-jsx-runtime', false, array('react'));
+        $scripts->add_inline_script('react-jsx-runtime', 'window.ReactJSXRuntime=window.ReactJSXRuntime||(function(R){function jsx(t,p,k){var o=p||{};if(k!==undefined){o=Object.assign({},o,{key:k});}return R.createElement(t,o);}return{jsx:jsx,jsxs:jsx,Fragment:R.Fragment};})(window.React);');
     }
 
     /**

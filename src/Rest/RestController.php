@@ -22,6 +22,7 @@ namespace MatrixMap\Rest;
 use MatrixMap\Geo\Geocoder;
 use MatrixMap\Geo\VisitorLocation;
 use MatrixMap\Locations\GeoIndex;
+use MatrixMap\Locations\JsonBlob;
 use MatrixMap\Locations\LocationPostType;
 use MatrixMap\Locations\LocationsCache;
 use MatrixMap\Maps\MapConfig;
@@ -196,7 +197,8 @@ final class RestController
         }
 
         $params = $request->get_json_params();
-        $config = MapConfig::save($post->ID, isset($params['config']) ? $params['config'] : array());
+        // Only a request that sends a config changes it: renaming a map must not reset it.
+        $config = isset($params['config']) && is_array($params['config']) ? MapConfig::save($post->ID, $params['config']) : MapConfig::for_map($post->ID);
 
         if (isset($params['title']) && is_string($params['title'])) {
             wp_update_post(array('ID' => $post->ID, 'post_title' => sanitize_text_field($params['title'])));
@@ -641,6 +643,22 @@ final class RestController
         // Only real categories count (sorted, at most 20), so the cache can't be flooded with variants.
         $cats = self::geojson_categories((string) $request['categories']);
         $lean = (bool) $request['lean'];
+        $bbox = array_map('floatval', array_filter(explode(',', (string) $request['bbox']), 'is_numeric'));
+        if (4 === count($bbox)) {
+            // West, south, east, north on the globe (1e400 or -999 cannot reach the query).
+            $bbox = array(max(-180, min(180, $bbox[0])), max(-90, min(90, $bbox[1])), max(-180, min(180, $bbox[2])), max(-90, min(90, $bbox[3])));
+        }
+
+        // More locations than one file holds: the visible area comes from the database
+        // (the file would be missing some), unless ?_fields= needs decoded data.
+        if (4 === count($bbox) && !isset($request['_fields']) && LocationsCache::over_cap()) {
+            // A database build costs ten page views of the visitor's allowance (60 per 10 minutes).
+            if (!current_user_can('edit_matrixmaps') && !self::rate_ok('geojson', 9)) {
+                return new WP_Error('matrixmap_busy', __('Too many requests. Please wait a minute and try again.', 'geo-maps'), array('status' => 429));
+            }
+            return self::cacheable(new WP_REST_Response(new JsonBlob('', LocationsCache::bbox_json($lean ? 'lean' : 'full', $cats, $bbox))), 600);
+        }
+
         $blob = LocationsCache::get($lean ? 'lean' : 'full', $cats);
 
         if (is_wp_error($blob)) {
@@ -653,12 +671,24 @@ final class RestController
         }
 
         // The visible area filter runs on the cached data.
-        $bbox = array_map('floatval', array_filter(explode(',', (string) $request['bbox']), 'is_numeric'));
         if (4 === count($bbox)) {
-            $data = $blob->jsonSerialize();
             $inside = function ($lng, $lat) use ($bbox) {
                 return $lng >= $bbox[0] && $lat >= $bbox[1] && $lng <= $bbox[2] && $lat <= $bbox[3];
             };
+            // Entry by entry, and sent as JSON text: decoding all locations at once can take
+            // more memory than PHP has.
+            $json = $blob->filter_list($lean ? 'items' : 'features', $lean ? function ($i) use ($inside) {
+                return $inside($i[2], $i[1]);
+            } : function ($f) use ($inside) {
+                return $inside($f['geometry']['coordinates'][0], $f['geometry']['coordinates'][1]);
+            }, !isset($request['_fields']));
+            if (is_string($json)) {
+                return self::cacheable(new WP_REST_Response(new JsonBlob('', $json)), 600);
+            }
+            if (is_array($json)) {
+                return self::cacheable(rest_ensure_response($json), 600);
+            }
+            $data = $blob->jsonSerialize();
             if ($lean) {
                 $data['items'] = array_values(array_filter((array) $data['items'], function ($i) use ($inside) {
                     return $inside($i[2], $i[1]);
@@ -672,7 +702,8 @@ final class RestController
             return self::cacheable(rest_ensure_response($data), 600);
         }
 
-        $response = new WP_REST_Response($blob);
+        // ?_fields= picks keys from decoded data (WordPress can't do that with the file as is).
+        $response = new WP_REST_Response(isset($request['_fields']) ? $blob->jsonSerialize() : $blob);
         $etag = $blob->etag();
         $response->header('ETag', $etag);
         if ($etag === trim((string) $request->get_header('if_none_match'))) {
@@ -706,7 +737,11 @@ final class RestController
         $markers = array();
 
         if ($ids) {
-            $found = get_posts(array('post_type' => LocationPostType::POST_TYPE, 'post_status' => 'publish', 'post__in' => $ids, 'fields' => 'ids', 'posts_per_page' => 100, 'no_found_rows' => true, 'orderby' => 'post__in'));
+            $query = array('post_type' => LocationPostType::POST_TYPE, 'post_status' => 'publish', 'post__in' => $ids, 'fields' => 'ids', 'posts_per_page' => 100, 'no_found_rows' => true, 'orderby' => 'post__in');
+            if (Settings::hide_protected()) {
+                $query['has_password'] = false;
+            }
+            $found = get_posts($query);
             LocationPostType::prime($found);
 
             foreach ($found as $id) {

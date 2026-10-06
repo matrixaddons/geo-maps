@@ -74,9 +74,12 @@ export function directionsMenu( marker, origin, i18n ) {
  */
 export function popupContent( marker, ctx ) {
 	const { i18n } = ctx;
-	const root = h( 'div', { class: 'mm-popup', style: 'max-width:' + ( ctx.maxWidth || 300 ) + 'px' } );
+	// Layouts: card (photo on top, the default), side (photo beside the text), minimal (title, status, address and buttons only).
+	const layout = [ 'side', 'minimal' ].includes( ctx.layout ) ? ctx.layout : 'card';
+	const minimal = layout === 'minimal';
+	const root = h( 'div', { class: 'mm-popup mm-popup--' + layout, style: 'max-width:' + ( ctx.maxWidth || 300 ) + 'px' } );
 
-	if ( marker.image ) {
+	if ( marker.image && ! minimal ) {
 		root.appendChild( h( 'img', { class: 'mm-popup__image', src: marker.image, alt: '', loading: 'lazy', decoding: 'async' } ) );
 	}
 
@@ -100,13 +103,13 @@ export function popupContent( marker, ctx ) {
 		body.appendChild( h( 'p', { class: 'mm-popup__address', text: marker.address } ) );
 	}
 
-	if ( marker.html ) {
+	if ( marker.html && ! minimal ) {
 		// Server-sanitized (wp_kses_post) HTML.
 		body.appendChild( h( 'div', { class: 'mm-popup__content', html: marker.html } ) );
 	}
 
 	// Extra details (label / value), plain text; web addresses become links.
-	if ( Array.isArray( marker.details ) && marker.details.length ) {
+	if ( ! minimal && Array.isArray( marker.details ) && marker.details.length ) {
 		const dl = h( 'dl', { class: 'mm-popup__details' } );
 		marker.details.forEach( ( d ) => {
 			const row = h( 'div', { class: 'mm-popup__detail' } );
@@ -125,7 +128,7 @@ export function popupContent( marker, ctx ) {
 		body.appendChild( dl );
 	}
 
-	if ( marker.hours && Object.keys( marker.hours ).length ) {
+	if ( ! minimal && marker.hours && Object.keys( marker.hours ).length ) {
 		const rows = weekRows( marker, i18n, ctx.locale );
 		const table = h( 'table', { class: 'mm-hours' }, rows.map( ( r ) => h( 'tr', { class: r.today ? 'is-today' : '' }, [ h( 'th', { scope: 'row', text: r.label } ), h( 'td', { text: r.text } ) ] ) ) );
 		const det = h( 'details', { class: 'mm-popup__hours' }, [ h( 'summary', { html: svg( ICONS.clock, 14 ) + '<span></span>' } ), table ] );

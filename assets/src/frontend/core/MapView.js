@@ -14,7 +14,7 @@ import { boundsOf, circleRing, distanceKm, fromKm } from './geo';
 import { accent, createCluster, createMarker, createUserDot } from './markers';
 import { popupContent } from './popup';
 import { createControls } from './controls';
-import { createFilter, createList } from './list';
+import { createFilter, createLegend, createList } from './list';
 import { featureBounds, featureInfo, loadLayer } from './layers';
 
 export default class MapView {
@@ -31,6 +31,8 @@ export default class MapView {
 		this.locale = this.settings.locale || undefined;
 		this.units = payload.units || this.settings.units || 'km';
 		this.markers = ( payload.markers || [] ).slice();
+		// Places that came with the page (kept when the visible area is reloaded).
+		this.inline = this.markers.slice();
 		this.categoryIndex = {};
 		( payload.categories || [] ).forEach( ( c ) => ( this.categoryIndex[ c.id ] = c ) );
 		this.activeCats = new Set();
@@ -63,7 +65,11 @@ export default class MapView {
 		if ( this.payload.leanUrl && this.payload.dataUrl ) {
 			// Many locations: the lean index now, each popup's details when opened.
 			// deferLean: the store locator loads it itself, only when needed.
-			if ( ! this.payload.deferLean ) {
+			// leanViewport: more locations than one file holds; the visible area loads
+			// once the map exists (see loadViewport()) and again whenever it moves.
+			if ( this.payload.leanViewport ) {
+				this.viewport = { bbox: null, items: null, key: '' };
+			} else if ( ! this.payload.deferLean ) {
 				this.markers.push( ...( await this.loadLean() ) );
 			}
 		} else if ( this.payload.dataUrl ) {
@@ -128,12 +134,28 @@ export default class MapView {
 			this.el.insertBefore( this.filterEl, this.el.querySelector( '.mm-layout' ) || this.stage );
 		}
 
+		const legend = createLegend( this );
+		if ( legend ) {
+			this.stage.appendChild( legend );
+		}
+
 		this.drawShapes();
 		this.loadLayers();
 		this.refresh();
 		this.fitInitial();
 
-		this.adapter.on( 'moveend', () => this.clustering && this.renderClusters() );
+		if ( this.viewport && ! this.payload.deferLean ) {
+			await this.loadViewport();
+		}
+
+		this.adapter.on( 'moveend', () => {
+			if ( this.clustering ) {
+				this.renderClusters();
+			}
+			if ( this.viewport && ! this.viewportPaused ) {
+				this.scheduleViewport();
+			}
+		} );
 		this.adapter.on( 'error', ( msg ) => this.diagnose( msg ) );
 
 		// Keep the map sized inside tabs, accordions and modals.
@@ -225,6 +247,10 @@ export default class MapView {
 	 * @return {Promise<Array>} Lean markers (m.lean: popup details not loaded yet).
 	 */
 	loadLean() {
+		// More locations than one file holds: what is in view now stands in for the index.
+		if ( this.viewport && this.adapter ) {
+			return this.loadViewport();
+		}
 		if ( this.leanPromise ) {
 			return this.leanPromise;
 		}
@@ -234,40 +260,117 @@ export default class MapView {
 		const get = file ? this.getJson( file, 0 ).catch( () => this.getJson( url ) ) : this.getJson( url );
 		this.leanPromise = get
 			.then( ( data ) => {
-				const f = {};
-				( data.fields || [] ).forEach( ( name, i ) => ( f[ name ] = i ) );
-				const terms = {};
-				( data.terms || [] ).forEach( ( t ) => {
-					terms[ t.id ] = t;
-					const id = 'term-' + t.id;
-					if ( ! this.categoryIndex[ id ] ) {
-						this.categoryIndex[ id ] = { id, name: t.name, color: t.color || accent() };
-						( this.payload.categories = this.payload.categories || [] ).push( this.categoryIndex[ id ] );
+				const items = this.leanItems( data );
+				// The file stops at the site's limit: from now on load the visible area instead.
+				if ( data.truncated && ! this.viewport ) {
+					this.viewport = { bbox: null, items: null, key: '' };
+					if ( this.adapter ) {
+						return this.loadViewport();
 					}
-				} );
-				this.leanFacets = data.facets || {};
-				// Same marker look as the full data (Renderer::location_marker()).
-				return ( data.items || [] ).map( ( r ) => ( {
-					id: 'loc' + r[ f.id ],
-					loc: r[ f.id ],
-					lat: r[ f.lat ],
-					lng: r[ f.lng ],
-					title: r[ f.title ],
-					address: r[ f.address ] || '',
-					city: r[ f.city ] || '',
-					postcode: r[ f.postcode ] || '',
-					icon: { type: 'pin', color: r[ f.color ] || '', glyph: '', url: '', size: 36 },
-					cats: ( r[ f.cats ] || [] ).map( ( c ) => 'term-' + c ),
-					terms: ( r[ f.cats ] || [] ).map( ( c ) => terms[ c ] ).filter( Boolean ),
-					hasHours: !! ( r[ f.flags ] & 1 ),
-					lean: true,
-				} ) );
+				}
+				return items;
 			} )
 			.catch( ( e ) => {
 				this.diagnose( 'Locations could not be loaded: ' + e.message );
 				return [];
 			} );
 		return this.leanPromise;
+	}
+
+	/**
+	 * Lean index data → markers (their categories are added to the map's categories).
+	 *
+	 * @param {Object} data Lean JSON (fields, items, terms, facets).
+	 * @return {Array} Lean markers.
+	 */
+	leanItems( data ) {
+		const f = {};
+		( data.fields || [] ).forEach( ( name, i ) => ( f[ name ] = i ) );
+		const terms = {};
+		( data.terms || [] ).forEach( ( t ) => {
+			terms[ t.id ] = t;
+			const id = 'term-' + t.id;
+			if ( ! this.categoryIndex[ id ] ) {
+				this.categoryIndex[ id ] = { id, name: t.name, color: t.color || accent() };
+				( this.payload.categories = this.payload.categories || [] ).push( this.categoryIndex[ id ] );
+			}
+		} );
+		this.leanFacets = Object.assign( this.leanFacets || {}, data.facets || {} );
+		// Same marker look as the full data (Renderer::location_marker()).
+		return ( data.items || [] ).map( ( r ) => ( {
+			id: 'loc' + r[ f.id ],
+			loc: r[ f.id ],
+			lat: r[ f.lat ],
+			lng: r[ f.lng ],
+			title: r[ f.title ],
+			address: r[ f.address ] || '',
+			city: r[ f.city ] || '',
+			postcode: r[ f.postcode ] || '',
+			icon: { type: 'pin', color: r[ f.color ] || '', glyph: '', url: '', size: 36 },
+			cats: ( r[ f.cats ] || [] ).map( ( c ) => 'term-' + c ),
+			terms: ( r[ f.cats ] || [] ).map( ( c ) => terms[ c ] ).filter( Boolean ),
+			hasHours: !! ( r[ f.flags ] & 1 ),
+			lean: true,
+		} ) );
+	}
+
+	/**
+	 * Load the locations in the visible area (padded, so small pans need no request)
+	 * and show them: for sites with more locations than one file holds. Places already
+	 * detailed (opened popups) keep their data. Emits "viewport" with the markers.
+	 *
+	 * @return {Promise<Array>} Lean markers in view.
+	 */
+	async loadViewport() {
+		if ( ! this.viewport || ! this.adapter ) {
+			return [];
+		}
+		const b = this.adapter.getBounds();
+		const padX = ( b[ 2 ] - b[ 0 ] ) * 0.25;
+		const padY = ( b[ 3 ] - b[ 1 ] ) * 0.25;
+		const bbox = [ Math.max( -180, b[ 0 ] - padX ), Math.max( -85, b[ 1 ] - padY ), Math.min( 180, b[ 2 ] + padX ), Math.min( 85, b[ 3 ] + padY ) ];
+		const url = new URL( this.payload.leanUrl, window.location.href );
+		url.searchParams.set( 'bbox', bbox.map( ( n ) => n.toFixed( 4 ) ).join( ',' ) );
+		const key = url.toString();
+		if ( key === this.viewport.key && this.viewport.items ) {
+			return this.viewport.items;
+		}
+		this.viewport.key = key;
+		let items = [];
+		let partial = false;
+		try {
+			const data = await this.getJson( key );
+			items = this.leanItems( data );
+			partial = !! data.truncated; // More in this area than one response holds: zooming in must ask again.
+		} catch ( e ) {
+			this.diagnose( 'Locations could not be loaded: ' + e.message );
+		}
+		if ( key !== this.viewport.key ) {
+			return items; // A later move already asked for another area.
+		}
+		const known = new Map( this.markers.filter( ( m ) => m.loc && ! m.lean ).map( ( m ) => [ String( m.id ), m ] ) );
+		items = items.map( ( m ) => known.get( String( m.id ) ) || m );
+		this.viewport.bbox = partial ? null : bbox;
+		this.viewport.items = items;
+		this.markers = this.inline.concat( items );
+		this.refresh();
+		this.emit( 'viewport', items );
+		return items;
+	}
+
+	/**
+	 * After a move: load the visible area, unless it is still inside the last loaded one.
+	 */
+	scheduleViewport() {
+		window.clearTimeout( this.viewportTimer );
+		this.viewportTimer = window.setTimeout( () => {
+			const b = this.adapter.getBounds();
+			const v = this.viewport && this.viewport.bbox;
+			if ( v && b[ 0 ] >= v[ 0 ] && b[ 1 ] >= v[ 1 ] && b[ 2 ] <= v[ 2 ] && b[ 3 ] <= v[ 3 ] ) {
+				return;
+			}
+			this.loadViewport();
+		}, 350 );
 	}
 
 	/**
@@ -578,6 +681,7 @@ export default class MapView {
 			origin: this.origin,
 			directions: ! this.payload.directions || this.payload.directions.enabled !== false,
 			maxWidth: ( this.payload.popup && this.payload.popup.maxWidth ) || 300,
+			layout: ( this.payload.popup && this.payload.popup.layout ) || 'card',
 			view: this, // For popup actions (e.g. MatrixMap Pro's directions on the map).
 		} );
 
@@ -695,24 +799,63 @@ export default class MapView {
 			this.adapter.setView( b[ 1 ], b[ 0 ], opts.maxZoom || this.adapter.fromClusterZoom( 15 ), { animate: !! opts.animate } );
 			return;
 		}
-		this.adapter.fitBounds( b, { padding: this.fitPadding(), maxZoom: opts.maxZoom || this.adapter.fromClusterZoom( 16 ), animate: !! opts.animate } );
+		const padding = this.fitPadding();
+		// Places spread over the world on a tall, narrow map: fitting them by width leaves the
+		// map zoomed out past the point where the world fills its height (grey bands above and
+		// below). Zoom in just enough to fill the height instead, centred on the places.
+		const fill = this.fillZoom();
+		if ( fill !== null && this.fitZoom( b, padding ) < fill ) {
+			const y = ( lat ) => Math.log( Math.tan( Math.PI / 4 + ( lat * Math.PI ) / 360 ) );
+			const lat = ( ( 2 * Math.atan( Math.exp( ( y( b[ 1 ] ) + y( b[ 3 ] ) ) / 2 ) ) - Math.PI / 2 ) * 180 ) / Math.PI;
+			this.adapter.setView( lat, ( b[ 0 ] + b[ 2 ] ) / 2, this.adapter.fromClusterZoom( fill ), { animate: !! opts.animate } );
+			return;
+		}
+		this.adapter.fitBounds( b, { padding, maxZoom: opts.maxZoom || this.adapter.fromClusterZoom( 16 ), animate: !! opts.animate } );
+	}
+
+	/**
+	 * Zoom (256px-tile levels, as clustering uses) at which the whole world is as tall as the map.
+	 *
+	 * @return {number|null} Zoom, or null when the map has no size yet.
+	 */
+	fillZoom() {
+		const hgt = this.stage ? this.stage.clientHeight : 0;
+		return hgt > 0 ? Math.log2( hgt / 256 ) : null;
+	}
+
+	/**
+	 * Zoom (256px-tile levels) at which bounds fit the map inside the padding (Web Mercator).
+	 *
+	 * @param {Array}  b       [west, south, east, north].
+	 * @param {Object} padding { top, right, bottom, left }.
+	 * @return {number} Zoom (may be negative for very small maps).
+	 */
+	fitZoom( b, padding ) {
+		const w = Math.max( 1, this.stage.clientWidth - padding.left - padding.right );
+		const hgt = Math.max( 1, this.stage.clientHeight - padding.top - padding.bottom );
+		const y = ( lat ) => Math.log( Math.tan( Math.PI / 4 + ( Math.max( -85, Math.min( 85, lat ) ) * Math.PI ) / 360 ) );
+		const dx = Math.max( 1e-9, ( b[ 2 ] - b[ 0 ] ) / 360 );
+		const dy = Math.max( 1e-9, Math.abs( y( b[ 3 ] ) - y( b[ 1 ] ) ) / ( 2 * Math.PI ) );
+		return Math.min( Math.log2( w / ( 256 * dx ) ), Math.log2( hgt / ( 256 * dy ) ) );
 	}
 
 	/**
 	 * Padding for fitting places, with room for the controls so no marker hides under them.
+	 * Narrow maps (phones, sidebars) use less, so the places are not squeezed into the middle.
 	 *
 	 * @return {Object} { top, right, bottom, left }.
 	 */
 	fitPadding() {
 		const pos = ( this.payload.controls && this.payload.controls.position ) || 'top-right';
-		const pad = { top: 56, right: 40, bottom: 40, left: 40 };
+		const narrow = this.stage && this.stage.clientWidth > 0 && this.stage.clientWidth < 480;
+		const pad = narrow ? { top: 48, right: 24, bottom: 28, left: 24 } : { top: 56, right: 40, bottom: 40, left: 40 };
 		if ( pos === 'hidden' ) {
 			return pad;
 		}
 		const side = pos.indexOf( 'right' ) !== -1 ? 'right' : 'left';
-		pad[ side ] = 72;
+		pad[ side ] = narrow ? 56 : 72;
 		if ( pos.indexOf( 'bottom' ) !== -1 ) {
-			pad.bottom = 56;
+			pad.bottom = narrow ? 48 : 56;
 		}
 		return pad;
 	}

@@ -1,6 +1,7 @@
 <wpml-config>
 	<custom-fields>
 		<custom-field action="copy">_matrixmap_config</custom-field>
+		<custom-field action="copy">_matrixmap_config_sig</custom-field>
 		<custom-field action="copy">mm_lat</custom-field>
 		<custom-field action="copy">mm_lng</custom-field>
 		<custom-field action="copy">mm_country</custom-field>
@@ -20,6 +21,9 @@
 		<custom-field action="translate">mm_closed_note</custom-field>
 		<custom-field action="translate">mm_details</custom-field>
 	</custom-fields>
+	<custom-term-fields>
+		<custom-term-field action="copy">mm_color</custom-term-field>
+	</custom-term-fields>
 	<custom-types>
 		<custom-type translate="1">mm_location</custom-type>
 		<custom-type translate="1">geo-maps</custom-type>

@@ -36,7 +36,10 @@ function Locator( { config, update } ) {
 			<TextControl __nextHasNoMarginBottom label={ __( 'Limit search to countries', 'geo-maps' ) } help={ __( 'Two-letter codes, e.g. US,CA', 'geo-maps' ) } value={ loc.countries } onChange={ ( v ) => set( { countries: v.toUpperCase() } ) } />
 			<RangeControl __nextHasNoMarginBottom label={ __( 'Maximum results', 'geo-maps' ) } min={ 5 } max={ 200 } value={ loc.limit } onChange={ ( v ) => set( { limit: v } ) } />
 			<ToggleControl __nextHasNoMarginBottom label={ __( 'Show all locations before a search', 'geo-maps' ) } checked={ loc.showAllOnLoad } onChange={ ( v ) => set( { showAllOnLoad: v } ) } />
+			<ToggleControl __nextHasNoMarginBottom label={ __( 'Draw the search radius on the map', 'geo-maps' ) } help={ __( 'A circle around the searched address, as wide as the chosen distance.', 'geo-maps' ) } checked={ !! loc.circle } onChange={ ( v ) => set( { circle: v } ) } />
 			<ToggleControl __nextHasNoMarginBottom label={ __( 'Suggest locations as visitors type', 'geo-maps' ) } help={ __( 'Matching store names, cities and postcodes from your locations. No external service.', 'geo-maps' ) } checked={ loc.suggest !== false } onChange={ ( v ) => set( { suggest: v } ) } />
+			<ToggleControl __nextHasNoMarginBottom label={ __( 'Let visitors sort the results', 'geo-maps' ) } help={ __( 'A “Sort” choice: distance, name, or open now first.', 'geo-maps' ) } checked={ !! loc.sort } onChange={ ( v ) => set( { sort: v } ) } />
+			<ToggleControl __nextHasNoMarginBottom label={ __( '“Copy link” button after a search', 'geo-maps' ) } help={ __( 'The link opens this page with the same search, radius and results.', 'geo-maps' ) } checked={ !! loc.share } onChange={ ( v ) => set( { share: v } ) } />
 			<SelectControl
 				__nextHasNoMarginBottom
 				label={ __( 'Results layout', 'geo-maps' ) }

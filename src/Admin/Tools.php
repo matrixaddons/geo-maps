@@ -34,6 +34,12 @@ final class Tools
     /** Most rows per import request; rows with coordinates need no geocoding, so many fit. */
     const BATCH = 200;
 
+    /** Import rows are stored this many per option (and at most ROWS_CHUNK_BYTES each). @since 2.1.0 */
+    const ROWS_CHUNK = 1000;
+
+    /** Largest serialized rows option: well under MySQL's smallest common max_allowed_packet (4 MB). @since 2.1.0 */
+    const ROWS_CHUNK_BYTES = 1048576;
+
     /** Time budget of one import request (seconds). */
     const BATCH_SECONDS = 10;
 
@@ -74,6 +80,41 @@ final class Tools
         add_action('admin_post_matrixmap_tools', array(__CLASS__, 'handle'));
         add_action('admin_post_matrixmap_import_upload', array(__CLASS__, 'upload'));
         add_action('wp_ajax_matrixmap_import_batch', array(__CLASS__, 'batch'));
+        add_action('matrixmap_daily', array(__CLASS__, 'sweep_imports'));
+    }
+
+    /**
+     * Daily: remove import jobs older than a day and row chunks whose job is gone
+     * (a user who never returned to finish an import would otherwise leave them behind).
+     *
+     * @since 2.1.0
+     */
+    public static function sweep_imports()
+    {
+        global $wpdb;
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+        $jobs = $wpdb->get_col($wpdb->prepare("SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like('matrixmap_import_job_') . '%'));
+        $alive = array();
+        foreach ((array) $jobs as $name) {
+            $uid = (int) substr($name, strlen('matrixmap_import_job_'));
+            $job = get_option($name);
+            if (is_array($job) && isset($job['time']) && (int) $job['time'] >= time() - DAY_IN_SECONDS) {
+                $alive[$uid] = true;
+                continue;
+            }
+            delete_option($name);
+            self::delete_rows($uid);
+        }
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+        $chunks = $wpdb->get_col($wpdb->prepare("SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like('matrixmap_import_rows_') . '%'));
+        foreach ((array) $chunks as $name) {
+            $uid = (int) substr($name, strlen('matrixmap_import_rows_'));
+            if ($uid > 0 && empty($alive[$uid])) {
+                delete_option($name);
+            }
+        }
     }
 
     /**
@@ -188,7 +229,7 @@ final class Tools
     {
         $job = self::job_get();
 
-        if (is_array($job) && !empty($job['rows'])) {
+        if (is_array($job) && self::job_count($job) > 0) {
             self::render_mapping($job);
             return;
         }
@@ -323,15 +364,23 @@ final class Tools
     private static function render_mapping($job)
     {
         $cols = self::columns();
+        $total = self::job_count($job);
+        $first = self::job_rows($job, 0, 1);
+        $first = isset($first[0]) && is_array($first[0]) ? $first[0] : array();
         ?>
         <?php
         UI::card_start(
             /* translators: %s: file name */
             sprintf(__('Import %s', 'geo-maps'), $job['name']),
             /* translators: %s: number of rows */
-            sprintf(__('%s rows. Match each column in your file to a location field, then start the import.', 'geo-maps'), number_format_i18n(count($job['rows']))),
+            sprintf(__('%s rows. Match each column in your file to a location field, then start the import.', 'geo-maps'), number_format_i18n($total)),
             'mm-import'
         );
+        $start = isset($job['next']) ? min(max(0, (int) $job['next']), $total) : 0;
+        if ($start) {
+            /* translators: 1: rows already imported, 2: all rows */
+            UI::notice('info', sprintf(__('%1$s of %2$s rows were imported before the import stopped. Start the import to continue with the rest.', 'geo-maps'), number_format_i18n($start), number_format_i18n($total)));
+        }
         ?>
             <form id="mm-import-form">
                 <table class="mm-table mm-import-map">
@@ -340,7 +389,7 @@ final class Tools
                     <?php foreach ($job['header'] as $i => $head) : ?>
                         <tr>
                             <th scope="row"><label for="mm-map-<?php echo (int) $i; ?>"><?php echo esc_html($head); ?></label></th>
-                            <td><code><?php echo esc_html(mb_substr((string) ($job['rows'][0][$i] ?? ''), 0, 60)); ?></code></td>
+                            <td><code><?php echo esc_html(mb_substr((string) ($first[$i] ?? ''), 0, 60)); ?></code></td>
                             <td>
                                 <select id="mm-map-<?php echo (int) $i; ?>" name="map[<?php echo (int) $i; ?>]">
                                     <?php foreach ($cols as $key => $label) : ?>
@@ -359,7 +408,7 @@ final class Tools
                 </div>
             </form>
             <div id="mm-import-progress" hidden>
-                <progress max="<?php echo (int) count($job['rows']); ?>" value="0"></progress>
+                <progress max="<?php echo (int) $total; ?>" value="0"></progress>
                 <p role="status" aria-live="polite" id="mm-import-status"></p>
                 <ul id="mm-import-errors" class="mm-import-errors"></ul>
             </div>
@@ -367,10 +416,10 @@ final class Tools
         <script>
         ( function () {
             var form = document.getElementById( 'mm-import-form' );
-            var total = <?php echo (int) count($job['rows']); ?>;
+            var total = <?php echo (int) $total; ?>;
             var nonce = <?php echo wp_json_encode(wp_create_nonce('matrixmap_import_batch')); ?>;
             var ajax = <?php echo wp_json_encode(admin_url('admin-ajax.php')); ?>;
-            var labels = <?php echo wp_json_encode(array('progress' => /* translators: 1: rows done, 2: total rows, 3: created, 4: updated, 5: failed */ __('%1$d of %2$d rows processed — %3$d created, %4$d updated, %5$d failed.', 'geo-maps'), 'done' => __('Import complete.', 'geo-maps'), 'view' => __('View locations', 'geo-maps'), 'locations' => admin_url('edit.php?post_type=' . LocationPostType::POST_TYPE))); ?>;
+            var labels = <?php echo wp_json_encode(array('progress' => /* translators: 1: rows done, 2: total rows, 3: created, 4: updated, 5: failed */ __('%1$d of %2$d rows processed — %3$d created, %4$d updated, %5$d failed.', 'geo-maps'), 'done' => __('Import complete.', 'geo-maps'), 'view' => __('View locations', 'geo-maps'), 'locations' => admin_url('edit.php?post_type=' . LocationPostType::POST_TYPE), /* translators: %d: rows done */ 'stopped' => __('The import stopped after %d rows: the server did not answer.', 'geo-maps'), 'resume' => __('Resume import', 'geo-maps'))); ?>;
             form.addEventListener( 'submit', function ( e ) {
                 e.preventDefault();
                 var data = new FormData( form );
@@ -380,14 +429,19 @@ final class Tools
                 var status = document.getElementById( 'mm-import-status' );
                 var errors = document.getElementById( 'mm-import-errors' );
                 var totals = { created: 0, updated: 0, failed: 0 };
+                var tries = 0;
                 function step( offset ) {
                     data.set( 'action', 'matrixmap_import_batch' );
                     data.set( '_wpnonce', nonce );
                     data.set( 'offset', offset );
                     fetch( ajax, { method: 'POST', body: data, credentials: 'same-origin' } )
-                        .then( function ( r ) { return r.json(); } )
+                        .then( function ( r ) {
+                            // A timeout or server error page is not JSON: retry the same rows.
+                            return r.json().catch( function () { var e = new Error( r.status + ' ' + r.statusText ); e.retry = true; throw e; } );
+                        }, function ( netErr ) { netErr.retry = true; throw netErr; } )
                         .then( function ( res ) {
                             if ( ! res.success ) { throw new Error( res.data && res.data.message ? res.data.message : 'Error' ); }
+                            tries = 0;
                             var d = res.data;
                             totals.created += d.created; totals.updated += d.updated; totals.failed += d.errors.length;
                             d.errors.forEach( function ( msg ) { var li = document.createElement( 'li' ); li.textContent = msg; errors.appendChild( li ); } );
@@ -398,9 +452,23 @@ final class Tools
                                 var a = document.createElement( 'a' ); a.href = labels.locations; a.textContent = labels.view; a.className = 'mm-btn mm-btn--primary'; status.appendChild( a );
                             }
                         } )
-                        .catch( function ( err ) { status.textContent = err.message; } );
+                        .catch( function ( err ) {
+                            // Rows already done are never sent again: retry from this batch, a few times, then offer to resume.
+                            if ( err.retry && tries < 3 ) {
+                                tries++;
+                                setTimeout( function () { step( offset ); }, 2000 * tries );
+                                return;
+                            }
+                            tries = 0;
+                            status.textContent = err.retry ? labels.stopped.replace( '%d', offset ) + ' (' + err.message + ') ' : err.message;
+                            if ( err.retry ) {
+                                var again = document.createElement( 'button' ); again.type = 'button'; again.className = 'mm-btn mm-btn--primary'; again.textContent = labels.resume;
+                                again.addEventListener( 'click', function () { again.remove(); step( offset ); } );
+                                status.appendChild( again );
+                            }
+                        } );
                 }
-                step( 0 );
+                step( <?php echo (int) $start; ?> );
             } );
         } )();
         </script>
@@ -416,33 +484,193 @@ final class Tools
     public static function job_get()
     {
         $uid = get_current_user_id();
-        $job = get_transient('matrixmap_import_' . $uid);
+        $job = self::job_meta($uid);
 
         if (!is_array($job)) {
             return null;
         }
-        if (!isset($job['rows'])) {
+        if (isset($job['rows'])) {
+            // A job from before rows had their own option (a transient).
+            $job['count'] = count($job['rows']);
+        } elseif (!isset($job['chunks'])) {
+            // A job from before rows were stored in chunks: one option with every row.
             $rows = get_option('matrixmap_import_rows_' . $uid, null);
             if (!is_array($rows)) {
                 return null;
             }
             $job['rows'] = $rows;
+            $job['count'] = count($rows);
         }
 
         return $job;
     }
 
     /**
-     * Save an import job.
+     * Rows of an import job (see job_rows()).
+     *
+     * @param array $job Job (from job_get()).
+     * @return int
+     * @since 2.1.0
+     */
+    public static function job_count($job)
+    {
+        return isset($job['count']) ? (int) $job['count'] : (isset($job['rows']) ? count($job['rows']) : 0);
+    }
+
+    /**
+     * A slice of an import job's rows: only the chunk options that hold them are read,
+     * so a batch never unserializes the whole spreadsheet.
+     *
+     * @param array $job Job (from job_get()).
+     * @param int $offset First row.
+     * @param int $length Rows.
+     * @return array Rows, in order (0-based).
+     * @since 2.1.0
+     */
+    public static function job_rows($job, $offset, $length)
+    {
+        if (isset($job['rows'])) {
+            return array_slice($job['rows'], $offset, $length);
+        }
+
+        $uid = get_current_user_id();
+        $out = array();
+        $start = 0;
+
+        foreach (isset($job['chunks']) ? (array) $job['chunks'] : array() as $n => $size) {
+            $size = (int) $size;
+            if ($start + $size > $offset && $start < $offset + $length) {
+                $chunk = get_option('matrixmap_import_rows_' . $uid . '_' . (int) $n, null);
+                foreach (is_array($chunk) ? $chunk : array() as $i => $row) {
+                    if ($start + $i >= $offset && $start + $i < $offset + $length) {
+                        $out[] = $row;
+                    }
+                }
+                wp_cache_delete('matrixmap_import_rows_' . $uid . '_' . (int) $n, 'options');
+            }
+            $start += $size;
+            if ($start >= $offset + $length) {
+                break;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Split rows into chunks of at most ROWS_CHUNK rows and ROWS_CHUNK_BYTES serialized
+     * bytes (a single bigger row stays alone), so no option write exceeds the
+     * database's packet limit.
+     *
+     * @param array $rows Rows.
+     * @return array[] Chunks.
+     * @since 2.1.0
+     */
+    public static function chunk_rows($rows)
+    {
+        $chunks = array();
+        $current = array();
+        $bytes = 0;
+
+        foreach (array_values((array) $rows) as $row) {
+            $size = strlen(serialize($row)); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize -- size estimate of what update_option() writes.
+            if ($current && ($bytes + $size > self::ROWS_CHUNK_BYTES || count($current) >= self::ROWS_CHUNK)) {
+                $chunks[] = $current;
+                $current = array();
+                $bytes = 0;
+            }
+            $current[] = $row;
+            $bytes += $size;
+        }
+
+        if ($current) {
+            $chunks[] = $current;
+        }
+
+        return $chunks;
+    }
+
+    /**
+     * Save an import job. Rows go into their own, not autoloaded options, a chunk each.
      *
      * @param array $job name, header, rows, guess.
      */
     public static function job_set($job)
     {
         $uid = get_current_user_id();
-        update_option('matrixmap_import_rows_' . $uid, isset($job['rows']) ? $job['rows'] : array(), false);
+        self::delete_rows($uid);
+        $chunks = self::chunk_rows(isset($job['rows']) ? $job['rows'] : array());
+        $sizes = array();
+
+        foreach ($chunks as $n => $chunk) {
+            update_option('matrixmap_import_rows_' . $uid . '_' . $n, $chunk, false);
+            $sizes[] = count($chunk);
+        }
+
+        $job['count'] = array_sum($sizes);
+        $job['chunks'] = $sizes;
         unset($job['rows']);
-        set_transient('matrixmap_import_' . $uid, $job, DAY_IN_SECONDS);
+        self::job_meta_set($uid, $job);
+    }
+
+    /**
+     * Remove a user's stored import rows (the single option of older jobs and every chunk).
+     *
+     * @param int $uid User ID.
+     * @since 2.1.0
+     */
+    private static function delete_rows($uid)
+    {
+        global $wpdb;
+
+        delete_option('matrixmap_import_rows_' . $uid);
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+        $names = $wpdb->get_col($wpdb->prepare("SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like('matrixmap_import_rows_' . $uid . '_') . '%'));
+        foreach ((array) $names as $name) {
+            delete_option($name);
+        }
+    }
+
+    /**
+     * An import job's settings (name, header, mapping guess, progress).
+     *
+     * Kept in a not autoloaded option, not a transient: with an object cache a
+     * transient lives only in the cache, which may drop it, or (one cache per
+     * server) not have it on the server that answers the next request.
+     *
+     * @param int $uid User ID.
+     * @return array|null
+     */
+    private static function job_meta($uid)
+    {
+        $job = get_option('matrixmap_import_job_' . $uid, null);
+
+        if (!is_array($job)) {
+            // A job started before this change.
+            $job = get_transient('matrixmap_import_' . $uid);
+            return is_array($job) ? $job : null;
+        }
+
+        // Jobs are kept for a day, as before.
+        if (isset($job['time']) && (int) $job['time'] < time() - DAY_IN_SECONDS) {
+            delete_option('matrixmap_import_job_' . $uid);
+            self::delete_rows($uid);
+            return null;
+        }
+
+        return $job;
+    }
+
+    /**
+     * Save an import job's settings.
+     *
+     * @param int $uid User ID.
+     * @param array $job Settings (without the rows).
+     */
+    private static function job_meta_set($uid, $job)
+    {
+        $job['time'] = isset($job['time']) ? (int) $job['time'] : time();
+        update_option('matrixmap_import_job_' . $uid, $job, false);
     }
 
     /**
@@ -452,7 +680,8 @@ final class Tools
     {
         $uid = get_current_user_id();
         delete_transient('matrixmap_import_' . $uid);
-        delete_option('matrixmap_import_rows_' . $uid);
+        delete_option('matrixmap_import_job_' . $uid);
+        self::delete_rows($uid);
     }
 
     /**
@@ -481,15 +710,36 @@ final class Tools
             exit;
         }
 
-        $header = array_map('trim', array_shift($rows));
-        $rows = array_slice(array_values(array_filter($rows, function ($r) {
-            return count(array_filter($r, 'strlen')) > 0;
-        })), 0, 20000);
+        $header = array_map('trim', array_map('strval', array_shift($rows)));
+        $kept = array_filter($rows, function ($r) {
+            return count(array_filter(array_map('strval', $r), 'strlen')) > 0; // Blank lines are array(null).
+        });
+        // Blank rows are left out; remember where they were so error messages give the row number in the file.
+        $blank = array_values(array_diff(array_keys($rows), array_keys($kept)));
+        $rows = array_slice(array_values($kept), 0, 20000);
 
-        self::job_set(array('name' => $name, 'header' => $header, 'rows' => $rows, 'guess' => self::guess($header)));
+        self::job_set(array('name' => $name, 'header' => $header, 'rows' => $rows, 'guess' => self::guess($header), 'blank' => array_slice($blank, 0, 20000)));
 
         wp_safe_redirect(admin_url('admin.php?page=' . self::SLUG . '&section=import'));
         exit;
+    }
+
+    /**
+     * Row number in the uploaded file (header = 1) of an imported row, counting the blank rows left out.
+     *
+     * @param int $index Index in the job's rows.
+     * @param int[] $blank Indexes (after the header, ascending) of the blank rows left out.
+     * @return int
+     */
+    public static function file_row($index, $blank)
+    {
+        foreach ((array) $blank as $b) {
+            if ((int) $b <= $index) {
+                ++$index;
+            }
+        }
+
+        return $index + 2;
     }
 
     /**
@@ -549,7 +799,7 @@ final class Tools
             'website' => array('website', 'url', 'web', 'site'),
             'description' => array('description', 'info', 'details', 'notes'),
             'category' => array('category', 'categories', 'type', 'group'),
-            'external_id' => array('id', 'ref', 'reference', 'external id', 'store id', 'code'),
+            'external_id' => array('id', 'ref', 'reference', 'reference id', 'ref id', 'external id', 'store id', 'code'),
             'hours' => array('hours', 'opening hours', 'open', 'opening_hours'),
         );
 
@@ -591,7 +841,7 @@ final class Tools
         $created = 0;
         $updated = 0;
         $errors = array();
-        $rows = array_slice($job['rows'], $offset, self::BATCH);
+        $rows = self::job_rows($job, $offset, self::BATCH);
         $started = microtime(true);
         $done = 0;
 
@@ -599,12 +849,8 @@ final class Tools
         LocationPostType::suspend_touch();
         wp_defer_term_counting(true);
 
+        $datas = array();
         foreach ($rows as $n => $row) {
-            if ($n && microtime(true) - $started > self::BATCH_SECONDS) {
-                break;
-            }
-
-            $line = $offset + $n + 2;
             $data = array();
 
             foreach ($map as $i => $field) {
@@ -613,12 +859,25 @@ final class Tools
                 }
                 if ('detail' === $field) {
                     // Several columns can be details; the header is the label.
-                    $data['details'][] = array('label' => isset($job['header'][$i]) ? (string) $job['header'][$i] : '', 'value' => trim((string) $row[$i]));
+                    $data['details'][] = array('label' => isset($job['header'][$i]) ? (string) $job['header'][$i] : '', 'value' => self::csv_unsafe(trim((string) $row[$i])));
                 } else {
-                    $data[$field] = trim((string) $row[$i]);
+                    $data[$field] = self::csv_unsafe(trim((string) $row[$i]));
                 }
             }
+            $datas[$n] = $data;
+        }
 
+        // Existing locations of the whole batch in one lookup, not one query per row.
+        if ($update) {
+            self::prime_matches($datas);
+        }
+
+        foreach ($datas as $n => $data) {
+            if ($n && microtime(true) - $started > self::BATCH_SECONDS) {
+                break;
+            }
+
+            $line = self::file_row($offset + $n, isset($job['blank']) ? $job['blank'] : array());
             $result = self::import_row($data, $update);
 
             // Geocoder slot taken (Nominatim: 1 lookup/second): stop here, and the
@@ -640,16 +899,185 @@ final class Tools
             }
         }
 
+        self::forget_matches();
         wp_defer_term_counting(false);
         LocationPostType::resume_touch();
 
         $next = isset($wait) ? $wait : $offset + $done;
 
-        if ($next >= count($job['rows'])) {
+        if ($next >= self::job_count($job)) {
             self::job_delete();
+        } else {
+            // Remember the progress: an import interrupted (page closed, connection lost) continues here.
+            $meta = self::job_meta(get_current_user_id());
+            if (is_array($meta)) {
+                $meta['next'] = $next;
+                self::job_meta_set(get_current_user_id(), $meta);
+            }
         }
 
         wp_send_json_success(array('next' => $next, 'created' => $created, 'updated' => $updated, 'errors' => $errors, 'wait' => isset($wait) ? 1100 : 0));
+    }
+
+    /**
+     * Existing locations for the rows of a batch (match key → location ID, 0 = none),
+     * looked up in one or two queries instead of one per row. Null: not primed.
+     *
+     * @var array|null
+     */
+    private static $matches = null;
+
+    /**
+     * What import_row() matches an existing location on: the reference ID, else name + street.
+     *
+     * @param array $data Row fields.
+     * @param string $title Name used for the row.
+     * @return string
+     */
+    private static function match_key($data, $title)
+    {
+        return !empty($data['external_id']) ? 'r|' . sanitize_text_field($data['external_id']) : 'n|' . $title . "\n" . sanitize_text_field($data['street'] ?? '');
+    }
+
+    /**
+     * Look up the existing locations of many import rows at once (import_row()
+     * then needs no query of its own for them). Rows without coordinates, and any
+     * value the database might match differently (other letter case or accents),
+     * keep the per-row lookup, so the result is the same as without priming.
+     *
+     * @param array[] $rows Row fields, as passed to import_row().
+     * @since 2.1.0
+     */
+    public static function prime_matches($rows)
+    {
+        global $wpdb;
+
+        self::$matches = array();
+        $refs = array();
+        $pairs = array();
+
+        foreach ((array) $rows as $data) {
+            if (!is_array($data)) {
+                continue;
+            }
+            $title = isset($data['title']) ? sanitize_text_field($data['title']) : '';
+            $coords = isset($data['lat'], $data['lng']) && is_numeric(str_replace(',', '.', $data['lat'])) && is_numeric(str_replace(',', '.', $data['lng']));
+            // Rows that are geocoded first (their street can change) or are skipped: per-row lookup.
+            if (!$coords || ('' === $title && empty($data['street']) && empty($data['address']))) {
+                continue;
+            }
+            if ('' === $title) {
+                $title = !empty($data['street']) ? $data['street'] : $data['address'];
+            }
+            if (!empty($data['external_id'])) {
+                $values = array(sanitize_text_field($data['external_id']));
+            } elseif ('' !== trim((string) $title)) {
+                $values = array(stripslashes(trim((string) $title)), sanitize_text_field($data['street'] ?? '')); // As WP_Query compares the title.
+            } else {
+                continue;
+            }
+            // Plain ASCII only: other text can compare equal in the database in ways PHP can't tell.
+            if (preg_match('/[^\x20-\x7E]/', implode('', $values))) {
+                continue;
+            }
+            if (1 === count($values)) {
+                $refs[self::match_key($data, $title)] = $values;
+            } else {
+                $pairs[self::match_key($data, $title)] = $values;
+            }
+        }
+
+        // The statuses get_posts() with 'any' leaves out.
+        $skip = array_values(get_post_stati(array('exclude_from_search' => true)));
+        $not_in = $skip ? $wpdb->prepare(' AND p.post_status NOT IN (' . implode(',', array_fill(0, count($skip), '%s')) . ')', $skip) : ''; // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare,WordPress.DB.PreparedSQL.NotPrepared
+
+        foreach (array_chunk($refs, 500, true) as $chunk) {
+            $values = array_values(array_unique(wp_list_pluck($chunk, 0)));
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare,WordPress.DB.PreparedSQL.NotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- placeholders built above; $not_in is prepared.
+            $found = $wpdb->get_results($wpdb->prepare("SELECT p.ID, pm.meta_value AS v FROM {$wpdb->postmeta} pm INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = 'mm_external_id' AND pm.meta_value IN (" . implode(',', array_fill(0, count($values), '%s')) . ") AND p.post_type = %s{$not_in} ORDER BY p.post_date DESC", array_merge($values, array(LocationPostType::POST_TYPE))), ARRAY_A);
+            self::$matches += self::resolve_matches($chunk, (array) $found, array('v'));
+        }
+
+        foreach (array_chunk($pairs, 200, true) as $chunk) {
+            $titles = array_values(array_unique(wp_list_pluck($chunk, 0)));
+            $streets = array_values(array_unique(wp_list_pluck($chunk, 1)));
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare,WordPress.DB.PreparedSQL.NotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- placeholders built above; $not_in is prepared.
+            $found = $wpdb->get_results($wpdb->prepare("SELECT p.ID, p.post_title AS t, pm.meta_value AS v FROM {$wpdb->posts} p INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID WHERE pm.meta_key = 'mm_street' AND p.post_title IN (" . implode(',', array_fill(0, count($titles), '%s')) . ') AND pm.meta_value IN (' . implode(',', array_fill(0, count($streets), '%s')) . ") AND p.post_type = %s{$not_in} ORDER BY p.post_date DESC", array_merge($titles, $streets, array(LocationPostType::POST_TYPE))), ARRAY_A);
+            self::$matches += self::resolve_matches($chunk, (array) $found, array('t', 'v'));
+        }
+    }
+
+    /**
+     * Match looked-up rows to the import rows, byte for byte. A key is left out (and
+     * looked up one by one) when the database also returned a value that only
+     * differs in case or accents, or another import row differs only that way; a
+     * value the database matched for another reason drops the whole lookup.
+     *
+     * @param array $wanted key → list of values.
+     * @param array $found Rows: ID plus the value columns.
+     * @param string[] $cols Value columns of $found, in the order of $wanted's values.
+     * @return array key → location ID (0 = none).
+     */
+    private static function resolve_matches($wanted, $found, $cols)
+    {
+        $fold = function ($v) {
+            $v = remove_accents((string) $v);
+            return function_exists('mb_strtolower') ? mb_strtolower($v, 'UTF-8') : strtolower($v);
+        };
+
+        $groups = array();
+        $known = array();
+        foreach ($wanted as $key => $values) {
+            $folded = array_map($fold, $values);
+            $groups[implode("\n", $folded)][implode("\n", $values)] = $key;
+            foreach ($folded as $i => $f) {
+                $known[$i][$f] = true;
+            }
+        }
+
+        $ids = array();
+        $unsure = array();
+        foreach ($found as $row) {
+            $values = array();
+            $folded = array();
+            foreach ($cols as $i => $col) {
+                $values[] = (string) $row[$col];
+                $folded[] = $fold($row[$col]);
+                if (!isset($known[$i][end($folded)])) {
+                    return array(); // The database's collation matched something else: look up one by one.
+                }
+            }
+            $f = implode("\n", $folded);
+            $exact = implode("\n", $values);
+            if (!isset($groups[$f])) {
+                continue; // Another title + street combination of this batch: not a match.
+            }
+            if (!isset($groups[$f][$exact])) {
+                $unsure[$f] = true;
+            } elseif (!isset($ids[$exact])) {
+                $ids[$exact] = (int) $row['ID']; // Newest first, as get_posts() orders.
+            }
+        }
+
+        $out = array();
+        foreach ($groups as $f => $members) {
+            if (1 !== count($members) || isset($unsure[$f])) {
+                continue;
+            }
+            $out[reset($members)] = isset($ids[key($members)]) ? $ids[key($members)] : 0;
+        }
+
+        return $out;
+    }
+
+    /**
+     * Forget primed matches (end of a batch).
+     *
+     * @since 2.1.0
+     */
+    public static function forget_matches()
+    {
+        self::$matches = null;
     }
 
     /**
@@ -671,14 +1099,37 @@ final class Tools
             $data['country'] = Location::sanitize_country($data['country']);
         }
 
+        // Street taken from the one-field address (earlier versions left it out when the row had coordinates).
+        $street_from_address = empty($data['street']) && !empty($data['address']);
+
         // Coordinates: given, or geocoded from the address.
         $has_coords = isset($data['lat'], $data['lng']) && is_numeric(str_replace(',', '.', $data['lat'])) && is_numeric(str_replace(',', '.', $data['lng']));
 
         if ($has_coords) {
             $data['lat'] = (float) str_replace(',', '.', $data['lat']);
             $data['lng'] = (float) str_replace(',', '.', $data['lng']);
-        } else {
-            $query = !empty($data['address']) ? $data['address'] : implode(', ', array_filter(array($data['street'] ?? '', trim(($data['postcode'] ?? '') . ' ' . ($data['city'] ?? '')), $data['state'] ?? '', !empty($data['country']) ? Location::country_name($data['country']) : '')));
+
+            if (abs($data['lat']) > 90 || abs($data['lng']) > 180) {
+                /* translators: 1: latitude, 2: longitude */
+                return new \WP_Error('matrixmap_import', sprintf(__('Coordinates out of range: %1$s, %2$s', 'geo-maps'), $data['lat'], $data['lng']));
+            }
+        }
+
+        if (!$has_coords) {
+            $place = array_filter(array(trim(($data['postcode'] ?? '') . ' ' . ($data['city'] ?? '')), $data['state'] ?? '', !empty($data['country']) ? Location::country_name($data['country']) : ''));
+            if (!empty($data['address'])) {
+                // A one-field address ("6 Main St") with its own city / postcode columns: search with
+                // those too, or the first "Main St" in the country is taken.
+                $query = $data['address'];
+                foreach (array($data['city'] ?? '', $data['postcode'] ?? '') as $part) {
+                    if ('' !== trim((string) $part) && false === stripos($query, trim((string) $part))) {
+                        $query = implode(', ', array_merge(array($data['address']), $place));
+                        break;
+                    }
+                }
+            } else {
+                $query = implode(', ', array_filter(array_merge(array($data['street'] ?? ''), $place)));
+            }
 
             if ('' === trim($query)) {
                 return new \WP_Error('matrixmap_import', __('No address or coordinates.', 'geo-maps'));
@@ -697,10 +1148,11 @@ final class Tools
 
             $data['lat'] = $found[0]['lat'];
             $data['lng'] = $found[0]['lng'];
+        }
 
-            if (empty($data['street']) && !empty($data['address'])) {
-                $data['street'] = $data['address'];
-            }
+        // A one-field address is kept as the street line (also when the row has coordinates).
+        if (empty($data['street']) && !empty($data['address'])) {
+            $data['street'] = $data['address'];
         }
 
         if ('' === $title) {
@@ -710,10 +1162,26 @@ final class Tools
         // Existing match: reference ID first, then name + street.
         $existing = 0;
 
-        if ($update) {
+        $key = $update ? self::match_key($data, $title) : '';
+
+        if ($update && is_array(self::$matches) && isset(self::$matches[$key])) {
+            // Looked up for the whole batch already (see prime_matches()).
+            $existing = self::$matches[$key];
+        } elseif ($update) {
             $meta = !empty($data['external_id']) ? array(array('key' => 'mm_external_id', 'value' => sanitize_text_field($data['external_id']))) : array(array('key' => 'mm_street', 'value' => sanitize_text_field($data['street'] ?? '')));
             $found = get_posts(array('post_type' => LocationPostType::POST_TYPE, 'post_status' => 'any', 'numberposts' => 1, 'fields' => 'ids', 'title' => empty($data['external_id']) ? $title : '', 'meta_query' => $meta)); // phpcs:ignore WordPress.DB.SlowDBQuery
             $existing = $found ? (int) $found[0] : 0;
+        }
+
+        // Same name, saved without its street by an earlier import of the same file.
+        if ($update && !$existing && $street_from_address && empty($data['external_id'])) {
+            $found = get_posts(array('post_type' => LocationPostType::POST_TYPE, 'post_status' => 'any', 'numberposts' => 1, 'fields' => 'ids', 'title' => $title, 'meta_query' => array(array('key' => 'mm_street', 'value' => '')))); // phpcs:ignore WordPress.DB.SlowDBQuery
+            $existing = $found ? (int) $found[0] : 0;
+        }
+
+        // A later row with the same key must see this row's location: look it up again.
+        if (is_array(self::$matches)) {
+            unset(self::$matches[$key]);
         }
 
         $post = array('post_type' => LocationPostType::POST_TYPE, 'post_status' => 'publish', 'post_title' => $title);
@@ -837,85 +1305,32 @@ final class Tools
                 exit;
 
             case 'export_settings':
-                $settings = Settings::all();
-                foreach (array('google_api_key', 'google_geocode_key', 'maptiler_key', 'thunderforest_key', 'mapbox_token') as $key) {
-                    unset($settings[$key]);
-                }
-                /**
-                 * Filters the settings export (MatrixMap Pro adds its own).
-                 *
-                 * @param array $export matrixmap → settings.
-                 * @since 2.0.0
-                 */
-                $export = apply_filters('matrixmap_settings_export', array('matrixmap' => $settings));
                 nocache_headers();
                 header('Content-Type: application/json; charset=utf-8');
                 header('Content-Disposition: attachment; filename=matrixmap-settings-' . gmdate('Y-m-d') . '.json');
-                echo wp_json_encode(array('generator' => 'MatrixMap ' . MATRIXMAP_VERSION, 'settings' => $export), JSON_PRETTY_PRINT); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON download.
+                echo wp_json_encode(self::settings_export_data(), JSON_PRETTY_PRINT); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON download.
                 exit;
 
             case 'import_settings':
                 $file = isset($_FILES['settings']['tmp_name']) ? sanitize_text_field($_FILES['settings']['tmp_name']) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
                 $data = '' !== $file && is_uploaded_file($file) && filesize($file) < MB_IN_BYTES ? json_decode((string) file_get_contents($file), true) : null; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
                 $back = admin_url('admin.php?page=' . self::SLUG . '&section=export');
-                if (!is_array($data) || empty($data['settings']['matrixmap']) || !is_array($data['settings']['matrixmap'])) {
-                    wp_safe_redirect(add_query_arg('mm_notice', 'badsettings', $back));
-                    exit;
-                }
-                $incoming = $data['settings']['matrixmap'];
-                foreach (array('google_api_key', 'google_geocode_key', 'maptiler_key', 'thunderforest_key', 'mapbox_token') as $key) {
-                    unset($incoming[$key]);
-                }
-                update_option(Settings::OPTION, Settings::sanitize(array_merge(Settings::all(), $incoming)));
-                Settings::flush();
-                /**
-                 * Import add-on settings from a settings export.
-                 *
-                 * @param array $settings The export's settings (matrixmap, and any add-on keys).
-                 * @since 2.0.0
-                 */
-                do_action('matrixmap_settings_import', $data['settings']);
-                wp_safe_redirect(add_query_arg('mm_notice', 'settings', $back));
+                wp_safe_redirect(add_query_arg('mm_notice', self::settings_import_data($data) ? 'settings' : 'badsettings', $back));
                 exit;
 
             case 'export_maps':
                 $ids = isset($_REQUEST['maps']) ? array_map('absint', (array) wp_unslash($_REQUEST['maps'])) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- absint.
-                $out = array();
-                foreach (array_slice(array_filter($ids), 0, 500) as $id) {
-                    $post = get_post($id);
-                    if ($post && MapPostType::POST_TYPE === $post->post_type && current_user_can('edit_post', $id)) {
-                        $out[] = array('title' => $post->post_title, 'config' => MapConfig::for_map($id));
-                    }
-                }
                 nocache_headers();
                 header('Content-Type: application/json; charset=utf-8');
                 header('Content-Disposition: attachment; filename=matrixmap-maps-' . gmdate('Y-m-d') . '.json');
-                echo wp_json_encode(array('generator' => 'MatrixMap ' . MATRIXMAP_VERSION, 'type' => 'matrixmap-maps', 'maps' => $out), JSON_PRETTY_PRINT); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON download.
+                echo wp_json_encode(self::maps_export_data($ids), JSON_PRETTY_PRINT); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON download.
                 exit;
 
             case 'import_maps':
                 $file = isset($_FILES['maps']['tmp_name']) ? sanitize_text_field($_FILES['maps']['tmp_name']) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
                 $data = '' !== $file && is_uploaded_file($file) && filesize($file) < 20 * MB_IN_BYTES ? json_decode((string) file_get_contents($file), true) : null; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
                 $back = admin_url('admin.php?page=' . self::SLUG . '&section=export');
-                if (!is_array($data) || !isset($data['type'], $data['maps']) || 'matrixmap-maps' !== $data['type'] || !is_array($data['maps'])) {
-                    wp_safe_redirect(add_query_arg('mm_notice', 'badmaps', $back));
-                    exit;
-                }
-                $n = 0;
-                foreach (array_slice($data['maps'], 0, 500) as $item) {
-                    if (!is_array($item) || !isset($item['config']) || !is_array($item['config'])) {
-                        continue;
-                    }
-                    $id = wp_insert_post(array(
-                        'post_type' => MapPostType::POST_TYPE,
-                        'post_status' => 'draft',
-                        'post_title' => isset($item['title']) && is_string($item['title']) ? sanitize_text_field($item['title']) : __('Imported map', 'geo-maps'),
-                    ), true);
-                    if (!is_wp_error($id)) {
-                        MapConfig::save($id, $item['config']); // Sanitized on save.
-                        $n++;
-                    }
-                }
+                $n = count(self::maps_import_data($data));
                 wp_safe_redirect(add_query_arg(array('mm_notice' => $n ? 'mapsimported' : 'badmaps', 'mm_count' => $n), $back));
                 exit;
 
@@ -942,6 +1357,105 @@ final class Tools
 
         wp_safe_redirect($back);
         exit;
+    }
+
+    /**
+     * Settings export (API keys removed; add-ons add theirs).
+     *
+     * @return array generator, settings
+     */
+    public static function settings_export_data()
+    {
+        $settings = Settings::all();
+        foreach (array('google_api_key', 'google_geocode_key', 'maptiler_key', 'thunderforest_key', 'mapbox_token') as $key) {
+            unset($settings[$key]);
+        }
+        /**
+         * Filters the settings export (MatrixMap Pro adds its own).
+         *
+         * @param array $export matrixmap → settings.
+         * @since 2.0.0
+         */
+        $export = apply_filters('matrixmap_settings_export', array('matrixmap' => $settings));
+
+        return array('generator' => 'MatrixMap ' . MATRIXMAP_VERSION, 'settings' => $export);
+    }
+
+    /**
+     * Import a settings export (API keys in it are ignored; the site's own keys stay).
+     *
+     * @param mixed $data Decoded export.
+     * @return bool Imported.
+     */
+    public static function settings_import_data($data)
+    {
+        if (!is_array($data) || empty($data['settings']['matrixmap']) || !is_array($data['settings']['matrixmap'])) {
+            return false;
+        }
+        $incoming = $data['settings']['matrixmap'];
+        foreach (array('google_api_key', 'google_geocode_key', 'maptiler_key', 'thunderforest_key', 'mapbox_token') as $key) {
+            unset($incoming[$key]);
+        }
+        update_option(Settings::OPTION, Settings::sanitize(array_merge(Settings::all(), $incoming)));
+        Settings::flush();
+        /**
+         * Import add-on settings from a settings export.
+         *
+         * @param array $settings The export's settings (matrixmap, and any add-on keys).
+         * @since 2.0.0
+         */
+        do_action('matrixmap_settings_import', $data['settings']);
+
+        return true;
+    }
+
+    /**
+     * Maps export (maps the current user can edit; at most 500).
+     *
+     * @param int[] $ids Map IDs.
+     * @return array generator, type, maps
+     */
+    public static function maps_export_data($ids)
+    {
+        $out = array();
+        foreach (array_slice(array_filter(array_map('absint', (array) $ids)), 0, 500) as $id) {
+            $post = get_post($id);
+            if ($post && MapPostType::POST_TYPE === $post->post_type && current_user_can('edit_post', $id)) {
+                $out[] = array('title' => $post->post_title, 'config' => MapConfig::for_map($id));
+            }
+        }
+
+        return array('generator' => 'MatrixMap ' . MATRIXMAP_VERSION, 'type' => 'matrixmap-maps', 'maps' => $out);
+    }
+
+    /**
+     * Import a maps export: each map is added as a draft.
+     *
+     * @param mixed $data Decoded export.
+     * @return int[] New map IDs (empty when the file is not a maps export).
+     */
+    public static function maps_import_data($data)
+    {
+        if (!is_array($data) || !isset($data['type'], $data['maps']) || 'matrixmap-maps' !== $data['type'] || !is_array($data['maps'])) {
+            return array();
+        }
+        $ids = array();
+        foreach (array_slice($data['maps'], 0, 500) as $item) {
+            if (!is_array($item) || !isset($item['config']) || !is_array($item['config'])) {
+                continue;
+            }
+            $id = wp_insert_post(array(
+                'post_type' => MapPostType::POST_TYPE,
+                'post_status' => 'draft',
+                'post_title' => isset($item['title']) && is_string($item['title']) ? sanitize_text_field($item['title']) : __('Imported map', 'geo-maps'),
+            ), true);
+            if (!is_wp_error($id)) {
+                MapConfig::save($id, $item['config']); // Sanitized on save.
+                $ids[] = (int) $id;
+            }
+        }
+
+        return $ids;
     }
 
     /**
@@ -1060,11 +1574,10 @@ final class Tools
      */
     private static function export_chunks($full)
     {
-        $page = 1;
+        // All IDs sorted once (paging with LIMIT/OFFSET sorted every location again for each page).
+        $all = array_map('intval', get_posts(array('post_type' => LocationPostType::POST_TYPE, 'post_status' => 'publish', 'posts_per_page' => -1, 'fields' => 'ids', 'orderby' => array('title' => 'ASC', 'ID' => 'ASC'), 'no_found_rows' => true, 'cache_results' => false)));
 
-        do {
-            $ids = array_map('intval', get_posts(array('post_type' => LocationPostType::POST_TYPE, 'post_status' => 'publish', 'posts_per_page' => 500, 'paged' => $page, 'fields' => 'ids', 'orderby' => array('title' => 'ASC', 'ID' => 'ASC'), 'no_found_rows' => true)));
-
+        foreach (array_chunk($all, 500) as $ids) {
             if ($full) {
                 LocationPostType::prime($ids);
             } else {
@@ -1078,9 +1591,20 @@ final class Tools
                 wp_cache_delete($id, 'post_meta');
                 wp_cache_delete($id, LocationPostType::TAXONOMY . '_relationships');
             }
+        }
+    }
 
-            ++$page;
-        } while (500 === count($ids));
+    /**
+     * Undo csv_safe() on import: "'+49 30 …" from our own export becomes "+49 30 …" again.
+     *
+     * @param string $v Cell value.
+     * @return string
+     */
+    public static function csv_unsafe($v)
+    {
+        $v = (string) $v;
+
+        return strlen($v) > 1 && "'" === $v[0] && in_array($v[1], array('=', '+', '-', '@', "\t", "\r"), true) ? substr($v, 1) : $v;
     }
 
     /**

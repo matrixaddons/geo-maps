@@ -46,6 +46,7 @@ final class MapEditor
         add_action('manage_' . MapPostType::POST_TYPE . '_posts_custom_column', array(__CLASS__, 'column'), 10, 2);
         add_filter('post_row_actions', array(__CLASS__, 'row_actions'), 10, 2);
         add_action('admin_action_matrixmap_duplicate', array(__CLASS__, 'duplicate'));
+        add_action('admin_action_matrixmap_create_page', array(__CLASS__, 'create_page'));
         add_filter('enter_title_here', array(__CLASS__, 'title_placeholder'), 10, 2);
         add_filter('post_updated_messages', array(__CLASS__, 'messages'));
         self::upload_filters();
@@ -232,7 +233,83 @@ final class MapEditor
             return;
         }
 
-        UI::editbar($post, admin_url('edit.php?post_type=' . MapPostType::POST_TYPE), __('Back to maps', 'geo-maps'), 'auto-draft' !== $post->post_status ? '[matrixmap id="' . (int) $post->ID . '"]' : '');
+        $extra = '';
+        if ('auto-draft' !== $post->post_status && self::can_create_page($post->ID)) {
+            $extra = '<a class="mm-btn mm-btn--secondary mm-btn--sm" href="' . esc_url(self::create_page_url($post->ID)) . '" title="' . esc_attr__('Create a draft page with this map on it and open it', 'geo-maps') . '">' . esc_html__('Create page', 'geo-maps') . '</a>';
+        }
+        // Embedding on other websites (Settings → Advanced): one click copies the <iframe> code.
+        if ('publish' === $post->post_status && \MatrixMap\Maps\Embed::enabled()) {
+            $extra .= ' <button type="button" class="mm-btn mm-btn--secondary mm-btn--sm mm-copy" data-mm-copy="' . esc_attr(\MatrixMap\Maps\Embed::code($post->ID)) . '" title="' . esc_attr__('Copy the iframe code that shows this map on another website', 'geo-maps') . '">' . esc_html__('Copy embed code', 'geo-maps') . '<span class="screen-reader-text" data-mm-copy-label></span></button>';
+        }
+        UI::editbar($post, admin_url('edit.php?post_type=' . MapPostType::POST_TYPE), __('Back to maps', 'geo-maps'), 'auto-draft' !== $post->post_status ? '[matrixmap id="' . (int) $post->ID . '"]' : '', $extra);
+    }
+
+    /**
+     * The current user may make a page with this map: edit the map and create pages.
+     *
+     * @param int $map_id Map ID.
+     * @return bool
+     * @since 2.1.0
+     */
+    public static function can_create_page($map_id)
+    {
+        $pages = get_post_type_object('page');
+
+        return $pages && current_user_can('edit_post', $map_id) && current_user_can($pages->cap->create_posts);
+    }
+
+    /**
+     * Link that creates a draft page with the map (nonced).
+     *
+     * @param int $map_id Map ID.
+     * @return string
+     * @since 2.1.0
+     */
+    public static function create_page_url($map_id)
+    {
+        return wp_nonce_url(admin_url('admin.php?action=matrixmap_create_page&post=' . (int) $map_id), 'matrixmap_create_page_' . (int) $map_id);
+    }
+
+    /**
+     * Page content for a map: the MatrixMap block (editable in the block editor, rendered everywhere).
+     *
+     * @param int $map_id Map ID.
+     * @return string
+     * @since 2.1.0
+     */
+    public static function page_content($map_id)
+    {
+        return '<!-- wp:matrixmaps/map {"map_id":' . (int) $map_id . '} /-->';
+    }
+
+    /**
+     * "Create page": a draft page named after the map, holding its block, opened in the editor.
+     */
+    public static function create_page()
+    {
+        $id = isset($_GET['post']) ? absint($_GET['post']) : 0;
+
+        check_admin_referer('matrixmap_create_page_' . $id);
+
+        $post = get_post($id);
+
+        if (!$post || MapPostType::POST_TYPE !== $post->post_type || !self::can_create_page($id)) {
+            wp_die(esc_html__('You cannot create a page with this map.', 'geo-maps'), 403);
+        }
+
+        $page = wp_insert_post(array(
+            'post_type' => 'page',
+            'post_status' => 'draft',
+            'post_title' => '' !== trim($post->post_title) ? $post->post_title : __('Map', 'geo-maps'),
+            'post_content' => self::page_content($id),
+        ), true);
+
+        if (is_wp_error($page)) {
+            wp_die(esc_html($page->get_error_message()));
+        }
+
+        wp_safe_redirect(admin_url('post.php?action=edit&post=' . (int) $page));
+        exit;
     }
 
     /**
@@ -333,7 +410,8 @@ final class MapEditor
     {
         $asset = \MatrixMap\Maps\Assets::asset('admin/builder');
         wp_enqueue_script('matrixmap-builder', MATRIXMAP_URL . 'build/admin/builder.js', $asset['dependencies'], $asset['version'], true);
-        wp_enqueue_style('matrixmap-builder', MATRIXMAP_URL . 'build/admin/builder.css', array('wp-components'), $asset['version']);
+        wp_enqueue_style('matrixmap-builder', MATRIXMAP_URL . 'build/admin/builder.css', array_merge(array('wp-components'), \MatrixMap\Maps\Assets::preview_styles()), $asset['version']);
+        wp_style_add_data('matrixmap-builder', 'rtl', 'replace'); // Right-to-left languages get the mirrored build.
         wp_set_script_translations('matrixmap-builder', 'geo-maps', MATRIXMAP_DIR . 'languages');
         wp_add_inline_script('matrixmap-builder', 'window.matrixmapBuilder=' . wp_json_encode(EditorData::builder()) . ';window.matrixmapEditor=' . wp_json_encode(EditorData::blocks()) . ';', 'before');
 
@@ -430,6 +508,9 @@ final class MapEditor
         if (MapPostType::POST_TYPE === $post->post_type && current_user_can('edit_matrixmaps')) {
             $url = wp_nonce_url(admin_url('admin.php?action=matrixmap_duplicate&post=' . $post->ID), 'matrixmap_duplicate_' . $post->ID);
             $actions['matrixmap_duplicate'] = '<a href="' . esc_url($url) . '">' . esc_html__('Duplicate', 'geo-maps') . '</a>';
+            if (self::can_create_page($post->ID)) {
+                $actions['matrixmap_create_page'] = '<a href="' . esc_url(self::create_page_url($post->ID)) . '" aria-label="' . esc_attr(sprintf(/* translators: %s: map title */ __('Create a page with “%s”', 'geo-maps'), $post->post_title)) . '">' . esc_html__('Create page', 'geo-maps') . '</a>';
+            }
             if (\MatrixMap\Capabilities::can_manage()) {
                 $export = wp_nonce_url(admin_url('admin-post.php?action=matrixmap_tools&task=export_maps&maps[]=' . $post->ID), 'matrixmap_tools');
                 $actions['matrixmap_export'] = '<a href="' . esc_url($export) . '">' . esc_html__('Export', 'geo-maps') . '</a>';

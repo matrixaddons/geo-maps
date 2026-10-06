@@ -10,7 +10,7 @@
 	"keywords": [ "map", "maps", "google maps", "openstreetmap", "location", "marker", "geo" ],
 	"textdomain": "geo-maps",
 	"attributes": {
-		"map_id": { "type": "string", "default": "0" },
+		"map_id": { "type": [ "string", "integer" ], "default": "0" },
 		"width": { "type": "string", "default": "100%" },
 		"height": { "type": "string", "default": "500px" },
 		"title": { "type": "string", "default": "" }

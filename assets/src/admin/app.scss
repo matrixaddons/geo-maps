@@ -103,6 +103,24 @@ body.mm-admin {
 
 	@media (max-width: 600px) {
 		position: static;
+		// Phones: brand and actions on the first row, the whole nav on its own row (so nothing runs off screen).
+		flex-wrap: wrap;
+		gap: 0 12px;
+		padding-top: 10px;
+
+		.mm-top__nav {
+			order: 3;
+			flex-basis: 100%;
+		}
+
+		.mm-top__end {
+			margin-left: auto;
+		}
+
+		.mm-top__link {
+			margin: 6px 0 8px;
+			padding: 8px 12px;
+		}
 	}
 
 	.mm-badge--pro {
@@ -209,9 +227,16 @@ body.mm-admin {
 		color: #fff;
 	}
 
+	// Narrow screens: icon only, the label stays for screen readers.
 	@media (max-width: 1100px) {
 		span {
-			display: none;
+			position: absolute;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+			width: 1px;
+			height: 1px;
+			margin: -1px;
+			white-space: nowrap;
 		}
 	}
 }
@@ -1151,6 +1176,12 @@ body.mm-admin {
 			border-bottom: 0;
 		}
 
+		// The column name, when the cell carries one (the header row is hidden here).
+		td[data-label]::before {
+			content: attr(data-label) ": ";
+			color: var(--mm-muted);
+		}
+
 		select {
 			max-width: 100%;
 		}
@@ -1707,6 +1738,23 @@ a.mm-strong {
 		padding: 14px 0;
 		color: var(--mm-text);
 		font-size: 14px;
+	}
+
+	// Checkbox lines: the box beside its text, also when the text wraps (phones).
+	td label:has(> input[type="checkbox"], > input[type="radio"]) {
+		display: flex;
+		align-items: flex-start;
+		gap: 8px;
+		margin: 0 0 6px;
+
+		> input {
+			flex: none;
+			margin: 2px 0 0;
+		}
+
+		+ br {
+			display: none;
+		}
 	}
 
 	@media (max-width: 782px) {
@@ -2467,6 +2515,8 @@ html:not(.mm-fullscreen) body.mm-admin--map .mm-create__foot {
 		align-items: center;
 		gap: 8px;
 		min-width: 0;
+		// overflow:hidden lets grid rows shrink below the checkbox; keep a 28px target.
+		min-height: 28px;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -2671,6 +2721,21 @@ html:not(.mm-fullscreen) body.mm-admin--map .mm-create__foot {
 	background: #0f172a;
 	color: #e2e8f0;
 	font-size: 13px;
+
+	// Focusable (tabindex="0") so a block that scrolls sideways can be read with the keyboard.
+	&:focus-visible {
+		outline: 2px solid #93c5fd;
+		outline-offset: 2px;
+	}
+
+	// The inline-code look (light chip) must not apply inside a code block: light on light.
+	code {
+		padding: 0;
+		border-radius: 0;
+		background: transparent;
+		color: inherit;
+		font-size: inherit;
+	}
 }
 
 .mm-docs__table {
@@ -2708,3 +2773,13 @@ html:not(.mm-fullscreen) body.mm-admin--map .mm-create__foot {
 	vertical-align: middle;
 }
 
+
+// Importer tables (Switch from another plugin): scroll sideways on phones instead of pushing
+// the page out (the "Import n maps" button was cut off at 390px).
+@media (max-width: 782px) {
+	.mm-migrate {
+		display: block;
+		max-width: 100%;
+		overflow-x: auto;
+	}
+}

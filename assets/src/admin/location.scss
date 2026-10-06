@@ -147,6 +147,34 @@
 	white-space: nowrap;
 }
 
+// Phones: label and value side by side at full width, the row's actions under them.
+@media (max-width: 600px) {
+	.mm-details-edit tr {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 4px 8px;
+		padding: 6px 0;
+		border-bottom: 1px solid #f0f0f1;
+	}
+
+	.mm-details-edit td,
+	.mm-details-edit td:first-child {
+		display: block;
+		width: auto;
+		padding: 0;
+	}
+
+	.mm-details-edit .mm-details__actions {
+		grid-column: 1 / -1;
+		width: auto;
+	}
+
+	.mm-details__actions .button-link {
+		min-height: 24px;
+		margin-right: 12px;
+	}
+}
+
 // "Copy to the next days": a big enough target (WCAG 2.5.8).
 .mm-hours-edit .mm-copy-down {
 	display: inline-flex;

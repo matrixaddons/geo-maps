@@ -77,6 +77,42 @@ final class Assets
         wp_register_script('matrixmap-loader', self::url('frontend/loader.js'), array(), $loader['version'], array('in_footer' => true, 'strategy' => 'defer'));
         wp_register_style('matrixmap', self::url('frontend/loader.css'), array(), $loader['version']);
         wp_style_add_data('matrixmap', 'path', MATRIXMAP_DIR . 'build/frontend/loader.css');
+        // Right-to-left languages get the mirrored build (the consent placeholder and "skip map" link).
+        wp_style_add_data('matrixmap', 'rtl', 'replace');
+    }
+
+    /**
+     * MapLibre's stylesheet for admin screens (the map builder and the location editor).
+     *
+     * Registered without a right-to-left version: MapLibre places markers, popups
+     * and controls from the left edge, so a mirrored copy would move them off the map.
+     *
+     * @return string Style handle.
+     */
+    public static function maplibre_style()
+    {
+        if (!wp_style_is('matrixmap-maplibre', 'registered')) {
+            $engine = self::asset('frontend/engine-maplibre');
+            wp_register_style('matrixmap-maplibre', self::url('frontend/engine-maplibre.css'), array(), $engine['version']);
+        }
+
+        return 'matrixmap-maplibre';
+    }
+
+    /**
+     * Stylesheets of the map builder's previews: MapLibre and the front-end map
+     * styles, the same files (never mirrored) the site and the live preview use.
+     *
+     * @return string[] Style handles.
+     */
+    public static function preview_styles()
+    {
+        if (!wp_style_is('matrixmap-front-app', 'registered')) {
+            $app = self::asset('frontend/app');
+            wp_register_style('matrixmap-front-app', self::url('frontend/app.css'), array(self::maplibre_style()), $app['version']);
+        }
+
+        return array(self::maplibre_style(), 'matrixmap-front-app');
     }
 
     /**
@@ -147,17 +183,36 @@ final class Assets
      * Engine chunk.
      *
      * @param string $name Entry.
+     * @param bool $rtl Use the mirrored stylesheet (<name>-rtl.css) when the build has one.
      * @return array js, css
      */
-    private static function chunk($name)
+    private static function chunk($name, $rtl = false)
     {
         $asset = self::asset($name);
-        $css = MATRIXMAP_DIR . 'build/' . $name . '.css';
+        $file = $name . ($rtl && is_readable(MATRIXMAP_DIR . 'build/' . $name . '-rtl.css') ? '-rtl' : '') . '.css';
+        $css = MATRIXMAP_DIR . 'build/' . $file;
 
         return array(
             'js' => add_query_arg('ver', $asset['version'], self::url($name . '.js')),
-            'css' => is_readable($css) ? add_query_arg('ver', $asset['version'], self::url($name . '.css')) : '',
+            'css' => is_readable($css) ? add_query_arg('ver', $asset['version'], self::url($file)) : '',
         );
+    }
+
+    /**
+     * Whether the site's own map stylesheets should be mirrored: right-to-left
+     * language on the front end.
+     *
+     * Only MatrixMap's chunks (app, locator, region) are mirrored. The map
+     * libraries' stylesheets (MapLibre, Leaflet) are never: they place tiles,
+     * markers and popups from the left edge in CSS, and a mirrored copy moves
+     * them off their coordinates. Admin screens keep the unmirrored files too
+     * (the map builder enqueues them itself; see preview_styles()).
+     *
+     * @return bool
+     */
+    public static function rtl_chunks()
+    {
+        return is_rtl() && !is_admin();
     }
 
     /**
@@ -168,15 +223,17 @@ final class Assets
      */
     public static function settings($google_key = true)
     {
+        $rtl = self::rtl_chunks();
         $settings = array(
             'version' => MATRIXMAP_VERSION,
             'chunks' => array(
-                'app' => self::chunk('frontend/app'),
+                'app' => self::chunk('frontend/app', $rtl),
+                // Map-library CSS is never mirrored (see rtl_chunks()).
                 'maplibre' => self::chunk('frontend/engine-maplibre'),
                 'leaflet' => self::chunk('frontend/engine-leaflet'),
                 'google' => self::chunk('frontend/engine-google'),
-                'region' => self::chunk('frontend/region'),
-                'locator' => self::chunk('frontend/locator'),
+                'region' => self::chunk('frontend/region', $rtl),
+                'locator' => self::chunk('frontend/locator', $rtl),
             ),
             'google' => array('key' => $google_key ? (string) Settings::get('google_api_key') : '', 'language' => substr(determine_locale(), 0, 2)),
             'consent' => array(
@@ -247,12 +304,21 @@ final class Assets
             'any' => __('Any', 'geo-maps'),
             'noMatch' => __('No locations match these filters.', 'geo-maps'),
             'clearFilters' => __('Clear filters', 'geo-maps'),
+            'legend' => __('Legend', 'geo-maps'),
+            'sortBy' => __('Sort', 'geo-maps'),
+            'sortDistance' => __('Distance', 'geo-maps'),
+            'sortName' => __('Name', 'geo-maps'),
+            'sortOpen' => __('Open now first', 'geo-maps'),
+            'copyLink' => __('Copy link to these results', 'geo-maps'),
+            'linkCopied' => __('Link copied', 'geo-maps'),
             'filterBy' => __('Filter by category', 'geo-maps'),
             'searchPlaces' => __('Search places', 'geo-maps'),
             'noPlaces' => __('No places match.', 'geo-maps'),
             /* translators: %d: number of places */
             'placesCount' => __('%d places', 'geo-maps'),
             'onePlace' => __('1 place', 'geo-maps'),
+            'noLocations' => __('No locations to show yet.', 'geo-maps'),
+            'loadingPlaces' => __('Loading…', 'geo-maps'),
             /* translators: %d: number of places */
             'cluster' => __('%d places, zoom in', 'geo-maps'),
             'openNow' => __('Open now', 'geo-maps'),
@@ -263,6 +329,7 @@ final class Assets
             'opensOn' => __('Opens %1$s %2$s', 'geo-maps'),
             /* translators: %s: time */
             'closesAt' => __('Closes %s', 'geo-maps'),
+            'open24' => __('Open 24 hours', 'geo-maps'),
             /* translators: %s: date */
             'closedUntil' => __('Temporarily closed until %s', 'geo-maps'),
             'hours' => __('Opening hours', 'geo-maps'),
@@ -272,6 +339,8 @@ final class Assets
             'away' => __('%s away', 'geo-maps'),
             // Locator.
             'searchLabel' => __('Enter an address, city or postcode', 'geo-maps'),
+            // Placeholder in a narrow search box (phones), where the full one would be cut off.
+            'searchLabelShort' => __('Address or postcode', 'geo-maps'),
             'search' => __('Search', 'geo-maps'),
             'useMyLocation' => __('Use my location', 'geo-maps'),
             'radius' => __('Within', 'geo-maps'),

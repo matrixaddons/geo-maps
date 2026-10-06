@@ -155,6 +155,7 @@ final class UI
 
         $asset = Assets::asset('admin/app');
         wp_enqueue_style('matrixmap-app', MATRIXMAP_URL . 'build/admin/app.css', array(), $asset['version']);
+        wp_style_add_data('matrixmap-app', 'rtl', 'replace'); // Right-to-left languages get the mirrored build.
         wp_enqueue_script('matrixmap-app', MATRIXMAP_URL . 'build/admin/app.js', $asset['dependencies'], $asset['version'], true);
         wp_localize_script('matrixmap-app', 'matrixmapApp', array(
             'copied' => __('Copied', 'geo-maps'),
@@ -661,7 +662,6 @@ final class UI
             'back' => '<path d="M19 12H5M11 18l-6-6 6-6"/>',
             'eye' => '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
             'trash' => '<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>',
-            'book' => '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
             'code' => '<path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/>',
             'folder' => '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
         );

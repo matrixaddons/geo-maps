@@ -48,7 +48,7 @@ final class Menu
         add_submenu_page(self::SLUG, __('Add New Map', 'geo-maps'), __('Add New Map', 'geo-maps'), 'edit_matrixmaps', 'post-new.php?post_type=' . MapPostType::POST_TYPE);
         add_submenu_page(self::SLUG, __('Locations', 'geo-maps'), __('Locations', 'geo-maps'), 'edit_matrixmaps', 'edit.php?post_type=' . LocationPostType::POST_TYPE);
         add_submenu_page(self::SLUG, __('Location categories', 'geo-maps'), __('Categories', 'geo-maps'), 'edit_matrixmaps', 'edit-tags.php?taxonomy=' . LocationPostType::TAXONOMY . '&post_type=' . LocationPostType::POST_TYPE);
-        add_submenu_page(self::SLUG, __('MatrixMap Analytics', 'geo-maps'), __('Analytics', 'geo-maps'), 'edit_matrixmaps', self::ANALYTICS, array(__CLASS__, 'analytics'));
+        add_submenu_page(self::SLUG, __('MatrixMap Analytics', 'geo-maps'), __('Analytics', 'geo-maps'), Capabilities::analytics_cap(), self::ANALYTICS, array(__CLASS__, 'analytics'));
         add_submenu_page(self::SLUG, __('MatrixMap Settings', 'geo-maps'), __('Settings', 'geo-maps'), Capabilities::MANAGE, SettingsPage::SLUG, array(SettingsPage::class, 'render'));
         add_submenu_page(self::SLUG, __('MatrixMap Tools', 'geo-maps'), __('Import & Tools', 'geo-maps'), Capabilities::MANAGE, Tools::SLUG, array(Tools::class, 'render'));
         add_submenu_page(self::SLUG, __('MatrixMap: Free vs Pro', 'geo-maps'), __('Free vs Pro', 'geo-maps'), 'edit_matrixmaps', Compare::SLUG, array(Compare::class, 'render'));

@@ -99,9 +99,12 @@ function toggleFullscreen( view, b ) {
 	}
 	const req = el.requestFullscreen || el.webkitRequestFullscreen;
 	if ( req ) {
-		req.call( el ).catch
-			? req.call( el ).catch( () => pseudo( view, b ) )
-			: req.call( el );
+		// Call it once: a second request would race the first, and a refused first
+		// request was an unhandled rejection.
+		const p = req.call( el );
+		if ( p && p.catch ) {
+			p.catch( () => pseudo( view, b ) );
+		}
 	} else {
 		pseudo( view, b );
 	}

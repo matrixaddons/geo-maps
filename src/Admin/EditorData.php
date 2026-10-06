@@ -57,7 +57,7 @@ final class EditorData
             $editor = self::blocks_lite();
             $editor['lazy'] = array(
                 'url' => add_query_arg(array('action' => 'matrixmap_editor_data', '_wpnonce' => wp_create_nonce('matrixmap_editor_data')), admin_url('admin-ajax.php')),
-                'css' => add_query_arg('ver', Assets::asset('admin/builder')['version'], MATRIXMAP_URL . 'build/admin/builder.css'),
+                'css' => add_query_arg('ver', Assets::asset('admin/builder')['version'], MATRIXMAP_URL . 'build/admin/builder' . (is_rtl() ? '-rtl' : '') . '.css'),
             );
             $builder = new \stdClass();
         }
@@ -77,7 +77,8 @@ final class EditorData
 
         // Builder styles for the modal (the builder JS is lazy-loaded).
         $asset = Assets::asset('admin/builder');
-        wp_enqueue_style('matrixmap-builder', MATRIXMAP_URL . 'build/admin/builder.css', array('wp-components'), $asset['version']);
+        wp_enqueue_style('matrixmap-builder', MATRIXMAP_URL . 'build/admin/builder.css', array_merge(array('wp-components'), Assets::preview_styles()), $asset['version']);
+        wp_style_add_data('matrixmap-builder', 'rtl', 'replace'); // Right-to-left languages get the mirrored build.
         wp_enqueue_media();
     }
 
@@ -191,14 +192,22 @@ final class EditorData
 
         $terms = get_terms(array('taxonomy' => LocationPostType::TAXONOMY, 'hide_empty' => false, 'number' => 200));
 
-        return array(
+        /**
+         * Filters the data handed to the map builder (MatrixMap Pro: a network's
+         * shared location categories, extra flags).
+         *
+         * @param array $data Builder data (locationCategories, global, defaults…).
+         * @since 2.1.0
+         */
+        return apply_filters('matrixmap_builder_data', array(
             'rest' => esc_url_raw(rest_url('matrixmap/v1/')),
             'pro' => UI::pro(),
             'proUrl' => UI::pro_url(),
             'detailLabels' => self::detail_labels(),
             'defaults' => array(
                 'markers' => MapConfig::defaults('markers'),
-                'locator' => MapConfig::defaults('locator'),
+                // New store locators draw the radius circle; saved maps keep what they have (MapConfig).
+                'locator' => array_replace_recursive(MapConfig::defaults('locator'), array('locator' => array('circle' => true))),
                 'region' => MapConfig::defaults('region'),
             ),
             'global' => array(
@@ -221,7 +230,7 @@ final class EditorData
             'locationsUrl' => admin_url('edit.php?post_type=' . LocationPostType::POST_TYPE),
             'siteCountry' => '',
             'maxMarkers' => MapConfig::MAX_MARKERS,
-        );
+        ));
     }
 
     /**

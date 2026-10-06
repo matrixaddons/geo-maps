@@ -144,6 +144,14 @@ final class SettingsPage
                 'after' => array(__CLASS__, 'section_visitor_after'),
                 'fields' => array('visitor_location'),
             ),
+            'locations' => array(
+                'label' => __('Locations', 'geo-maps'),
+                'icon' => 'store',
+                'group' => $locator,
+                'render' => array(__CLASS__, 'section_locations'),
+                'fields' => array('hide_protected'),
+                'checkboxes' => array('hide_protected'),
+            ),
             'locator' => array(
                 'label' => __('Locator extras', 'geo-maps'),
                 'icon' => 'store',
@@ -447,10 +455,24 @@ final class SettingsPage
     }
 
     /**
+     * Locations.
+     */
+    public static function section_locations()
+    {
+        UI::card_start(__('Visibility', 'geo-maps'), __('Which published locations visitors can see on maps, in the store locator and in location data (locations.geojson, the REST API, sitemaps).', 'geo-maps'));
+        UI::row(__('Password-protected locations', 'geo-maps'), UI::toggle(self::name('hide_protected'), (bool) Settings::get('hide_protected'), __('Hide password-protected locations from maps, the locator and location data', 'geo-maps'), 'mm-hide_protected'), __('Off by default: a location with a password (Visibility in its edit screen) is still placed on maps, as before. Turn this on to keep such locations private until the password is removed.', 'geo-maps'));
+        UI::card_end();
+    }
+
+    /**
      * Advanced.
      */
     public static function section_advanced()
     {
+        UI::card_start(__('Embedding', 'geo-maps'), __('Show a map on another website with an <iframe>. Each published map’s editor bar then has a “Copy embed code” button.', 'geo-maps'));
+        UI::row(__('Other websites', 'geo-maps'), UI::toggle(self::name('embed'), (bool) Settings::get('embed'), __('Allow maps to be embedded on other websites', 'geo-maps'), 'mm-embed'), __('Off by default. Only published maps are served, at /?matrixmap_embed=ID, with a “noindex” hint for search engines.', 'geo-maps'));
+        UI::card_end();
+
         UI::card_start(__('Your data', 'geo-maps'));
         UI::row(__('When the plugin is deleted', 'geo-maps'), UI::toggle(self::name('delete_data'), (bool) Settings::get('delete_data'), __('Also delete all maps, locations and settings', 'geo-maps'), 'mm-delete_data'), __('Off by default, so reinstalling never loses your maps.', 'geo-maps'));
 

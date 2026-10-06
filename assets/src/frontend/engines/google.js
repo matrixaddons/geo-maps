@@ -71,6 +71,7 @@ async function create( container, ctx ) {
 		mapId: ( payload.google && payload.google.mapId ) || 'DEMO_MAP_ID',
 		gestureHandling,
 		disableDefaultUI: true,
+		scaleControl: !! ( payload.controls && payload.controls.scale ),
 		clickableIcons: false,
 		keyboardShortcuts: true,
 	} );

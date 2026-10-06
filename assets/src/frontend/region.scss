@@ -262,12 +262,28 @@
 	td {
 		padding: 6px 10px;
 		border-bottom: 1px solid #e2e8f0;
-		text-align: left;
+		text-align: start;
 	}
 
 	td {
-		text-align: right;
+		text-align: end;
 		font-variant-numeric: tabular-nums;
+	}
+}
+
+// A legend that would cover regions at this size sits under the map instead (set by region.js).
+.mm-region__legend.is-under {
+	position: static;
+	max-width: none;
+	margin-top: 6px;
+	box-shadow: none;
+	background: none;
+	padding: 0;
+
+	ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0 14px;
 	}
 }
 
@@ -290,6 +306,8 @@
 		flex-direction: row;
 		justify-content: flex-end;
 		margin-top: 6px;
+		// Room for the ring and focus outline, which .mm-region (overflow: hidden) would clip.
+		padding: 0 3px 3px;
 	}
 
 	.mm-region .mm-ctl__group {
@@ -537,7 +555,7 @@
 	color: #0f172a;
 	font: inherit;
 	font-size: 14px;
-	text-align: left;
+	text-align: start;
 	cursor: pointer;
 
 	&::before {
@@ -589,7 +607,7 @@
 	background: none;
 	color: inherit;
 	font: inherit;
-	text-align: left;
+	text-align: start;
 	cursor: pointer;
 
 	&:hover {

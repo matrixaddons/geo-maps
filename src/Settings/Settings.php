@@ -61,6 +61,10 @@ final class Settings
             'accent' => '',
             'corners' => 'rounded',
             'gestures' => 'cooperative',
+            // Locations: leave password-protected ones out of maps, the locator and location data (off = as before 2.1).
+            'hide_protected' => false,
+            // Embedding maps on other websites (/?matrixmap_embed=ID in an iframe). Off: nothing is served.
+            'embed' => false,
             // Housekeeping.
             'delete_data' => false,
             'wizard_done' => false,
@@ -172,6 +176,8 @@ final class Settings
         $out['accent'] = $accent ? $accent : '';
         $out['corners'] = self::choice($input, 'corners', array('rounded', 'square', 'pill'), $d['corners']);
 
+        $out['hide_protected'] = !empty($input['hide_protected']);
+        $out['embed'] = !empty($input['embed']);
         $out['delete_data'] = !empty($input['delete_data']);
         $out['wizard_done'] = !empty($input['wizard_done']);
 
@@ -200,6 +206,18 @@ final class Settings
     }
 
     /**
+     * Password-protected locations stay out of public location data (maps, the locator,
+     * cached files, REST meta and sitemaps). Off by default: existing sites keep showing them.
+     *
+     * @return bool
+     * @since 2.1.0
+     */
+    public static function hide_protected()
+    {
+        return (bool) self::get('hide_protected');
+    }
+
+    /**
      * Brand colour and corner style as CSS custom properties ('' when default).
      *
      * @return string CSS
@@ -210,7 +228,11 @@ final class Settings
         $accent = (string) self::get('accent');
 
         if ('' !== $accent) {
-            $rgb = array_map('hexdec', str_split(ltrim($accent, '#'), 2));
+            $hex = ltrim($accent, '#');
+            if (3 === strlen($hex)) {
+                $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2]; // #abc → #aabbcc
+            }
+            $rgb = array_map('hexdec', str_split(str_pad($hex, 6, '0'), 2));
             $dark = sprintf('#%02x%02x%02x', (int) ($rgb[0] * 0.82), (int) ($rgb[1] * 0.82), (int) ($rgb[2] * 0.82));
             $vars[] = '--mm-accent:' . $accent;
             $vars[] = '--mm-accent-strong:' . $dark;

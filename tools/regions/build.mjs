@@ -350,7 +350,25 @@ function continentFeatures( world ) {
 /* ------------------------------------------------------------------ */
 
 const validCode = ( c ) => typeof c === 'string' && /^[A-Z]{2}-[A-Z0-9]{1,3}$/.test( c );
-const defaultUnit = ( p ) => ( validCode( p.iso_3166_2 ) ? { id: p.iso_3166_2, name: p.name_en || p.name } : null );
+// Natural Earth names and codes that are wrong, or the same as another region's (checked against ISO 3166-2).
+const NAME_FIXES = {
+	'US-DC': 'District of Columbia', 'RU-ALT': 'Altai Krai', 'GY-ES': 'Essequibo Islands-West Demerara', 'SC-13': "Grand'Anse Mahé",
+	'UA-32': 'Kyiv Oblast', 'AR-C': 'Buenos Aires City', 'TW-CYQ': 'Chiayi County', 'TW-CYI': 'Chiayi City', 'TW-HSQ': 'Hsinchu County',
+	'TW-HSZ': 'Hsinchu City', 'HU-VM': 'Veszprém City', 'BY-MI': 'Minsk Region', 'BG-23': 'Sofia Province', 'HR-01': 'Zagreb County',
+	'UZ-TO': 'Tashkent Region', 'YE-SA': 'Amanat al-Asimah (Sanaa City)', 'TT-ETO': 'Eastern Tobago', 'TT-WTO': 'Western Tobago',
+	'BM-HAM': 'Hamilton Parish', 'BM-HA': 'City of Hamilton', 'LV-008': 'Amata', 'LV-009': 'Ape', 'LV-017': 'Beverīna',
+	'LV-019': 'Burtnieki', 'LV-021': 'Cesvaine', 'LV-030': 'Ērgļi', 'LV-035': 'Ikšķile', 'LV-039': 'Jaunpiebalga', 'LV-045': 'Kocēni',
+	'LV-055': 'Līgatne', 'LV-057': 'Lubāna', 'LV-060': 'Mazsalaca', 'LV-064': 'Naukšēni', 'LV-070': 'Pārgauja', 'LV-075': 'Priekuļi',
+	'LV-076': 'Rauna', 'LV-084': 'Rūjiena', 'LV-094': 'Smiltene', 'LV-096': 'Strenči', 'LV-102': 'Varakļāni', 'LV-104': 'Vecpiebalga',
+	'RU-MOW': 'Moscow', 'RU-MOS': 'Moscow Oblast',
+};
+// Natural Earth has the two Moscow codes the wrong way round.
+const CODE_FIXES = { 'RU-MOW': 'RU-MOS', 'RU-MOS': 'RU-MOW' };
+const fixUnit = ( id, name ) => {
+	const code = CODE_FIXES[ id ] || id;
+	return { id: code, name: NAME_FIXES[ code ] || String( name ).replace( /\s{2,}/g, ' ' ) };
+};
+const defaultUnit = ( p ) => ( validCode( p.iso_3166_2 ) ? fixUnit( p.iso_3166_2, p.name_en || p.name ) : null );
 
 const FR_REGIONS = {
 	'FR-HDF': 'Hauts-de-France', 'FR-GES': 'Grand Est', 'FR-PAC': "Provence-Alpes-Côte d'Azur", 'FR-ARA': 'Auvergne-Rhône-Alpes',
@@ -610,6 +628,14 @@ function detailFeatures( fc, admin1, iso, byParent = true ) {
 		const polys = d3Polys( f.geometry );
 		const parent = parentOf( polys ) || iso;
 		let id = ( parent + '-' + slugify( name ) ).toUpperCase().slice( 0, 60 );
+		// Some districts come in several pieces (e.g. coastal waters, or a piece whose parent isn't found): one region each.
+		const named = out.filter( ( o ) => o.properties.name === name );
+		const same = named.find( ( o ) => o.properties.gid === id ) || ( 1 === named.length && ( parent === iso || named[ 0 ].properties.parent === iso ) ? named[ 0 ] : null );
+		if ( same && byParent ) {
+			same.geometry.coordinates.push( ...polys );
+			if ( same.properties.parent === iso && parent !== iso ) Object.assign( same.properties, { gid: id, parent } );
+			continue;
+		}
 		if ( seen[ id ] ) id += '-' + ( ++seen[ id ] );
 		else seen[ id ] = 1;
 		out.push( { type: 'Feature', properties: { gid: id, name, parent }, geometry: { type: 'MultiPolygon', coordinates: polys } } );

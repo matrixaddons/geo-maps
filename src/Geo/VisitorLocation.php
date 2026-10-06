@@ -93,6 +93,8 @@ final class VisitorLocation
 
             if ('' !== $edgescape) {
                 parse_str(str_replace(',', '&', $edgescape), $e);
+                // "key[]=…" parses to an array: keep plain values only.
+                $e = array_filter($e, 'is_string');
 
                 if (!empty($e['country_code']) && 2 === strlen($e['country_code'])) {
                     $has_point = isset($e['lat'], $e['long']) && is_numeric($e['lat']) && is_numeric($e['long']);

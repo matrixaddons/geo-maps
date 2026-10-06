@@ -39,7 +39,7 @@ export function proTeasers( tab, type ) {
 		return t( __( 'Posts on this map', 'geo-maps' ), __( 'Show any post type on the map from its location fields — ACF, Meta Box, JetEngine or an address — coloured and filtered by category.', 'geo-maps' ) );
 	}
 	if ( type === 'markers' && tab === 'style' ) {
-		return t( __( 'Globe view and heatmap', 'geo-maps' ), __( 'Show the world as a spinning 3D globe, or where places are concentrated as a heatmap.', 'geo-maps' ) );
+		return t( __( 'Globe, heatmap, 3D and a style editor', 'geo-maps' ), __( 'Show the world as a spinning 3D globe or a heatmap, raise 3D buildings and terrain, and recolour the map style — water, land, roads, labels, label language.', 'geo-maps' ) );
 	}
 	if ( type === 'region' && tab === 'regions' ) {
 		return t( __( 'Regions from your content, a sheet or a feed', 'geo-maps' ), __( 'Fill regions from categories, posts with a region field (ACF), a Google Sheet or a JSON feed — and open a gallery, video or page when a region is clicked.', 'geo-maps' ) );

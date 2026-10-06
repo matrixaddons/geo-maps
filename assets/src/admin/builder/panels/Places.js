@@ -3,15 +3,19 @@
  */
 import { useState } from '@wordpress/element';
 import { Button, Spinner } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
-import { geocode, shortLabel } from '../util';
+import { __, sprintf } from '@wordpress/i18n';
+import { geocode, reverse, shortLabel } from '../util';
 
-export default function Places( { config, onSelect, onAdd, adding, setAdding, map, canClick = true } ) {
+const LIST_PAGE = 200;
+
+export default function Places( { config, onSelect, onAdd, onUpdate, adding, setAdding, map, canClick = true } ) {
 	const [ q, setQ ] = useState( '' );
 	const [ results, setResults ] = useState( null );
 	const [ busy, setBusy ] = useState( false );
 	const [ error, setError ] = useState( '' );
 	const [ filter, setFilter ] = useState( '' );
+	// Rows drawn at a time: a map with thousands of places would freeze the editor.
+	const [ shown, setShown ] = useState( LIST_PAGE );
 
 	const search = ( e ) => {
 		e.preventDefault();
@@ -34,7 +38,17 @@ export default function Places( { config, onSelect, onAdd, adding, setAdding, ma
 	};
 
 	const pick = ( r ) => {
-		onAdd( { lat: +r.lat.toFixed( 7 ), lng: +r.lng.toFixed( 7 ), title: shortLabel( r.label ), address: r.label } );
+		// Typed coordinates have no name: "Place 3", not "51.5007" (the address field stays empty).
+		const coords = r.type === 'coordinates';
+		/* translators: %d: number of the place on the map */
+		const title = coords ? sprintf( __( 'Place %d', 'geo-maps' ), config.markers.length + 1 ) : shortLabel( r.label );
+		const id = onAdd( { lat: +r.lat.toFixed( 7 ), lng: +r.lng.toFixed( 7 ), title, address: coords ? '' : r.label } );
+		if ( coords && id && onUpdate ) {
+			// The nearest known address names the place, when there is one.
+			reverse( r.lat, r.lng )
+				.then( ( rv ) => rv && rv.label && onUpdate( id, { address: rv.label, title: shortLabel( rv.label ) || title } ) )
+				.catch( () => {} );
+		}
 		setResults( null );
 		setQ( '' );
 		if ( map.current ) {
@@ -42,6 +56,14 @@ export default function Places( { config, onSelect, onAdd, adding, setAdding, ma
 		}
 	};
 
+	// Same colour as the pin on the map: its own, else its first category's.
+	const dotColor = ( m ) => {
+		if ( m.icon && m.icon.color ) {
+			return m.icon.color;
+		}
+		const cat = ( config.categories || [] ).find( ( c ) => ( m.categories || [] ).includes( c.id ) );
+		return cat && cat.color ? cat.color : '#2563eb';
+	};
 	const list = config.markers.filter( ( m ) => ! filter || ( m.title + ' ' + m.address ).toLowerCase().includes( filter.toLowerCase() ) );
 
 	return (
@@ -100,10 +122,10 @@ export default function Places( { config, onSelect, onAdd, adding, setAdding, ma
 					</div>
 				) : null }
 				<ul>
-					{ list.map( ( m ) => (
+					{ list.slice( 0, shown ).map( ( m ) => (
 						<li key={ m.id }>
 							<button type="button" className="mm-b-list__item" data-id={ m.id } onClick={ () => onSelect( m.id ) }>
-								<span className="mm-b-dot" style={ { background: m.icon && m.icon.color ? m.icon.color : '#2563eb' } } aria-hidden="true" />
+								<span className="mm-b-dot" style={ { background: dotColor( m ) } } aria-hidden="true" />
 								<span className="mm-b-list__text">
 									<strong>{ m.title || __( '(no title)', 'geo-maps' ) }</strong>
 									{ m.address ? <span>{ m.address }</span> : null }
@@ -113,6 +135,11 @@ export default function Places( { config, onSelect, onAdd, adding, setAdding, ma
 						</li>
 					) ) }
 				</ul>
+				{ list.length > shown ? (
+					<Button variant="secondary" className="mm-b-list__more" onClick={ () => setShown( shown + LIST_PAGE ) }>
+						{ __( 'Show more places', 'geo-maps' ) }
+					</Button>
+				) : null }
 			</div>
 		</div>
 	);

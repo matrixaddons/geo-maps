@@ -44,6 +44,11 @@ final class Migrate
     const SOURCES = 'matrixmap_migrated_sources';
 
     /**
+     * Marker entry in SOURCES: the list also names store imports ("stores:id").
+     */
+    const SOURCES_V2 = '#2';
+
+    /**
      * Meta key on imported maps ("source:id").
      */
     const META = '_matrixmap_imported_from';
@@ -73,7 +78,7 @@ final class Migrate
     public static function sources()
     {
         if (null === self::$sources) {
-            $sources = array(new Sources\WpGoMaps(), new Sources\MapPress(), new Sources\WpMaps(), new Sources\InteractiveGeoMaps());
+            $sources = array(new Sources\WpGoMaps(), new Sources\MapPress(), new Sources\WpMaps(), new Sources\InteractiveGeoMaps(), new Sources\MapsMarker());
 
             /**
              * Filters the "Switch to MatrixMap" import sources.
@@ -162,6 +167,18 @@ final class Migrate
             }
         }
 
+        // Store locator imports, so compat() can keep their shortcodes working.
+        if (!empty($log['stores']) && is_array($log['stores'])) {
+            foreach ($log['stores'] as $id => $time) {
+                if (!empty($time)) {
+                    $ids[] = 'stores:' . $id;
+                }
+            }
+        }
+
+        // Marks a list that includes store imports (lists saved by 2.0.x don't).
+        $ids[] = self::SOURCES_V2;
+
         return $ids;
     }
 
@@ -184,13 +201,14 @@ final class Migrate
     {
         $imported = get_option(self::SOURCES, null);
 
-        // Sites that imported before this option existed: derive it once.
-        if (!is_array($imported)) {
+        // Sites that imported before this option existed (or before it listed
+        // store imports): derive it once.
+        if (!is_array($imported) || !in_array(self::SOURCES_V2, $imported, true)) {
             $imported = self::imported_sources(self::log());
             update_option(self::SOURCES, $imported, true);
         }
 
-        if (!$imported) {
+        if (array(self::SOURCES_V2) === $imported) {
             return;
         }
 
@@ -220,10 +238,8 @@ final class Migrate
             }
         }
 
-        $stores = isset($log['stores']) ? (array) $log['stores'] : array();
-
         foreach (self::store_sources() as $id => $source) {
-            if (empty($stores[$id])) {
+            if (!in_array('stores:' . $id, $imported, true)) {
                 continue;
             }
 
@@ -578,7 +594,7 @@ final class Migrate
             <?php endif; ?>
 
             <?php if (!$sources && !$stores && !$leaflet_posts && !$wpmb_posts) : ?>
-                <p><?php esc_html_e('No maps from other plugins were found on this site. MatrixMap can import maps from WP Go Maps, MapPress and WP Maps, stores from WP Store Locator and Agile Store Locator, and can show Leaflet Map shortcodes and WP Map Block blocks. The other plugin can be active or deactivated; its data is only read, never changed.', 'geo-maps'); ?></p>
+                <p><?php esc_html_e('No maps from other plugins were found on this site. MatrixMap can import maps from WP Go Maps, MapPress, WP Maps, Interactive Geo Maps and Maps Marker, stores from WP Store Locator and Agile Store Locator, and can show Leaflet Map shortcodes and WP Map Block blocks. The other plugin can be active or deactivated; its data is only read, never changed.', 'geo-maps'); ?></p>
             <?php endif; ?>
 
             <?php if ($sources) : ?>

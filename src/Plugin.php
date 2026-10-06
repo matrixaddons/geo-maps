@@ -47,6 +47,7 @@ final class Plugin
         Locations\LocationPostType::init();
         Maps\Assets::init();
         Maps\Shortcodes::init();
+        Maps\Embed::init();
         Blocks\Blocks::init();
         Rest\RestController::init();
         Geo\VisitorLocation::init();
@@ -67,8 +68,10 @@ final class Plugin
             Admin\SettingsPage::init();
             Admin\LocationEditor::init();
             Admin\Tools::init();
+            Admin\SampleData::init();
             Admin\Wizard::init();
             Diagnostics\SiteHealth::init();
+            Privacy\Privacy::init();
         }
 
         add_action('widgets_init', array($this, 'register_widget'));

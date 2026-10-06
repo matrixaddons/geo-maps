@@ -84,7 +84,10 @@ function buildScale( values, ch, palette ) {
 	if ( vals.every( ( v ) => Number.isInteger( v ) ) ) {
 		breaks = breaks.map( ( v ) => Math.round( v ) );
 	}
-	breaks = breaks.filter( ( v, i ) => i === 0 || v > breaks[ i - 1 ] );
+	// Repeated values (a quantile scale with few distinct values) give repeated breaks, and a
+	// break at the minimum gives an empty first range that overlaps the next one ("$5", "$5 – $79"):
+	// keep the breaks that are above the minimum and above each other, so the ranges are distinct.
+	breaks = breaks.filter( ( v, i ) => v > min && ( i === 0 || v > breaks[ i - 1 ] ) );
 
 	const idx = ( v ) => {
 		let i = 0;
@@ -603,7 +606,8 @@ mm.mounters.region = async ( el, payload, settings ) => {
 			path.setAttribute( 'tabindex', '0' );
 			// What Enter does: details or an add-on action (button), the region's page (link), nothing (img).
 			path.setAttribute( 'role', clickable || ( rc && rc.action ) || ( detailsMode && hasDetails( rc ) ) ? 'button' : rc && rc.url ? 'link' : 'img' );
-			path.setAttribute( 'aria-label', ( ( rc && rc.label ) || region.name ) + ( rc && typeof rc.value === 'number' ? ': ' + fmt( rc.value ) : scale ? ': ' + ( i18n.noData || 'No data' ) : '' ) );
+			// Custom maps may have unnamed shapes: their code is still a name for screen readers.
+			path.setAttribute( 'aria-label', ( ( rc && rc.label ) || region.name || region.id ) + ( rc && typeof rc.value === 'number' ? ': ' + fmt( rc.value ) : scale ? ': ' + ( i18n.noData || 'No data' ) : '' ) );
 			path.classList.add( 'is-interactive' );
 			if ( ( rc && ( rc.url || rc.action ) ) || clickable || ( detailsMode && hasDetails( rc ) ) ) {
 				path.classList.add( 'is-link' );
@@ -743,7 +747,7 @@ mm.mounters.region = async ( el, payload, settings ) => {
 				c.setAttribute( 'class', 'mm-region__bubble' );
 				c.setAttribute( 'tabindex', '0' );
 				c.setAttribute( 'role', rc.action || ( cfg.clickable || [] ).indexOf( region.id ) !== -1 || ( detailsMode && hasDetails( rc ) ) ? 'button' : rc.url ? 'link' : 'img' );
-				c.setAttribute( 'aria-label', ( rc.label || region.name ) + ': ' + fmt( rc.value ) );
+				c.setAttribute( 'aria-label', ( rc.label || region.name || region.id ) + ': ' + fmt( rc.value ) );
 				hits.set( c, { area: false, region, rc } );
 				bg.appendChild( c );
 			} );
@@ -981,6 +985,7 @@ mm.mounters.region = async ( el, payload, settings ) => {
 	let ty = 0;
 	// The map's width in pixels: measured by the resize observer (or on demand without one).
 	let svgW = 0;
+	let svgH = 0;
 	const observed = typeof window.ResizeObserver === 'function';
 	let sized = null;
 	let sizedAt = '';
@@ -998,17 +1003,20 @@ mm.mounters.region = async ( el, payload, settings ) => {
 		}
 		// Read first, then write.
 		if ( ! observed || ! svgW ) {
-			svgW = svg.getBoundingClientRect().width;
+			const box = svg.getBoundingClientRect();
+			svgW = box.width;
+			svgH = box.height;
 		}
 		const w = svgW;
-		if ( sizedAt === k + '/' + w + '/' + vw ) {
+		if ( sizedAt === k + '/' + w + '/' + svgH + '/' + vw ) {
 			return; // A pan: nothing to resize.
 		}
-		sizedAt = k + '/' + w + '/' + vw;
+		sizedAt = k + '/' + w + '/' + svgH + '/' + vw;
 		const q = 1 / Math.pow( k, 0.85 );
 		sized.r.forEach( ( c ) => c.setAttribute( 'r', String( parseFloat( c.dataset.r ) * q ) ) );
 		// Markers and their labels keep the same size on screen at any zoom and map width.
-		const px = w > 0 ? vw / w / k : vw / 800 / k;
+		// Tall maps are capped in height (max-height) and centred: then the height sets the scale.
+		const px = w > 0 ? Math.max( vw / w, svgH > 0 ? vh / svgH : 0 ) / k : vw / 800 / k;
 		sized.px.forEach( ( c ) => c.setAttribute( 'r', String( parseFloat( c.dataset.px ) * px ) ) );
 		sized.pins.forEach( ( n ) => n.setAttribute( 'transform', 'translate(' + n.dataset.x + ' ' + n.dataset.y + ') scale(' + parseFloat( n.dataset.s ) * px + ') translate(-12 -' + n.dataset.ay + ')' ) );
 		sized.texts.forEach( ( t ) => {
@@ -1134,7 +1142,9 @@ mm.mounters.region = async ( el, payload, settings ) => {
 	if ( observed ) {
 		// Called after layout: measuring here is free.
 		const ro = new window.ResizeObserver( () => {
-			svgW = svg.getBoundingClientRect().width;
+			const box = svg.getBoundingClientRect();
+			svgW = box.width;
+			svgH = box.height;
 			apply();
 			sizeMarkers();
 		} );
@@ -1318,11 +1328,12 @@ mm.mounters.region = async ( el, payload, settings ) => {
 		const legend = document.createElement( 'div' );
 		legend.className = 'mm-region__legend mm-region__legend--' + ( lgCfg.position || 'bottom-left' );
 		let html = lgCfg.title ? '<p class="mm-region__legend-title">' + escapeHtml( lgCfg.title ) + '</p>' : '';
+		// Ranges are wrapped dir="ltr": on right-to-left pages the bidi algorithm would otherwise show "$273,999 – $30,000".
 		if ( scale.linear ) {
 			html += '<div class="mm-region__gradient" style="background:linear-gradient(90deg,' + ( cfg.palette || [] ).join( ',' ) + ')"></div><div class="mm-region__gradient-labels"><span>' + escapeHtml( fmt( scale.min ) ) + '</span><span>' + escapeHtml( fmt( scale.max ) ) + '</span></div>';
 		} else {
 			// Each range is a toggle that highlights its regions.
-			html += '<ul>' + scale.legend.map( ( s, i ) => '<li><button type="button" class="mm-region__legend-item" aria-pressed="false" data-i="' + i + '"><span class="mm-region__swatch" style="background:' + s.color + '"></span>' + escapeHtml( fmt( s.from ) ) + ( s.to !== null && s.to !== s.from ? ' – ' + escapeHtml( fmt( s.to ) ) : '' ) + '</button></li>' ).join( '' ) + '</ul>';
+			html += '<ul>' + scale.legend.map( ( s, i ) => '<li><button type="button" class="mm-region__legend-item" aria-pressed="false" data-i="' + i + '"><span class="mm-region__swatch" style="background:' + s.color + '"></span><span dir="ltr">' + escapeHtml( fmt( s.from ) ) + ( s.to !== null && s.to !== s.from ? ' – ' + escapeHtml( fmt( s.to ) ) : '' ) + '</span>' + '</button></li>' ).join( '' ) + '</ul>';
 		}
 		html += '<p class="mm-region__legend-nodata"><span class="mm-region__swatch" style="background:' + ( ch.noData || '#e5e7eb' ) + '"></span>' + escapeHtml( i18n.noData || 'No data' ) + '</p>';
 		legend.innerHTML = html;
@@ -1343,6 +1354,46 @@ mm.mounters.region = async ( el, payload, settings ) => {
 			stage.appendChild( legend );
 		} else {
 			frame.appendChild( legend );
+			// A legend on the map must not hide regions: when it would cover one at this size, it moves under the map.
+			const fitLegend = () => {
+				legend.classList.remove( 'is-under' );
+				const lr = legend.getBoundingClientRect();
+				if ( ! lr.width || ! lr.height || typeof svg.createSVGPoint !== 'function' ) {
+					return;
+				}
+				const pt = svg.createSVGPoint();
+				const cols = Math.max( 2, Math.ceil( lr.width / 12 ) );
+				const rowsN = Math.max( 2, Math.ceil( lr.height / 12 ) );
+				const covers = ( n ) => {
+					const r = n.path.getBoundingClientRect();
+					// Specks (tiny islands) can't be seen anyway.
+					if ( ( r.width < 3 && r.height < 3 ) || r.right < lr.left || r.left > lr.right || r.bottom < lr.top || r.top > lr.bottom ) {
+						return false;
+					}
+					const m = n.path.getScreenCTM && n.path.getScreenCTM();
+					if ( ! m || typeof n.path.isPointInFill !== 'function' ) {
+						return true;
+					}
+					const inv = m.inverse();
+					for ( let i = 0; i <= cols; i++ ) {
+						for ( let j = 0; j <= rowsN; j++ ) {
+							pt.x = lr.left + ( lr.width * i ) / cols;
+							pt.y = lr.top + ( lr.height * j ) / rowsN;
+							if ( n.path.isPointInFill( pt.matrixTransform( inv ) ) ) {
+								return true;
+							}
+						}
+					}
+					return false;
+				};
+				legend.classList.toggle( 'is-under', nodes.some( covers ) );
+			};
+			later( fitLegend, 0 );
+			if ( observed ) {
+				const lro = new window.ResizeObserver( () => fitLegend() );
+				lro.observe( svg );
+				cleanup.push( () => lro.disconnect() );
+			}
 		}
 	}
 

@@ -49,6 +49,23 @@ final class LocationPostType
         }
 
         add_filter('rest_prepare_' . self::POST_TYPE, array(__CLASS__, 'rest_hide_private_meta'), 10, 3);
+        // Sitemaps (Pro location pages): password-protected locations are left out when Settings → Locations says so.
+        add_filter('wp_sitemaps_posts_query_args', function ($args, $post_type) {
+            if (self::POST_TYPE === $post_type && \MatrixMap\Settings\Settings::hide_protected()) {
+                $args['has_password'] = false;
+            }
+            return $args;
+        }, 10, 2);
+        // Turning the setting on or off changes the public data: rebuild the cached files.
+        add_action('update_option_' . \MatrixMap\Settings\Settings::OPTION, function ($old, $new) {
+            $before = is_array($old) && !empty($old['hide_protected']);
+            $after = is_array($new) && !empty($new['hide_protected']);
+            if ($before !== $after) {
+                \MatrixMap\Settings\Settings::flush();
+                LocationsCache::clear();
+                self::touch();
+            }
+        }, 10, 2);
 
         LocationsCache::init();
     }
@@ -69,6 +86,15 @@ final class LocationPostType
         }
 
         $data = $response->get_data();
+
+        // A password-protected location's fields (address, position, contact) stay private too.
+        if ('' !== $post->post_password && \MatrixMap\Settings\Settings::hide_protected() && isset($data['meta']) && is_array($data['meta'])) {
+            foreach (array_keys($data['meta']) as $key) {
+                if (0 === strpos((string) $key, 'mm_')) {
+                    unset($data['meta'][$key]);
+                }
+            }
+        }
 
         /**
          * Filters the location meta keys hidden from the REST API for users who can't edit the location.
@@ -247,7 +273,8 @@ final class LocationPostType
      */
     public static function write_version()
     {
-        if (null !== self::$pending) {
+        // Deleting the plugin's data must not write the option back at shutdown.
+        if (null !== self::$pending && !defined('WP_UNINSTALL_PLUGIN')) {
             update_option('matrixmap_locations_ver', self::$pending, true);
             self::$pending = null;
             // Public map data reflects the change right away on normal-sized sites.
@@ -323,11 +350,20 @@ final class LocationPostType
         }
         _prime_post_caches($ids, true, true);
         $thumbs = array();
+        $term_ids = array();
         foreach ($ids as $id) {
             $t = (int) get_post_meta($id, '_thumbnail_id', true);
             if ($t) {
                 $thumbs[] = $t;
             }
+            $terms = get_object_term_cache($id, self::TAXONOMY);
+            foreach (is_array($terms) ? $terms : array() as $term) {
+                $term_ids[(int) $term->term_id] = (int) $term->term_id;
+            }
+        }
+        // Category colours: one query, not one per category.
+        if ($term_ids) {
+            update_termmeta_cache(array_values($term_ids));
         }
         if ($thumbs) {
             _prime_post_caches(array_unique($thumbs), false, true);

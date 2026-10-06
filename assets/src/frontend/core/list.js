@@ -67,6 +67,32 @@ export function createFilter( view, onChange ) {
 }
 
 /**
+ * Category legend over the map: a colour swatch and the name of each category in
+ * use (map setting "legend"). Static, so it reads the same with or without filters.
+ *
+ * @param {Object} view MapView.
+ * @return {HTMLElement|null} Element.
+ */
+export function createLegend( view ) {
+	const cfg = view.payload.legend;
+	if ( ! cfg || ! cfg.enabled ) {
+		return null;
+	}
+	const used = new Set();
+	view.markers.forEach( ( m ) => ( m.cats || [] ).forEach( ( c ) => used.add( c ) ) );
+	const list = ( view.payload.categories || [] ).filter( ( c ) => used.has( c.id ) );
+	if ( ! list.length ) {
+		return null;
+	}
+	const pos = [ 'bottom-left', 'bottom-right', 'top-left', 'top-right' ].includes( cfg.position ) ? cfg.position : 'bottom-left';
+	const el = h( 'div', { class: 'mm-legend mm-legend--' + pos, role: 'list', 'aria-label': view.i18n.legend || 'Legend' } );
+	list.forEach( ( c ) => {
+		el.appendChild( h( 'div', { class: 'mm-legend__item', role: 'listitem' }, [ h( 'span', { class: 'mm-legend__swatch', style: 'background:' + ( c.color || accent() ), 'aria-hidden': 'true' } ), h( 'span', { text: c.name } ) ] ) );
+	} );
+	return el;
+}
+
+/**
  * List view.
  *
  * @param {Object} view MapView.

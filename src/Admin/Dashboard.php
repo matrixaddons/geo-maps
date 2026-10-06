@@ -34,11 +34,20 @@ final class Dashboard
         $locations = wp_count_posts(LocationPostType::POST_TYPE);
         $published = isset($locations->publish) ? (int) $locations->publish : 0;
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-        $placed = (int) $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(DISTINCT p.ID) FROM {$wpdb->posts} p INNER JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key = 'mm_lat' AND m.meta_value <> '' WHERE p.post_type = %s AND p.post_status = 'publish'",
-            LocationPostType::POST_TYPE
-        ));
+        // Counted again only after locations changed (a join over all location meta is slow on big sites).
+        $version = LocationPostType::version();
+        $cached = get_transient('matrixmap_dash_placed');
+
+        if (is_array($cached) && isset($cached[0], $cached[1]) && $version === $cached[0]) {
+            $placed = (int) $cached[1];
+        } else {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+            $placed = (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(DISTINCT p.ID) FROM {$wpdb->posts} p INNER JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key = 'mm_lat' AND m.meta_value <> '' WHERE p.post_type = %s AND p.post_status = 'publish'",
+                LocationPostType::POST_TYPE
+            ));
+            set_transient('matrixmap_dash_placed', array($version, $placed), DAY_IN_SECONDS);
+        }
 
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery
         $embedded = (int) $wpdb->get_var(
@@ -168,6 +177,11 @@ final class Dashboard
             }
             echo '</ol>';
             UI::card_end();
+        }
+
+        // Sample data: one click to see every kind of map with real-looking content.
+        if ($manage && ($c['maps'] + $c['locations'] < 3 || SampleData::installed())) {
+            SampleData::card();
         }
 
         // Start from a template.

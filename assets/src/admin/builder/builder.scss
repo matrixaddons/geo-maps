@@ -1590,7 +1590,8 @@
 
 .mm-b__panelhead {
 	position: sticky;
-	z-index: 3;
+	// Above the RangeControl thumbs (z-index 3 in @wordpress/components) that scroll under it.
+	z-index: 10;
 	top: 0;
 	padding: 16px 18px 14px;
 	border-bottom: 1px solid var(--mm-b-line);
@@ -1628,6 +1629,12 @@
 .mm-b__side .mm-b__panel > .mm-region-data,
 .mm-b__side .mm-b__panel > .mm-region-look {
 	padding: 14px;
+}
+
+// The Look tab's cards carry their own 12px 14px margin (like every other tab's cards and the
+// add-on cards under them): no extra padding, so free and Pro cards line up.
+.mm-b__side .mm-b__panel > .mm-region-look {
+	padding: 0 0 14px;
 }
 
 .mm-b-box {

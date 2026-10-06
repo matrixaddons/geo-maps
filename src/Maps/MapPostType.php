@@ -22,6 +22,24 @@ final class MapPostType
     public static function init()
     {
         add_action('init', array(__CLASS__, 'register'));
+        add_filter('wp_untrash_post_status', array(__CLASS__, 'untrash_status'), 10, 3);
+    }
+
+    /**
+     * Maps and locations come back from the Trash with the status they had
+     * (WordPress makes every restored post a draft, which would take a
+     * published map off every page that shows it).
+     *
+     * @param string $status Status WordPress picked.
+     * @param int $post_id Post ID.
+     * @param string $previous Status before it was trashed.
+     * @return string
+     */
+    public static function untrash_status($status, $post_id, $previous = '')
+    {
+        $types = array(self::POST_TYPE, \MatrixMap\Locations\LocationPostType::POST_TYPE);
+
+        return in_array(get_post_type($post_id), $types, true) && in_array($previous, array('publish', 'private', 'pending', 'draft', 'future'), true) ? $previous : $status;
     }
 
     /**

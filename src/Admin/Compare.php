@@ -33,8 +33,16 @@ final class Compare
                 array(__('Visual builder with a live preview and starter templates', 'geo-maps'), true, true),
                 array(__('Markers, popups, categories, clustering, shapes and GPX, KML or GeoJSON files', 'geo-maps'), true, true),
                 array(__('Blocks, shortcodes and the Elementor widget', 'geo-maps'), true, __('+ Bricks, Divi, WPBakery and a Query Loop map block', 'geo-maps')),
-                array(__('Maps from your posts (any post type, ACF map field or address)', 'geo-maps'), false, true),
+                array(__('Elementor dynamic tags for location templates (address, hours, open now, directions, map image)', 'geo-maps'), false, true),
+                array(__('Oxygen element, JetEngine dynamic sources and a Meta Box location field', 'geo-maps'), false, true),
+                array(__('Locations from WPForms, Fluent Forms and Gravity Forms entries', 'geo-maps'), false, true),
+                array(__('Maps from your posts (any post type, ACF or Meta Box map field, or an address)', 'geo-maps'), false, true),
                 array(__('Heatmaps and a 3D globe', 'geo-maps'), false, true),
+                array(__('Compare two maps with a slider (e.g. sales 2024 vs 2025)', 'geo-maps'), false, true),
+                array(__('Static map images for emails, social sharing and loading placeholders', 'geo-maps'), false, true),
+                array(__('3D buildings and terrain, with tilt and rotation', 'geo-maps'), false, true),
+                array(__('Style editor: colours, points of interest and label language of vector maps', 'geo-maps'), false, true),
+                array(__('Animated travel lines along routes and connected places', 'geo-maps'), false, true),
                 array(__('Planned routes and elevation profiles', 'geo-maps'), false, true),
             ),
             __('Store locator', 'geo-maps') => array(
@@ -56,15 +64,26 @@ final class Compare
                 array(__('Drill down from the world to states and counties', 'geo-maps'), false, true),
                 array(__('Combined maps and your own maps from SVG or GeoJSON', 'geo-maps'), false, true),
                 array(__('Region values from your content, a Google Sheet or a feed', 'geo-maps'), false, true),
+                array(__('Value bubbles that grow in and pulse', 'geo-maps'), false, true),
             ),
             __('Data and integrations', 'geo-maps') => array(
                 array(__('CSV import and export, map and settings export', 'geo-maps'), true, true),
                 array(__('Switch from other map and store locator plugins', 'geo-maps'), true, true),
                 array(__('Scheduled sync from Google Sheets, CSV or JSON', 'geo-maps'), false, true),
                 array(__('WooCommerce “Where to buy” with stock badges', 'geo-maps'), false, true),
-                array(__('WP-CLI commands', 'geo-maps'), false, true),
+                array(__('WooCommerce pickup location at checkout (block and classic)', 'geo-maps'), false, true),
+                array(__('Private Google Sheets sync through a service account', 'geo-maps'), false, true),
+                array(__('WP-CLI commands (import, export, geocode, sync, maps, settings, status, activity…)', 'geo-maps'), false, true),
+                array(__('Feeds and downloads checked against private and internal addresses, pinned through redirects', 'geo-maps'), false, true),
+                array(__('Activity log: who changed maps, locations and settings, with retention and CSV export', 'geo-maps'), false, true),
+                array(__('Location revisions with address, position, hours and details (compare and restore)', 'geo-maps'), false, true),
+                array(__('Approval workflow for location changes', 'geo-maps'), false, true),
+                array(__('Per-map editors (users and roles who may edit a map)', 'geo-maps'), false, true),
+                array(__('Multisite: network defaults, locked settings, shared API keys and a shared location library', 'geo-maps'), false, true),
             ),
             __('Visitors and growth', 'geo-maps') => array(
+                array(__('Consent placeholder and no third party until the visitor agrees', 'geo-maps'), true, true),
+                array(__('Privacy Plus: map tiles served from your site and a self-hosted basemap, so no consent banner is needed', 'geo-maps'), false, true),
                 array(__('Approximate visitor location from your CDN', 'geo-maps'), true, true),
                 array(__('Visitor location on any host (local IP database)', 'geo-maps'), false, true),
                 array(__('Geo-targeted content and a Nearest location block', 'geo-maps'), false, true),
@@ -73,6 +92,8 @@ final class Compare
             ),
             __('Privacy and support', 'geo-maps') => array(
                 array(__('Consent-aware loading, no cookies, no tracking', 'geo-maps'), true, true),
+                array(__('Suggested privacy policy text and a Site Health → Info section', 'geo-maps'), true, __('+ text and details for Pro features', 'geo-maps')),
+                array(__('Personal data export and erasure (submissions, dealer enquiries, activity log)', 'geo-maps'), false, true),
                 array(__('Updates', 'geo-maps'), __('WordPress.org', 'geo-maps'), __('One-click, with your licence', 'geo-maps')),
                 array(__('Support', 'geo-maps'), __('Community forum', 'geo-maps'), __('Email support', 'geo-maps')),
             ),
@@ -119,6 +140,7 @@ final class Compare
             }
             echo '</ul>';
             echo '<p class="mm-compare__actions"><a class="mm-btn mm-btn--pro" href="' . esc_url(UI::pro_url()) . '" target="_blank" rel="noopener">' . UI::icon('spark', 16) . esc_html__('See plans and pricing', 'geo-maps') . '<span class="screen-reader-text"> ' . esc_html__('(opens in a new tab)', 'geo-maps') . '</span></a></p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
+            echo '<p class="mm-compare__text mm-muted">' . esc_html__('From $49 a year for one website, or pay once for a lifetime licence. 14-day money-back guarantee. If a licence lapses, every map keeps working; only updates and support stop.', 'geo-maps') . '</p>';
             echo '</div><div class="mm-compare__plans">';
             foreach (array(
                 array(__('Personal', 'geo-maps'), __('1 website', 'geo-maps')),

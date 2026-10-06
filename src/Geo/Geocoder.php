@@ -135,14 +135,19 @@ final class Geocoder
         $results = apply_filters('matrixmap_pre_geocode', null, $query, $opts, $provider);
 
         if (null === $results) {
-            $results = call_user_func(array(__CLASS__, 'search_' . $provider), $query, $opts);
+            try {
+                $results = call_user_func(array(__CLASS__, 'search_' . $provider), $query, $opts);
+            } catch (\Throwable $e) {
+                // An answer in a shape the service doesn't document: not a crash, not cached.
+                $results = new WP_Error('matrixmap_geocode_http', __('The geocoding service sent an answer that could not be read. Please try again later.', 'geo-maps'));
+            }
         }
 
         if (is_wp_error($results)) {
             return $results;
         }
 
-        $results = array_slice(self::filter_countries($results, $opts['countries']), 0, $opts['limit']);
+        $results = array_slice(self::dedupe(self::filter_countries($results, $opts['countries'])), 0, $opts['limit']);
 
         // Google's terms allow caching coordinates for 30 days; others much longer. Misses are retried after a day.
         $ttl = !$results ? DAY_IN_SECONDS : ('google' === $provider ? 30 * DAY_IN_SECONDS : 180 * DAY_IN_SECONDS);
@@ -212,14 +217,18 @@ final class Geocoder
             return $cached;
         }
 
-        if ('photon' === $provider) {
-            $result = self::reverse_photon($lat, $lng, $opts);
-        } elseif ('maptiler' === $provider) {
-            $result = self::reverse_maptiler($lat, $lng, $opts);
-        } elseif ('google' === $provider) {
-            $result = self::reverse_google($lat, $lng, $opts);
-        } else {
-            $result = self::reverse_nominatim($lat, $lng, $opts);
+        try {
+            if ('photon' === $provider) {
+                $result = self::reverse_photon($lat, $lng, $opts);
+            } elseif ('maptiler' === $provider) {
+                $result = self::reverse_maptiler($lat, $lng, $opts);
+            } elseif ('google' === $provider) {
+                $result = self::reverse_google($lat, $lng, $opts);
+            } else {
+                $result = self::reverse_nominatim($lat, $lng, $opts);
+            }
+        } catch (\Throwable $e) {
+            $result = new WP_Error('matrixmap_geocode_http', __('The geocoding service sent an answer that could not be read. Please try again later.', 'geo-maps'));
         }
 
         if (is_wp_error($result)) {
@@ -280,8 +289,54 @@ final class Geocoder
         }
 
         return array_values(array_filter($results, function ($r) use ($countries) {
-            return '' === $r['country'] || in_array($r['country'], $countries, true);
+            // Results from a mocked or minimal provider may carry no country at all.
+            $country = isset($r['country']) ? (string) $r['country'] : '';
+
+            return '' === $country || in_array($country, $countries, true);
         }));
+    }
+
+    /**
+     * One entry per place. Nominatim often returns the same place twice (a node and
+     * a way with the same name, a few metres apart), which shows up as duplicates
+     * in "Choose the right place". A result is a duplicate when its label matches
+     * an earlier one, or when it lies within about 100 m of an earlier result that
+     * starts with the same name.
+     *
+     * @param array $results Results.
+     * @return array
+     */
+    public static function dedupe($results)
+    {
+        $kept = array();
+
+        foreach ((array) $results as $r) {
+            if (!is_array($r)) {
+                continue;
+            }
+            $label = strtolower(trim((string) ($r['label'] ?? '')));
+            $name = trim((string) strtok($label, ','));
+            $dup = false;
+
+            foreach ($kept as $k) {
+                if ($label === $k['label']) {
+                    $dup = true;
+                    break;
+                }
+                if ('' !== $name && $name === $k['name'] && abs((float) $r['lat'] - $k['lat']) < 0.001 && abs((float) $r['lng'] - $k['lng']) < 0.001) {
+                    $dup = true;
+                    break;
+                }
+            }
+
+            if (!$dup) {
+                $kept[] = array('label' => $label, 'name' => $name, 'lat' => (float) ($r['lat'] ?? 0), 'lng' => (float) ($r['lng'] ?? 0), 'r' => $r);
+            }
+        }
+
+        return array_values(array_map(function ($k) {
+            return $k['r'];
+        }, $kept));
     }
 
     /*
@@ -337,17 +392,22 @@ final class Geocoder
     /**
      * Take the site-wide 1 request/second Nominatim slot.
      *
-     * Web requests never wait for it (that would tie up PHP workers): when the
-     * slot is taken they get a "busy" error (HTTP 429). Only WP-CLI and cron
-     * (bulk geocoding) wait once, briefly, for the slot to free up.
+     * Web requests don't wait for a slot another request took (that would tie up
+     * PHP workers): they get a "busy" error (HTTP 429). WP-CLI and cron (bulk
+     * geocoding) wait once, briefly, for the slot to free up, and so does a web
+     * request's second and third lookup (one locator search can need three).
      *
      * @return bool False when the slot is not free.
      */
     private static function nominatim_slot()
     {
+        static $taken = 0;
+
         $wait = self::nominatim_wait();
 
-        if ($wait > 0 && ((defined('WP_CLI') && WP_CLI) || wp_doing_cron())) {
+        // A locator search tries the visitor's country, then worldwide: without waiting for
+        // its own previous lookup, the next one would always fail as "busy".
+        if ($wait > 0 && (($taken && $taken < 3) || (defined('WP_CLI') && WP_CLI) || wp_doing_cron())) {
             usleep((int) ceil($wait * 1000000));
             $wait = self::nominatim_wait();
         }
@@ -357,6 +417,7 @@ final class Geocoder
         }
 
         set_transient('matrixmap_nominatim_last', microtime(true), 60);
+        ++$taken;
 
         return true;
     }
@@ -437,7 +498,7 @@ final class Geocoder
         $out = array();
 
         foreach ($body as $r) {
-            if (!isset($r['lat'], $r['lon'])) {
+            if (!is_array($r) || !isset($r['lat'], $r['lon']) || !is_numeric($r['lat']) || !is_numeric($r['lon'])) {
                 continue;
             }
 
@@ -447,11 +508,11 @@ final class Geocoder
             $out[] = array(
                 'lat' => (float) $r['lat'],
                 'lng' => (float) $r['lon'],
-                'label' => isset($r['display_name']) ? (string) $r['display_name'] : $query,
-                'type' => isset($r['addresstype']) ? (string) $r['addresstype'] : (isset($r['type']) ? (string) $r['type'] : ''),
-                'country' => isset($a['country_code']) ? strtoupper($a['country_code']) : '',
+                'label' => self::str($r, 'display_name', $query),
+                'type' => self::str($r, 'addresstype', self::str($r, 'type')),
+                'country' => strtoupper(self::str($a, 'country_code')),
                 'city' => self::first($a, array('city', 'town', 'village', 'municipality', 'county')),
-                'postcode' => isset($a['postcode']) ? (string) $a['postcode'] : '',
+                'postcode' => self::str($a, 'postcode'),
                 'bbox' => $bbox,
             );
         }
@@ -488,17 +549,17 @@ final class Geocoder
         $out = array();
 
         foreach (isset($body['features']) ? (array) $body['features'] : array() as $f) {
-            if (!isset($f['geometry']['coordinates'][0], $f['geometry']['coordinates'][1])) {
+            if (!isset($f['geometry']['coordinates'][0], $f['geometry']['coordinates'][1]) || !is_numeric($f['geometry']['coordinates'][0]) || !is_numeric($f['geometry']['coordinates'][1])) {
                 continue;
             }
 
-            $p = isset($f['properties']) ? (array) $f['properties'] : array();
+            $p = isset($f['properties']) && is_array($f['properties']) ? $f['properties'] : array();
             $label = implode(', ', array_filter(array(
-                isset($p['name']) ? $p['name'] : '',
-                isset($p['street']) ? trim($p['street'] . ' ' . (isset($p['housenumber']) ? $p['housenumber'] : '')) : '',
-                isset($p['city']) ? $p['city'] : '',
-                isset($p['state']) ? $p['state'] : '',
-                isset($p['country']) ? $p['country'] : '',
+                self::str($p, 'name'),
+                '' !== self::str($p, 'street') ? trim(self::str($p, 'street') . ' ' . self::str($p, 'housenumber')) : '',
+                self::str($p, 'city'),
+                self::str($p, 'state'),
+                self::str($p, 'country'),
             )));
             $extent = isset($p['extent']) && 4 === count((array) $p['extent']) ? array_map('floatval', $p['extent']) : null;
 
@@ -506,10 +567,10 @@ final class Geocoder
                 'lat' => (float) $f['geometry']['coordinates'][1],
                 'lng' => (float) $f['geometry']['coordinates'][0],
                 'label' => '' !== $label ? $label : $query,
-                'type' => isset($p['type']) ? (string) $p['type'] : (isset($p['osm_value']) ? (string) $p['osm_value'] : ''),
-                'country' => isset($p['countrycode']) ? strtoupper($p['countrycode']) : '',
-                'city' => isset($p['city']) ? (string) $p['city'] : '',
-                'postcode' => isset($p['postcode']) ? (string) $p['postcode'] : '',
+                'type' => self::str($p, 'type', self::str($p, 'osm_value')),
+                'country' => strtoupper(self::str($p, 'countrycode')),
+                'city' => self::str($p, 'city'),
+                'postcode' => self::str($p, 'postcode'),
                 'bbox' => $extent ? array($extent[0], $extent[3], $extent[2], $extent[1]) : null,
             );
         }
@@ -545,7 +606,7 @@ final class Geocoder
         $out = array();
 
         foreach (isset($body['features']) ? (array) $body['features'] : array() as $f) {
-            if (!isset($f['center'][0], $f['center'][1])) {
+            if (!isset($f['center'][0], $f['center'][1]) || !is_numeric($f['center'][0]) || !is_numeric($f['center'][1])) {
                 continue;
             }
 
@@ -554,21 +615,21 @@ final class Geocoder
             $postcode = '';
 
             foreach (isset($f['context']) ? (array) $f['context'] : array() as $ctx) {
-                $id = isset($ctx['id']) ? (string) $ctx['id'] : '';
+                $id = self::str($ctx, 'id');
                 if (0 === strpos($id, 'country') && isset($ctx['country_code'])) {
-                    $country = strtoupper($ctx['country_code']);
+                    $country = strtoupper(self::str($ctx, 'country_code'));
                 } elseif ((0 === strpos($id, 'municipality') || 0 === strpos($id, 'place')) && isset($ctx['text'])) {
-                    $city = (string) $ctx['text'];
+                    $city = self::str($ctx, 'text');
                 } elseif (0 === strpos($id, 'postal_code') && isset($ctx['text'])) {
-                    $postcode = (string) $ctx['text'];
+                    $postcode = self::str($ctx, 'text');
                 }
             }
 
             $out[] = array(
                 'lat' => (float) $f['center'][1],
                 'lng' => (float) $f['center'][0],
-                'label' => isset($f['place_name']) ? (string) $f['place_name'] : $query,
-                'type' => isset($f['place_type'][0]) ? (string) $f['place_type'][0] : '',
+                'label' => self::str($f, 'place_name', $query),
+                'type' => isset($f['place_type']) && is_array($f['place_type']) ? self::str($f['place_type'], 0) : '',
                 'country' => $country,
                 'city' => $city,
                 'postcode' => $postcode,
@@ -602,11 +663,11 @@ final class Geocoder
             return $body;
         }
 
-        $status = isset($body['status']) ? (string) $body['status'] : '';
+        $status = self::str($body, 'status');
 
         if (!in_array($status, array('OK', 'ZERO_RESULTS'), true)) {
             /* translators: 1: status, 2: message */
-            return new WP_Error('matrixmap_geocode_google', sprintf(__('Google Geocoding error: %1$s %2$s', 'geo-maps'), $status, isset($body['error_message']) ? $body['error_message'] : ''));
+            return new WP_Error('matrixmap_geocode_google', sprintf(__('Google Geocoding error: %1$s %2$s', 'geo-maps'), $status, self::str($body, 'error_message')));
         }
 
         $out = array();
@@ -614,7 +675,7 @@ final class Geocoder
         foreach (isset($body['results']) ? (array) $body['results'] : array() as $r) {
             $loc = isset($r['geometry']['location']) ? $r['geometry']['location'] : null;
 
-            if (!$loc) {
+            if (!isset($loc['lat'], $loc['lng']) || !is_numeric($loc['lat']) || !is_numeric($loc['lng'])) {
                 continue;
             }
 
@@ -623,23 +684,23 @@ final class Geocoder
             $postcode = '';
 
             foreach (isset($r['address_components']) ? (array) $r['address_components'] : array() as $c) {
-                $types = isset($c['types']) ? (array) $c['types'] : array();
+                $types = isset($c['types']) && is_array($c['types']) ? $c['types'] : array();
                 if (in_array('country', $types, true)) {
-                    $country = (string) $c['short_name'];
+                    $country = self::str($c, 'short_name');
                 } elseif (in_array('locality', $types, true)) {
-                    $city = (string) $c['long_name'];
+                    $city = self::str($c, 'long_name');
                 } elseif (in_array('postal_code', $types, true)) {
-                    $postcode = (string) $c['long_name'];
+                    $postcode = self::str($c, 'long_name');
                 }
             }
 
-            $vp = isset($r['geometry']['viewport']) ? $r['geometry']['viewport'] : null;
+            $vp = isset($r['geometry']['viewport']['southwest']['lat'], $r['geometry']['viewport']['southwest']['lng'], $r['geometry']['viewport']['northeast']['lat'], $r['geometry']['viewport']['northeast']['lng']) ? $r['geometry']['viewport'] : null;
 
             $out[] = array(
                 'lat' => (float) $loc['lat'],
                 'lng' => (float) $loc['lng'],
-                'label' => isset($r['formatted_address']) ? (string) $r['formatted_address'] : $query,
-                'type' => isset($r['types'][0]) ? (string) $r['types'][0] : '',
+                'label' => self::str($r, 'formatted_address', $query),
+                'type' => isset($r['types']) && is_array($r['types']) ? self::str($r['types'], 0) : '',
                 'country' => $country,
                 'city' => $city,
                 'postcode' => $postcode,
@@ -676,7 +737,7 @@ final class Geocoder
             return $body;
         }
 
-        if (empty($body['display_name'])) {
+        if ('' === self::str($body, 'display_name')) {
             return new WP_Error('matrixmap_geocode_none', __('No address found here.', 'geo-maps'));
         }
 
@@ -685,12 +746,12 @@ final class Geocoder
         return array(
             'lat' => $lat,
             'lng' => $lng,
-            'label' => (string) $body['display_name'],
-            'street' => trim((isset($a['road']) ? $a['road'] : '') . ' ' . (isset($a['house_number']) ? $a['house_number'] : '')),
+            'label' => self::str($body, 'display_name'),
+            'street' => trim(self::str($a, 'road') . ' ' . self::str($a, 'house_number')),
             'city' => self::first($a, array('city', 'town', 'village', 'municipality', 'county')),
-            'state' => isset($a['state']) ? (string) $a['state'] : '',
-            'postcode' => isset($a['postcode']) ? (string) $a['postcode'] : '',
-            'country' => isset($a['country_code']) ? strtoupper($a['country_code']) : '',
+            'state' => self::str($a, 'state'),
+            'postcode' => self::str($a, 'postcode'),
+            'country' => strtoupper(self::str($a, 'country_code')),
         );
     }
 
@@ -710,23 +771,23 @@ final class Geocoder
             return $body;
         }
 
-        $p = isset($body['features'][0]['properties']) ? (array) $body['features'][0]['properties'] : null;
+        $p = isset($body['features'][0]['properties']) && is_array($body['features'][0]['properties']) ? $body['features'][0]['properties'] : null;
 
         if (!$p) {
             return new WP_Error('matrixmap_geocode_none', __('No address found here.', 'geo-maps'));
         }
 
-        $street = trim((isset($p['street']) ? $p['street'] : '') . ' ' . (isset($p['housenumber']) ? $p['housenumber'] : ''));
+        $street = trim(self::str($p, 'street') . ' ' . self::str($p, 'housenumber'));
 
         return array(
             'lat' => $lat,
             'lng' => $lng,
-            'label' => implode(', ', array_filter(array(isset($p['name']) ? $p['name'] : '', $street, isset($p['city']) ? $p['city'] : '', isset($p['country']) ? $p['country'] : ''))),
+            'label' => implode(', ', array_filter(array(self::str($p, 'name'), $street, self::str($p, 'city'), self::str($p, 'country')))),
             'street' => $street,
-            'city' => isset($p['city']) ? (string) $p['city'] : '',
-            'state' => isset($p['state']) ? (string) $p['state'] : '',
-            'postcode' => isset($p['postcode']) ? (string) $p['postcode'] : '',
-            'country' => isset($p['countrycode']) ? strtoupper($p['countrycode']) : '',
+            'city' => self::str($p, 'city'),
+            'state' => self::str($p, 'state'),
+            'postcode' => self::str($p, 'postcode'),
+            'country' => strtoupper(self::str($p, 'countrycode')),
         );
     }
 
@@ -742,11 +803,12 @@ final class Geocoder
     {
         $body = self::get_json(add_query_arg(array('key' => (string) Settings::get('maptiler_key'), 'language' => $opts['lang']), 'https://api.maptiler.com/geocoding/' . $lng . ',' . $lat . '.json'));
 
-        if (is_wp_error($body) || empty($body['features'][0])) {
+        // An answer without a usable place name counts as "nothing found".
+        if (is_wp_error($body) || empty($body['features'][0]['place_name']) || !is_string($body['features'][0]['place_name'])) {
             return is_wp_error($body) ? $body : new WP_Error('matrixmap_geocode_none', __('No address found here.', 'geo-maps'));
         }
 
-        return array('lat' => $lat, 'lng' => $lng, 'label' => (string) $body['features'][0]['place_name'], 'street' => '', 'city' => '', 'state' => '', 'postcode' => '', 'country' => '');
+        return array('lat' => $lat, 'lng' => $lng, 'label' => $body['features'][0]['place_name'], 'street' => '', 'city' => '', 'state' => '', 'postcode' => '', 'country' => '');
     }
 
     /**
@@ -761,11 +823,11 @@ final class Geocoder
     {
         $body = self::get_json(add_query_arg(array('latlng' => $lat . ',' . $lng, 'key' => self::google_key(), 'language' => $opts['lang']), 'https://maps.googleapis.com/maps/api/geocode/json'));
 
-        if (is_wp_error($body) || empty($body['results'][0])) {
+        if (is_wp_error($body) || empty($body['results'][0]['formatted_address']) || !is_string($body['results'][0]['formatted_address'])) {
             return is_wp_error($body) ? $body : new WP_Error('matrixmap_geocode_none', __('No address found here.', 'geo-maps'));
         }
 
-        return array('lat' => $lat, 'lng' => $lng, 'label' => (string) $body['results'][0]['formatted_address'], 'street' => '', 'city' => '', 'state' => '', 'postcode' => '', 'country' => '');
+        return array('lat' => $lat, 'lng' => $lng, 'label' => $body['results'][0]['formatted_address'], 'street' => '', 'city' => '', 'state' => '', 'postcode' => '', 'country' => '');
     }
 
     /**
@@ -778,11 +840,24 @@ final class Geocoder
     private static function first($a, $keys)
     {
         foreach ($keys as $k) {
-            if (!empty($a[$k])) {
-                return (string) $a[$k];
+            if ('' !== self::str($a, $k)) {
+                return self::str($a, $k);
             }
         }
 
         return '';
+    }
+
+    /**
+     * A text field of a service answer ('' or the default when missing or not text).
+     *
+     * @param mixed $a Array.
+     * @param string|int $key Key.
+     * @param string $default Default.
+     * @return string
+     */
+    private static function str($a, $key, $default = '')
+    {
+        return is_array($a) && isset($a[$key]) && is_scalar($a[$key]) && '' !== (string) $a[$key] ? (string) $a[$key] : $default;
     }
 }

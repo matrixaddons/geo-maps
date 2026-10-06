@@ -314,7 +314,8 @@ final class LocationEditor
 
         $asset = Assets::asset('admin/location');
         wp_enqueue_script('matrixmap-location', MATRIXMAP_URL . 'build/admin/location.js', $asset['dependencies'], $asset['version'], true);
-        wp_enqueue_style('matrixmap-location', MATRIXMAP_URL . 'build/admin/location.css', array(), $asset['version']);
+        wp_enqueue_style('matrixmap-location', MATRIXMAP_URL . 'build/admin/location.css', array(Assets::maplibre_style()), $asset['version']);
+        wp_style_add_data('matrixmap-location', 'rtl', 'replace'); // Right-to-left languages get the mirrored build.
         wp_set_script_translations('matrixmap-location', 'geo-maps', MATRIXMAP_DIR . 'languages');
         wp_localize_script('matrixmap-location', 'matrixmapLocation', array(
             'style' => Styles::resolve_vector((string) Settings::get('style'))['url'],

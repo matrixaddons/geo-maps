@@ -19,7 +19,10 @@
   "textdomain": "geo-maps",
   "attributes": {
     "map_id": {
-      "type": "string",
+      "type": [
+        "string",
+        "integer"
+      ],
       "default": "0"
     },
     "width": {

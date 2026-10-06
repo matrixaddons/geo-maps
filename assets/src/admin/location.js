@@ -3,7 +3,7 @@
  * extra details.
  */
 import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+// MapLibre's stylesheet is enqueued by PHP (never mirrored for right-to-left languages).
 import './location.scss';
 
 const cfg = window.matrixmapLocation || {};

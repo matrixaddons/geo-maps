@@ -32,6 +32,15 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 	const form = h( 'form', { class: 'mm-loc__form', role: 'search', novalidate: true } );
 	const qId = 'mm-loc-q-' + uid;
 	const input = h( 'input', { type: 'search', id: qId, class: 'mm-loc__input', name: 'mm_near', autocomplete: 'street-address', placeholder: i18n.searchLabel || 'Enter an address, city or postcode', enterkeyhint: 'search' } );
+	// A narrow search box (phones, sidebars) shows a shorter placeholder instead of a cut-off one.
+	if ( 'ResizeObserver' in window ) {
+		new window.ResizeObserver( ( entries ) => {
+			const w = entries[ 0 ].contentRect.width;
+			if ( w ) {
+				input.placeholder = w < 300 ? i18n.searchLabelShort || 'Address or postcode' : i18n.searchLabel || 'Enter an address, city or postcode';
+			}
+		} ).observe( input );
+	}
 	const submit = h( 'button', { type: 'submit', class: 'mm-loc__submit', text: i18n.search || 'Search' } );
 	const locateBtn = h( 'button', { type: 'button', class: 'mm-loc__locate', html: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg><span></span>' } );
 	locateBtn.querySelector( 'span' ).textContent = i18n.useMyLocation || 'Use my location';
@@ -58,6 +67,21 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 		h( 'label', { class: 'mm-loc__label', for: radiusId }, [ h( 'span', { text: i18n.radius || 'Within' } ), radius ] ),
 	] );
 	form.appendChild( filtersRow );
+
+	// Locator setting "sort": visitors reorder the results (distance, name, open now first).
+	let sortSelect = null;
+	if ( cfg.sort ) {
+		sortSelect = h( 'select', { id: 'mm-loc-s-' + uid, class: 'mm-loc__select mm-loc__sort' }, [
+			h( 'option', { value: 'distance', text: i18n.sortDistance || 'Distance' } ),
+			h( 'option', { value: 'name', text: i18n.sortName || 'Name' } ),
+			h( 'option', { value: 'open', text: i18n.sortOpen || 'Open now first' } ),
+		] );
+		filtersRow.appendChild( h( 'label', { class: 'mm-loc__label', for: sortSelect.id }, [ h( 'span', { text: i18n.sortBy || 'Sort' } ), sortSelect ] ) );
+		sortSelect.addEventListener( 'change', () => {
+			state.markers = sortList( state.markers );
+			renderResults();
+		} );
+	}
 
 	const status = h( 'div', { class: 'mm-loc__status', role: 'status', 'aria-live': 'polite' } );
 	const results = h( 'ol', { class: 'mm-loc__results', 'aria-label': i18n.resultsList || 'Locations' } );
@@ -98,7 +122,9 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 	// the visitor starts typing (suggestions). Never the full data on page view.
 	const lean = !! ( payload.leanUrl && payload.dataUrl );
 	const params0 = new URLSearchParams( window.location.search );
-	const searching = !! ( params0.get( 'mm_locate' ) || params0.get( 'mm_near' ) || ( params0.get( 'mm_lat' ) && params0.get( 'mm_lng' ) ) );
+	// ?near= is a short alias of ?mm_near= for shared links.
+	const nearParam = ( p ) => p.get( 'mm_near' ) || p.get( 'near' ) || '';
+	const searching = !! ( params0.get( 'mm_locate' ) || nearParam( params0 ) || ( params0.get( 'mm_lat' ) && params0.get( 'mm_lng' ) ) );
 	// Showing every place on load: the view loads the index itself (and fits it, as before).
 	const showNow = lean && cfg.showAllOnLoad !== false && ! searching;
 	const leanNow = showNow || ( lean && !! ( cfg.detailFilters || [] ).length );
@@ -110,6 +136,7 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 	).init();
 
 	let leanLoaded = null;
+	let leanReady = ! lean;
 	const ensureLean = () => {
 		if ( ! lean ) {
 			return Promise.resolve();
@@ -119,12 +146,14 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 				if ( ! allMarkers.length ) {
 					allMarkers.push( ...list );
 				}
+				leanReady = true;
 			} );
 		}
 		return leanLoaded;
 	};
 
 	if ( leanNow ) {
+		setStatus( i18n.loadingPlaces || 'Loading…' );
 		await ensureLean();
 	} else if ( ! allMarkers.length && view.markers.length ) {
 		// Many locations arrive from a URL instead of the page; the view has loaded them.
@@ -200,6 +229,8 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 			btn.appendChild( h( 'span', { class: 'mm-loc__distance', text: geo.formatDistance( m.distance, units, i18n, locale ) } ) );
 		}
 		btn.addEventListener( 'click', () => view.focusMarker( m.id, { fromList: true } ) );
+		btn.addEventListener( 'mouseenter', () => view.hoverMarker( m.id, true ) );
+		btn.addEventListener( 'mouseleave', () => view.hoverMarker( m.id, false ) );
 
 		const li = h( 'li', { class: 'mm-loc__item' }, btn );
 		const actions = h( 'div', { class: 'mm-loc__actions' } );
@@ -282,6 +313,18 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 		} );
 	} );
 
+	// "1 place", "12 places", or a plain message when the locator has no locations at all.
+	function countText( n ) {
+		if ( ! n && ! allMarkers.length && ! lean ) {
+			return i18n.noLocations || 'No locations to show yet.';
+		}
+		// The index is still on its way: not "0 places".
+		if ( ! n && lean && ! leanReady ) {
+			return i18n.loadingPlaces || 'Loading…';
+		}
+		return n === 1 ? i18n.onePlace || '1 place' : sprintf( i18n.placesCount || '%d places', n );
+	}
+
 	function setStatus( text, extra ) {
 		status.innerHTML = '';
 		status.appendChild( h( 'p', { class: 'mm-loc__count', text } ) );
@@ -290,8 +333,44 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 		}
 	}
 
+	// Order of the results: by distance (the server's order, nearest first), by name, or
+	// open places first (then by distance). Places without a distance keep their order.
+	function sortList( list ) {
+		const mode = sortSelect ? sortSelect.value : 'distance';
+		if ( mode === 'distance' ) {
+			return list.every( ( m ) => typeof m.distance === 'number' ) ? list.slice().sort( ( a, b ) => a.distance - b.distance ) : list;
+		}
+		if ( mode === 'name' ) {
+			return list.slice().sort( ( a, b ) => String( a.title || '' ).localeCompare( String( b.title || '' ), locale ) );
+		}
+		const openNow = ( m ) => {
+			const s = m.hours || m.closedUntil || m.special ? mm.util.hours.status( m, i18n, locale ) : null;
+			return s && s.open ? 0 : 1;
+		};
+		return list.slice().sort( ( a, b ) => openNow( a ) - openNow( b ) || ( typeof a.distance === 'number' && typeof b.distance === 'number' ? a.distance - b.distance : 0 ) );
+	}
+
+	// Locator setting "share": the address of these results (the page URL carries the search).
+	function shareButton() {
+		const btn = h( 'button', { type: 'button', class: 'mm-btn mm-btn--sm mm-loc__share', text: i18n.copyLink || 'Copy link to these results' } );
+		btn.addEventListener( 'click', () => {
+			const done = () => {
+				btn.textContent = i18n.linkCopied || 'Link copied';
+				window.setTimeout( () => ( btn.textContent = i18n.copyLink || 'Copy link to these results' ), 2000 );
+			};
+			if ( navigator.clipboard && navigator.clipboard.writeText ) {
+				navigator.clipboard.writeText( window.location.href ).then( done, () => window.prompt( i18n.copyLink || 'Copy link', window.location.href ) );
+			} else {
+				window.prompt( i18n.copyLink || 'Copy link', window.location.href );
+			}
+		} );
+		return btn;
+	}
+
 	function show( markers, origin ) {
-		state.markers = markers;
+		state.markers = sortList( markers );
+		// Results of a search stay as they are while the map moves (visible-area loading pauses).
+		view.viewportPaused = !! origin;
 		view.setMarkers( markers );
 		renderResults();
 		const pts = markers.map( ( m ) => ( { lat: m.lat, lng: m.lng } ) );
@@ -306,6 +385,8 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 	// filters: functions( marker ) → boolean applied to every result list.
 	// cards: functions( li, marker, body ) that add to each result card.
 	// origin(): the searched place or the visitor's location ({ lat, lng }), or null.
+	// After a search the container has the class "mm-loc--searched" and dispatches
+	// "matrixmap:locator-search" ({ api, origin, label }); before it, origin() is null.
 	const api = { el, form, filtersRow, view, panel, params: [], filters: [], cards: [], refresh: () => {}, origin: () => state.origin };
 	const applyFilters = ( list ) => api.filters.reduce( ( out, fn ) => out.filter( fn ), list );
 	const byCategory = ( list ) => {
@@ -345,13 +426,65 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 		if ( ! state.markers.length && filtered() ) {
 			setStatus( '', clearFiltersBox() );
 		} else {
-			setStatus( sprintf( i18n.placesCount || '%d places', state.markers.length ) );
+			setStatus( countText( state.markers.length ) );
 		}
 		keepFocus( had );
 	};
 
+	// More locations than one file holds: the map loaded another visible area. Without a
+	// search, the list shows what is in view.
+	view.on( 'viewport', ( items ) => {
+		if ( state.origin ) {
+			return;
+		}
+		allMarkers.length = 0;
+		allMarkers.push( ...items );
+		leanReady = true;
+		state.markers = sortList( applyFilters( byCategory( allMarkers ) ) );
+		if ( state.markers.length !== items.length ) {
+			view.setMarkers( state.markers );
+		}
+		renderResults();
+		setStatus( ! state.markers.length && filtered() ? '' : countText( state.markers.length ), ! state.markers.length && filtered() ? clearFiltersBox() : null );
+	} );
+
 	// --- Search ------------------------------------------------------------
 	let busy = false;
+
+	// The searched address gets its own dot, so visitors see where distances are measured from.
+	let searchedHandle = null;
+	function markSearched( where, label ) {
+		if ( searchedHandle ) {
+			searchedHandle.remove();
+			searchedHandle = null;
+		}
+		if ( where && view.adapter && view.adapter.addMarker ) {
+			const dot = h( 'div', { class: 'mm-user mm-user--searched', role: 'img', 'aria-label': label } );
+			dot.dataset.anchor = 'center';
+			searchedHandle = view.adapter.addMarker( where.lat, where.lng, dot, { anchor: 'center', zIndex: 999 } );
+		}
+	}
+
+	// The search radius as a circle around the searched point (locator setting "circle"),
+	// drawn the same way on every engine; "Any distance" draws none.
+	let circleHandle = null;
+	function drawRadius( origin ) {
+		if ( circleHandle ) {
+			circleHandle.remove();
+			circleHandle = null;
+		}
+		const r = parseFloat( radius.value );
+		if ( ! cfg.circle || ! origin || ! ( r > 0 ) || ! view.adapter || ! view.adapter.addGeoJSON ) {
+			return;
+		}
+		const metres = r * ( units === 'mi' ? 1609.344 : 1000 );
+		const color = ( settings && settings.accent ) || '#2563eb';
+		circleHandle = view.adapter.addGeoJSON(
+			{ type: 'FeatureCollection', features: [ { type: 'Feature', geometry: { type: 'Polygon', coordinates: [ geo.circleRing( origin.lng, origin.lat, metres, 96 ) ] }, properties: { style: { color, weight: 2, fillColor: color, fillOpacity: 0.08 } } } ] },
+			{ id: 'radius', interactive: false },
+			null
+		);
+	}
 
 	async function search( params, label ) {
 		if ( busy ) {
@@ -391,6 +524,12 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 
 			state.origin = { lat: data.origin.lat, lng: data.origin.lng };
 			view.origin = state.origin;
+			markSearched( label ? state.origin : null, label );
+			drawRadius( state.origin );
+			// A search happened: actions that need a start point (e.g. a route to a result)
+			// can show now. Class for CSS, event and api.origin() for scripts.
+			el.classList.add( 'mm-loc--searched' );
+			el.dispatchEvent( new window.CustomEvent( 'matrixmap:locator-search', { bubbles: true, detail: { api, origin: state.origin, label } } ) );
 			data.results = applyFilters( data.results || [] );
 
 			let extra = null;
@@ -433,6 +572,9 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 			}
 
 			updateUrl( label, state.origin );
+			if ( cfg.share ) {
+				status.appendChild( shareButton() );
+			}
 		} catch ( e ) {
 			setStatus( e.message || i18n.searchFailed );
 		} finally {
@@ -445,6 +587,7 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 	function updateUrl( label, origin ) {
 		try {
 			const u = new URL( window.location.href );
+			u.searchParams.delete( 'near' ); // The alias is read, mm_near is written.
 			if ( label ) {
 				u.searchParams.set( 'mm_near', label );
 				u.searchParams.delete( 'mm_lat' );
@@ -543,6 +686,8 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 		let options = [];
 		let active = -1;
 		let timer = null;
+		// Bumped by cancel(): a suggestion still pending (typing delay, index loading) doesn't reopen the list after a search.
+		let round = 0;
 
 		const close = () => {
 			list.hidden = true;
@@ -551,6 +696,11 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 			active = -1;
 			input.setAttribute( 'aria-expanded', 'false' );
 			input.removeAttribute( 'aria-activedescendant' );
+		};
+		const cancel = () => {
+			window.clearTimeout( timer );
+			round++;
+			close();
 		};
 
 		const setActive = ( i ) => {
@@ -566,7 +716,7 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 
 		// A place (city / postcode) is searched around the middle of its locations: no geocoding.
 		const choose = async ( o ) => {
-			close();
+			cancel();
 			input.value = o.label;
 			// Shared links keep the exact point (mm_lat/mm_lng), not a label to geocode.
 			if ( o.marker ) {
@@ -641,7 +791,11 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 		};
 
 		// Large locators: the index loads when the visitor starts typing.
-		const suggest = () => ( lean && ! leanLoaded && input.value.trim().length > 1 ? ensureLean().then( build ) : build() );
+		const suggest = () => {
+			const r = round;
+			const run = () => r === round && build();
+			return lean && ! leanLoaded && input.value.trim().length > 1 ? ensureLean().then( run ) : run();
+		};
 		input.addEventListener( 'input', () => {
 			window.clearTimeout( timer );
 			timer = window.setTimeout( suggest, 120 );
@@ -665,13 +819,13 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 				choose( options[ active ] );
 			} else if ( e.key === 'Escape' ) {
 				e.preventDefault();
-				close();
+				cancel();
 			} else if ( e.key === 'Tab' ) {
-				close();
+				cancel();
 			}
 		} );
-		input.addEventListener( 'blur', () => window.setTimeout( close, 150 ) );
-		form.addEventListener( 'submit', close );
+		input.addEventListener( 'blur', () => window.setTimeout( () => document.activeElement !== input && cancel(), 150 ) );
+		form.addEventListener( 'submit', cancel );
 	}
 
 	api.refresh = () => {
@@ -693,8 +847,8 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 	if ( params.get( 'mm_locate' ) ) {
 		// From the Store Search box's "Use my location" button.
 		locateBtn.click();
-	} else if ( params.get( 'mm_near' ) ) {
-		input.value = params.get( 'mm_near' );
+	} else if ( nearParam( params ) ) {
+		input.value = nearParam( params );
 		search( { q: input.value }, input.value );
 	} else if ( params.get( 'mm_lat' ) && params.get( 'mm_lng' ) ) {
 		search( { lat: params.get( 'mm_lat' ), lng: params.get( 'mm_lng' ) }, '' );
@@ -705,7 +859,7 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 				view.setMarkers( state.markers );
 			}
 			renderResults();
-			setStatus( sprintf( i18n.placesCount || '%d places', state.markers.length ) );
+			setStatus( countText( state.markers.length ) );
 		} else {
 			view.setMarkers( [] );
 			setStatus( i18n.searchLabel || '' );

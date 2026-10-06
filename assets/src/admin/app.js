@@ -251,3 +251,13 @@ document.querySelectorAll( '.mm-drop' ).forEach( ( zone ) => {
 		}
 	} );
 } )();
+
+// Phones: the header nav and the section tabs scroll sideways; bring the current one into view.
+document.querySelectorAll( '.mm-top__nav, .mm-side' ).forEach( ( strip ) => {
+	const active = strip.querySelector( '.is-active' );
+	if ( active && strip.scrollWidth > strip.clientWidth ) {
+		const a = active.getBoundingClientRect();
+		const r = strip.getBoundingClientRect();
+		strip.scrollLeft += a.left - r.left - ( r.width - a.width ) / 2;
+	}
+} );

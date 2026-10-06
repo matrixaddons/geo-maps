@@ -299,6 +299,18 @@
 	list-style: none;
 }
 
+
+// Themes indent lists in post content (Astra: 15px 0 / 20px left); these are not text lists.
+.matrixmap .mm-loc__results {
+	margin: 0;
+	padding: 0;
+}
+
+.matrixmap .mm-loc__suggest {
+	margin: 0;
+	padding: 6px;
+}
+
 .mm-loc__item {
 	padding: 8px 10px 10px;
 	border-bottom: 1px solid #f1f5f9;
@@ -317,13 +329,19 @@
 	border: 1px solid transparent;
 	border-radius: var(--mm-radius, 8px);
 	background: none;
+	// Themes style every <button> (Astra: shadow, uppercase, white text on hover): this one is a result card.
+	box-shadow: none;
 	color: inherit;
 	font: inherit;
-	text-align: left;
+	letter-spacing: normal;
+	text-align: start;
+	text-transform: none;
 	cursor: pointer;
 
-	&:hover {
+	&:hover,
+	&:focus {
 		background: #f8fafc;
+		color: inherit;
 	}
 
 	&.is-active {
@@ -364,6 +382,8 @@
 .mm-loc__address {
 	color: #475569;
 	font-size: 13px;
+	// A Latin address in a right-to-left page (and the reverse) reads in its own direction.
+	unicode-bidi: plaintext;
 }
 
 .mm-loc__details {
@@ -383,7 +403,8 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 6px;
-	margin: 4px 0 0 42px;
+	margin: 4px 0 0;
+	margin-inline-start: 42px;
 
 	.mm-btn {
 		min-height: 30px;
@@ -407,7 +428,7 @@
 	border-top: 1px solid var(--mm-border);
 	color: #64748b;
 	font-size: 11px;
-	text-align: right;
+	text-align: end;
 
 	a {
 		color: inherit;

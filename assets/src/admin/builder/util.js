@@ -12,7 +12,9 @@ export const data = window.matrixmapBuilder || {};
  * @param {KeyboardEvent} e Key event on the group.
  */
 export function radioKeys( e ) {
-	const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[ e.key ];
+	// Right-to-left screens: the left arrow moves forward.
+	const flip = document.documentElement.dir === 'rtl' ? -1 : 1;
+	const step = { ArrowRight: flip, ArrowDown: 1, ArrowLeft: -flip, ArrowUp: -1 }[ e.key ];
 	if ( ! step ) {
 		return;
 	}

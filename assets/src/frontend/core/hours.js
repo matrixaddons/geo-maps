@@ -134,9 +134,12 @@ export function status( loc, i18n, locale ) {
 		let c = toMin( close );
 		if ( c <= o ) {
 			c += 24 * 60; // Closes after midnight.
+		} else if ( c === 24 * 60 - 1 ) {
+			c = 24 * 60; // "23:59" (the "24 hours" button) means until midnight.
 		}
 		if ( now.minutes >= o && now.minutes < c ) {
-			return { open: true, label: i18n.openNow || 'Open now', detail: ( i18n.closesAt || 'Closes %s' ).replace( '%s', formatTime( c % ( 24 * 60 ), locale ) ) };
+			const allDay = o === 0 && c === 24 * 60;
+			return { open: true, label: i18n.openNow || 'Open now', detail: allDay ? i18n.open24 || 'Open 24 hours' : ( i18n.closesAt || 'Closes %s' ).replace( '%s', formatTime( c % ( 24 * 60 ), locale ) ) };
 		}
 	}
 
@@ -180,7 +183,7 @@ export function weekRows( loc, i18n, locale ) {
 		return {
 			day,
 			label: ( i18n.days || {} )[ day ] || day,
-			text: slots.length ? slots.map( ( [ o, c ] ) => formatTime( toMin( o ), locale ) + '–' + formatTime( toMin( c ) % ( 24 * 60 ), locale ) ).join( ', ' ) : i18n.closedAllDay || 'Closed',
+			text: slots.length ? slots.map( ( [ o, c ] ) => ( toMin( o ) === 0 && toMin( c ) >= 24 * 60 - 1 ? i18n.open24 || 'Open 24 hours' : formatTime( toMin( o ), locale ) + '–' + formatTime( toMin( c ) % ( 24 * 60 ), locale ) ) ).join( ', ' ) : i18n.closedAllDay || 'Closed',
 			today: day === now.day,
 		};
 	} );

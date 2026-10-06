@@ -19,6 +19,7 @@
 namespace MatrixMap\Locations;
 
 use MatrixMap\Maps\Renderer;
+use MatrixMap\Settings\Settings;
 use WP_Error;
 
 defined('ABSPATH') || exit;
@@ -33,8 +34,11 @@ final class LocationsCache
     /** A build that holds the lock longer than this is assumed dead. */
     const LOCK_TTL = 300;
 
-    /** Most locations in one file (as locations.geojson always had). */
-    const MAX = 20000;
+    /**
+     * Most locations in one file. Above it the file is marked "truncated" and maps that
+     * show every location load the visible area instead (see bbox_json()).
+     */
+    const MAX = 50000;
 
     /** Lean item fields, in order. */
     const FIELDS = array('id', 'lat', 'lng', 'title', 'cats', 'color', 'address', 'city', 'postcode', 'flags');
@@ -149,21 +153,9 @@ final class LocationsCache
             return new JsonBlob($path);
         }
 
-        if ('' === $path || !self::ensure_dir()) {
-            // No writable uploads folder: keep the JSON in a transient instead.
-            $key = 'matrixmap_loc_' . md5($variant . '|' . implode(',', $cats) . '|' . LocationPostType::version());
-            $json = get_transient($key);
-
-            if (!is_string($json)) {
-                $stream = fopen('php://temp', 'w+'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
-                self::write($variant, $cats, $stream);
-                rewind($stream);
-                $json = (string) stream_get_contents($stream);
-                fclose($stream); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
-                set_transient($key, $json, 6 * HOUR_IN_SECONDS);
-            }
-
-            return new JsonBlob('', $json);
+        // No writable uploads folder (or a recent write failed, e.g. disk full): keep the JSON in a transient instead.
+        if ('' === $path || !self::ensure_dir() || get_transient('matrixmap_cache_write_failed')) {
+            return self::memory($variant, $cats);
         }
 
         $stale = self::latest($variant, $cats);
@@ -182,6 +174,13 @@ final class LocationsCache
             return new JsonBlob($path);
         }
 
+        // The file could not be written (disk full, quota): serve the data without it,
+        // and don't try again for a few minutes.
+        if (self::$write_failed) {
+            set_transient('matrixmap_cache_write_failed', 1, 10 * MINUTE_IN_SECONDS);
+            return self::memory($variant, $cats);
+        }
+
         // Another request is building it: wait briefly, then ask the browser to retry.
         for ($i = 0; $i < 12; $i++) {
             usleep(250000);
@@ -192,6 +191,37 @@ final class LocationsCache
         }
 
         return new WP_Error('matrixmap_busy', __('The map data is being prepared. Please try again in a moment.', 'geo-maps'), array('status' => 503));
+    }
+
+    /**
+     * The last build could not write its file (set for the rest of the request).
+     *
+     * @var bool
+     */
+    private static $write_failed = false;
+
+    /**
+     * A variant's JSON kept in a transient (no writable cache folder).
+     *
+     * @param string $variant lean|full.
+     * @param int[] $cats Category IDs.
+     * @return JsonBlob
+     */
+    private static function memory($variant, $cats)
+    {
+        $key = 'matrixmap_loc_' . md5($variant . '|' . implode(',', $cats) . '|' . LocationPostType::version());
+        $json = get_transient($key);
+
+        if (!is_string($json)) {
+            $stream = fopen('php://temp', 'w+'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+            self::write($variant, $cats, $stream);
+            rewind($stream);
+            $json = (string) stream_get_contents($stream);
+            fclose($stream); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+            set_transient($key, $json, 6 * HOUR_IN_SECONDS);
+        }
+
+        return new JsonBlob('', $json);
     }
 
     /**
@@ -236,15 +266,18 @@ final class LocationsCache
         $tmp = $path . '.' . wp_generate_password(8, false) . '.tmp';
 
         try {
-            $out = fopen($tmp, 'wb'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+            $out = @fopen($tmp, 'wb'); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_operations_fopen
             if (!$out) {
+                self::$write_failed = true;
                 return false;
             }
-            self::write($variant, $cats, $out);
-            fclose($out); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+            $written = self::write($variant, $cats, $out);
+            $written = fclose($out) && $written; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 
+            // A short write (disk full) would leave broken JSON in place for good: never keep it.
             // Rename is atomic: readers never see a half-written file.
-            if (!rename($tmp, $path)) { // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
+            if (!$written || !@rename($tmp, $path)) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.rename_rename
+                self::$write_failed = true;
                 return false;
             }
 
@@ -348,30 +381,86 @@ final class LocationsCache
     }
 
     /**
-     * Write a variant's JSON to a stream, 500 locations at a time.
+     * Most locations in one file (filterable).
+     *
+     * @return int
+     * @since 2.1.0
+     */
+    public static function max()
+    {
+        /**
+         * Filters how many locations the map data holds at most (50,000 by default,
+         * about 125 bytes per location in the lean file maps load). Above it, maps that
+         * show every location load the visible area instead, and Site Health says so.
+         *
+         * @param int $max Locations.
+         * @since 2.1.0
+         */
+        return max(1, (int) apply_filters('matrixmap_locations_cache_max', self::MAX));
+    }
+
+    /**
+     * More published locations than fit in one file (cached count; cheap).
+     *
+     * @return bool
+     * @since 2.1.0
+     */
+    public static function over_cap()
+    {
+        $count = wp_count_posts(LocationPostType::POST_TYPE);
+
+        return isset($count->publish) && (int) $count->publish > self::max();
+    }
+
+    /**
+     * Write a variant's JSON to a stream, 5,000 locations at a time.
      *
      * @param string $variant lean|full.
      * @param int[] $cats Category IDs.
      * @param resource $out Stream.
+     * @param int[]|null $ids Location IDs to write (default: every published location of the categories, up to max()).
+     * @param bool $truncated With $ids: whether they stop at the cap.
+     * @return bool Every byte was written.
      */
-    private static function write($variant, $cats, $out)
+    private static function write($variant, $cats, $out, $ids = null, $truncated = false)
     {
-        $query = array('post_type' => LocationPostType::POST_TYPE, 'post_status' => 'publish', 'fields' => 'ids', 'posts_per_page' => self::MAX, 'no_found_rows' => true);
+        $ok = true;
+        $put = function ($s) use ($out, &$ok) {
+            if ($ok && strlen($s) !== @fwrite($out, $s)) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
+                $ok = false;
+            }
+        };
 
-        if ($cats) {
-            $query['tax_query'] = array(array('taxonomy' => LocationPostType::TAXONOMY, 'field' => 'term_id', 'terms' => $cats)); // phpcs:ignore WordPress.DB.SlowDBQuery
+        $max = self::max();
+
+        if (null === $ids) {
+            $query = array('post_type' => LocationPostType::POST_TYPE, 'post_status' => 'publish', 'fields' => 'ids', 'posts_per_page' => $max + 1, 'no_found_rows' => true);
+
+            if (Settings::hide_protected()) {
+                $query['has_password'] = false;
+            }
+
+            if ($cats) {
+                $query['tax_query'] = array(array('taxonomy' => LocationPostType::TAXONOMY, 'field' => 'term_id', 'terms' => $cats)); // phpcs:ignore WordPress.DB.SlowDBQuery
+            }
+
+            $ids = array_map('intval', get_posts($query));
+            // One more than the cap was asked for: the file does not hold every location.
+            $truncated = count($ids) > $max;
+            $ids = array_slice($ids, 0, $max);
         }
 
-        $ids = array_map('intval', get_posts($query));
         $lean = 'full' !== $variant;
         $terms = array();
         $facets = array();
         $first = true;
 
         // phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
-        fwrite($out, $lean ? '{"v":1,"fields":' . wp_json_encode(self::FIELDS) . ',"items":[' : '{"type":"FeatureCollection","features":[');
+        $put($lean ? '{"v":1,"fields":' . wp_json_encode(self::FIELDS) . ',"items":[' : '{"type":"FeatureCollection","features":[');
 
-        foreach (array_chunk($ids, 500) as $chunk) {
+        // 5,000 at a time: the meta query's cost is mostly per query, not per row (50,000
+        // locations: 0.7 s instead of 6 s with 500), and 5,000 primed posts stay under 30 MB.
+        foreach (array_chunk($ids, 5000) as $chunk) {
             LocationPostType::prime($chunk);
 
             foreach ($chunk as $id) {
@@ -379,7 +468,7 @@ final class LocationsCache
                 if (null === $item) {
                     continue;
                 }
-                fwrite($out, ($first ? '' : ',') . wp_json_encode($item));
+                $put(($first ? '' : ',') . wp_json_encode($item));
                 $first = false;
             }
 
@@ -391,15 +480,70 @@ final class LocationsCache
             }
         }
 
+        // "truncated": the data stops at the cap; maps then load the visible area (a foreign
+        // member in the GeoJSON, which RFC 7946 allows).
+        $tail = $truncated ? ',"truncated":true' : '';
+
         if ($lean) {
             foreach ($facets as $k => $f) {
                 $facets[$k]['values'] = array_keys($f['values']);
             }
-            fwrite($out, '],"terms":' . wp_json_encode(array_values($terms)) . ',"facets":' . wp_json_encode((object) $facets) . '}');
+            $put('],"terms":' . wp_json_encode(array_values($terms)) . ',"facets":' . wp_json_encode((object) $facets) . $tail . '}');
         } else {
-            fwrite($out, ']}');
+            $put(']' . $tail . '}');
         }
         // phpcs:enable
+
+        return $ok;
+    }
+
+    /**
+     * The locations inside a visible area, read from the database: for sites with more
+     * locations than one file holds (the cached file would be missing some). The same
+     * JSON as the file, limited to max() locations.
+     *
+     * @param string $variant lean|full.
+     * @param int[] $cats Sorted, existing category IDs.
+     * @param float[] $bbox West, south, east, north.
+     * @return string JSON.
+     * @since 2.1.0
+     */
+    public static function bbox_json($variant, $cats, $bbox)
+    {
+        global $wpdb;
+
+        $table = GeoIndex::table(); // A fixed table name, never user input.
+        $where = array(
+            $wpdb->prepare("{$table}.object_type = %s", 'location'), // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $wpdb->prepare("{$table}.lat BETWEEN %f AND %f", (float) $bbox[1], (float) $bbox[3]), // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $wpdb->prepare("{$table}.lng BETWEEN %f AND %f", (float) $bbox[0], (float) $bbox[2]), // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            "p.post_status = 'publish'",
+        );
+
+        if (Settings::hide_protected()) {
+            $where[] = "p.post_password = ''";
+        }
+
+        if ($cats) {
+            $in = implode(',', array_map('intval', $cats));
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- IDs are intval().
+            $where[] = $wpdb->prepare("EXISTS (SELECT 1 FROM {$wpdb->term_relationships} tr INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id WHERE tr.object_id = p.ID AND tt.taxonomy = %s AND tt.term_id IN ({$in}))", LocationPostType::TAXONOMY);
+        }
+
+        $max = self::max();
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- every part prepared above; $table is fixed.
+        $ids = array_map('intval', (array) $wpdb->get_col("SELECT p.ID FROM {$table} INNER JOIN {$wpdb->posts} p ON p.ID = {$table}.object_id WHERE " . implode(' AND ', $where) . $wpdb->prepare(' ORDER BY p.ID LIMIT %d', $max + 1)));
+        // More in this area than one response holds: say so, so the map asks again when it zooms in.
+        $truncated = count($ids) > $max;
+        $ids = array_slice($ids, 0, $max);
+
+        $stream = fopen('php://temp', 'w+'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+        self::write('full' === $variant ? 'full' : 'lean', $cats, $stream, $ids, $truncated);
+        rewind($stream);
+        $json = (string) stream_get_contents($stream);
+        fclose($stream); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+
+        return $json;
     }
 
     /**
@@ -502,7 +646,7 @@ final class LocationsCache
          *
          * @param array $item id, lat, lng, title, cats (term IDs), color, address, city, postcode, flags.
          * @param int $id Location ID.
-         * @since 2.1.0
+         * @since 2.0.0
          */
         $item = apply_filters('matrixmap_location_index_item', $item, (int) $id);
 
@@ -579,6 +723,13 @@ final class LocationsCache
         }
 
         $count = wp_count_posts(LocationPostType::POST_TYPE);
+        /**
+         * Filters up to how many published locations the map index is rebuilt at once
+         * (above it, in the background).
+         *
+         * @param int $max Locations.
+         * @since 2.0.0
+         */
         $sync = isset($count->publish) && (int) $count->publish <= (int) apply_filters('matrixmap_locations_sync_rebuild_max', self::SYNC_REBUILD_MAX);
 
         foreach (array_slice($known, 0, 6) as $item) {
