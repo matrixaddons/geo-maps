@@ -269,21 +269,28 @@ final class Dashboard
          */
         do_action('matrixmap_dashboard_side');
 
-        if (!UI::pro()) {
+        if (Upsell::enabled()) {
+            $pitch = Upsell::dashboard_pitch();
             echo '<section class="mm-card mm-upsell"><div class="mm-card__body">';
             echo '<span class="mm-badge mm-badge--pro">' . esc_html__('MatrixMap Pro', 'geo-maps') . '</span>';
-            echo '<h2 class="mm-upsell__title">' . esc_html__('Do more with your locations', 'geo-maps') . '</h2>';
+            echo '<h2 class="mm-upsell__title">' . esc_html($pitch['title']) . '</h2>';
             echo '<ul class="mm-checks">';
-            foreach (array(
-                __('Visitor location on any host, geo-targeted content', 'geo-maps'),
-                __('SEO pages for every location', 'geo-maps'),
-                __('Locator analytics and demand map', 'geo-maps'),
-                __('Google Sheets sync, posts on maps, heatmaps', 'geo-maps'),
-                __('Your own SVG maps and floor plans', 'geo-maps'),
-            ) as $point) {
+            foreach ($pitch['points'] as $point) {
                 echo '<li>' . UI::icon('check', 16) . esc_html($point) . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
             }
-            echo '</ul><a class="mm-btn mm-btn--pro" href="' . esc_url(UI::pro_url()) . '" target="_blank" rel="noopener">' . esc_html__('See MatrixMap Pro', 'geo-maps') . '</a></div></section>';
+            echo '</ul><a class="mm-btn mm-btn--pro" href="' . esc_url(UI::pro_url($pitch['source'])) . '" target="_blank" rel="noopener">' . esc_html__('See MatrixMap Pro', 'geo-maps') . '</a>';
+            echo '<p class="mm-pro-preview__assure">' . esc_html(UI::pro_assurance()) . '</p>';
+            Upsell::already_bought();
+            echo '</div></section>';
+        }
+
+        // A review, once MatrixMap has been in real use for a while.
+        if (Upsell::suggest_review($c['embedded'])) {
+            $dismiss = wp_nonce_url(admin_url('admin-post.php?action=matrixmap_dismiss&notice=review'), 'matrixmap_dismiss_review');
+            UI::card_start(__('Is MatrixMap working for you?', 'geo-maps'));
+            echo '<p class="mm-muted">' . esc_html__('A short review helps other site owners find it, and tells us what to keep doing.', 'geo-maps') . '</p>';
+            echo '<p class="mm-inline"><a class="mm-btn mm-btn--secondary mm-btn--sm" href="https://wordpress.org/support/plugin/geo-maps/reviews/#new-post" target="_blank" rel="noopener">' . esc_html__('Leave a review', 'geo-maps') . '<span class="screen-reader-text"> ' . esc_html__('(opens in a new tab)', 'geo-maps') . '</span></a> <a class="mm-moment__dismiss" href="' . esc_url($dismiss) . '">' . esc_html__('Don’t ask again', 'geo-maps') . '</a></p>';
+            UI::card_end();
         }
 
         // Resources.

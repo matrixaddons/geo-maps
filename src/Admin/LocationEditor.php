@@ -180,6 +180,11 @@ final class LocationEditor
             <table class="widefat mm-details-edit" role="presentation"><tbody class="mm-details__rows"></tbody></table>
             <p><button type="button" class="button" id="mm-details-add"><?php esc_html_e('Add a detail', 'geo-maps'); ?></button></p>
         </div>
+        <p>
+            <label for="mm-social"><strong><?php esc_html_e('Social links', 'geo-maps'); ?></strong></label><br>
+            <textarea id="mm-social" name="mm_social" class="widefat" rows="3" dir="ltr" placeholder="https://www.instagram.com/yourstore"><?php echo esc_textarea(implode("\n", $loc['social'])); ?></textarea>
+            <span class="description"><?php esc_html_e('One web address per line. Facebook, Instagram, X, LinkedIn, YouTube, TikTok and others appear as named links in the map popup.', 'geo-maps'); ?></span>
+        </p>
         <?php
     }
 
@@ -284,6 +289,9 @@ final class LocationEditor
 
         // The box is always on the screen, so an empty list clears the details.
         $in['details'] = isset($_POST['mm_details']) && is_array($_POST['mm_details']) ? array_values(wp_unslash($_POST['mm_details'])) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized in Location::sanitize_details_json().
+
+        // Not sanitize_textarea_field(): it removes %xx from addresses. Validated in Location::sanitize_social_json().
+        $in['social'] = isset($_POST['mm_social']) ? (string) wp_unslash($_POST['mm_social']) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
         // Geocode on save when there's an address but no position yet.
         if ((empty($in['lat']) || empty($in['lng'])) && (!empty($in['street']) || !empty($in['city']))) {

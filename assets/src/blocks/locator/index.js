@@ -9,6 +9,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import ServerSideRender from '@wordpress/server-side-render';
 import metadata from './block.json';
+import { SavedMapPanel } from '../saved-map';
 
 const editorData = window.matrixmapEditor || {};
 
@@ -32,9 +33,21 @@ function Edit( { attributes, setAttributes } ) {
 	const setLoc = ( patch ) => setAttributes( { config: Object.assign( {}, config, { type: 'locator', locator: Object.assign( {}, loc, patch ) } ) } );
 	const setSize = ( patch ) => setAttributes( { config: Object.assign( {}, config, { type: 'locator', size: Object.assign( {}, size, patch ) } ) } );
 
+	if ( parseInt( attributes.map_id, 10 ) ) {
+		return (
+			<div { ...blockProps }>
+				<InspectorControls>
+					<SavedMapPanel type="locator" attributes={ attributes } setAttributes={ setAttributes } />
+				</InspectorControls>
+				<ServerSideRender block={ metadata.name } attributes={ attributes } />
+			</div>
+		);
+	}
+
 	return (
 		<div { ...blockProps }>
 			<InspectorControls>
+				<SavedMapPanel type="locator" attributes={ attributes } setAttributes={ setAttributes } />
 				<PanelBody title={ __( 'Locations', 'geo-maps' ) }>
 					{ count === 0 ? (
 						<Notice status="warning" isDismissible={ false }>

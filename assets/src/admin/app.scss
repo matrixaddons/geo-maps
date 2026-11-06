@@ -462,6 +462,14 @@ mark.mm-hit {
 	padding: 18px 24px 0;
 }
 
+// Phones: a status pill or link beside the heading must not squeeze its description.
+@media (max-width: 600px) {
+	.mm-card__head {
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+}
+
 .mm-card__title {
 	margin: 0;
 	color: var(--mm-ink);
@@ -937,6 +945,10 @@ body.mm-admin {
 	.mm-icon {
 		margin-top: 1px;
 	}
+}
+
+.mm-notice form.mm-inline {
+	margin-top: 8px;
 }
 
 .mm-notice--success {
@@ -1694,7 +1706,7 @@ a.mm-strong {
 
 /* ---------- Cards written as plain HTML (heading + content) ---------- */
 
-.mm-page .mm-card:not(:has(> .mm-card__body)):not(.mm-pro-preview) {
+.mm-page .mm-card:not(:has(> .mm-card__body)):not(.mm-pro-preview, .mm-compare__hero, .mm-compare__buyer) {
 	padding: 6px 24px 20px;
 
 	> h2:first-child {
@@ -1717,6 +1729,20 @@ a.mm-strong {
 // WordPress form tables look like setting rows.
 .mm-page .form-table {
 	margin: 0;
+
+	// Phones stack the cells: without this a file input can push the table out of its card.
+	@media (max-width: 782px) {
+		&,
+		tbody,
+		tr {
+			display: block;
+			width: 100%;
+		}
+
+		input[type="file"] {
+			max-width: 100%;
+		}
+	}
 
 	tr {
 		border-top: 1px solid #f1f5f9;
@@ -2128,6 +2154,7 @@ body.mm-admin--categories {
 			font-weight: 600;
 			letter-spacing: 0.03em;
 			text-transform: uppercase;
+			vertical-align: middle;
 
 			a {
 				color: var(--mm-muted);
@@ -2138,13 +2165,15 @@ body.mm-admin--categories {
 			display: none;
 		}
 
+		// Top-aligned like core's tables: the title cell keeps a line for its hover actions,
+		// so anything else would leave titles out of line with the rest of the row.
 		td,
-		td.column-primary,
+		tbody .column-primary,
 		th.check-column {
 			padding-top: 14px;
 			padding-bottom: 14px;
 			border-top: 1px solid #f1f5f9;
-			vertical-align: middle;
+			vertical-align: top;
 		}
 
 		&.striped > tbody > :nth-child(odd) {
@@ -2744,6 +2773,11 @@ html:not(.mm-fullscreen) body.mm-admin--map .mm-create__foot {
 
 	.mm-table {
 		min-width: 480px;
+
+		// Phones stack the cells, so nothing has to scroll sideways (text looked cut off).
+		@media (max-width: 782px) {
+			min-width: 0;
+		}
 	}
 
 	th[scope="row"] {
@@ -2782,4 +2816,196 @@ html:not(.mm-fullscreen) body.mm-admin--map .mm-create__foot {
 		max-width: 100%;
 		overflow-x: auto;
 	}
+}
+
+// Upgrade prompts (free plugin only).
+.mm-pro-preview__assure {
+	margin: 10px 0 0;
+	color: #64748b;
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+.mm-have-pro {
+	margin: 8px 0 0;
+	color: #64748b;
+	font-size: 12px;
+}
+
+.mm-moment {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 16px 0;
+	padding: 12px 16px;
+	border: 1px solid #ddd6fe;
+	border-radius: 12px;
+	background: #faf8ff;
+
+	.wrap &.notice {
+		margin: 16px 0;
+		border: 1px solid #ddd6fe;
+	}
+}
+
+.mm-moment__icon {
+	display: inline-flex;
+	color: #7c3aed;
+}
+
+.mm-moment__body {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+	color: var(--mm-ink, #0f172a);
+	font-size: 13px;
+}
+
+.mm-moment__text {
+	color: #475569;
+	line-height: 1.5;
+}
+
+.mm-moment__actions {
+	display: flex;
+	flex-shrink: 0;
+	align-items: center;
+	gap: 12px;
+}
+
+.mm-moment__dismiss {
+	color: #475569;
+	font-size: 12px;
+}
+
+@media (max-width: 782px) {
+	.mm-moment {
+		flex-wrap: wrap;
+	}
+
+	.mm-moment__body {
+		flex-basis: calc(100% - 34px);
+	}
+}
+
+.mm-page .mm-sample {
+	margin-bottom: 20px;
+	padding: 20px 24px 24px;
+}
+
+.mm-sample__label {
+	display: inline-block;
+	margin: 0 0 16px;
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: #fef3c7;
+	color: #78350f;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.mm-sample__tiles {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 12px;
+	margin-bottom: 20px;
+
+	@media (max-width: 782px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.mm-sample__tile {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 12px 14px;
+	border: 1px solid #e2e8f0;
+	border-radius: 10px;
+
+	strong {
+		color: #0f172a;
+		font-size: 22px;
+	}
+
+	span {
+		color: #475569;
+		font-size: 12px;
+	}
+}
+
+.mm-sample__grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 24px;
+
+	@media (max-width: 782px) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.mm-sample__title {
+	margin: 0 0 10px;
+	color: #0f172a;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.mm-sample__bars {
+	display: flex;
+	align-items: flex-end;
+	gap: 4px;
+	height: 110px;
+
+	span {
+		flex: 1;
+		border-radius: 3px 3px 0 0;
+		background: #a78bfa;
+	}
+}
+
+.mm-sample__table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+
+	th,
+	td {
+		padding: 7px 0;
+		border-bottom: 1px solid #f1f5f9;
+		font-weight: 400;
+		text-align: left;
+	}
+
+	thead th {
+		color: #64748b;
+		font-size: 12px;
+	}
+
+	td:last-child,
+	th:last-child,
+	td:nth-child(2),
+	thead th:nth-child(2) {
+		text-align: right;
+	}
+
+	tbody th {
+		color: #0f172a;
+	}
+}
+
+.mm-locpage__url {
+	margin: 8px 0;
+
+	code {
+		display: block;
+		overflow-wrap: anywhere;
+		font-size: 12px;
+	}
+}
+
+.mm-locpage__actions {
+	margin: 8px 0 0;
 }

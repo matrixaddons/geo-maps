@@ -34,6 +34,10 @@
 
 .mm-compare__actions {
 	margin: 18px 0 0;
+
+	+ .mm-compare__text {
+		margin: 12px 0 0;
+	}
 }
 
 .mm-compare__plans {
@@ -45,6 +49,7 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	gap: 16px;
 	padding: 12px 16px;
 	border: 1px solid var(--mm-line);
 	border-radius: var(--mm-radius-sm);
@@ -57,6 +62,7 @@
 
 	span {
 		color: var(--mm-muted);
+		text-align: end;
 	}
 }
 
@@ -164,8 +170,41 @@ thead .mm-compare__procol {
 			padding: 10px 12px;
 		}
 
-		td {
-			width: 72px;
+		// On a phone the feature names need the room: the tick columns stay as narrow as they can.
+		td,
+		thead th:not(:first-child) {
+			width: 56px;
+			padding-right: 4px;
+			padding-left: 4px;
 		}
+
+		.mm-compare__note-cell {
+			font-size: 12px;
+		}
+	}
+}
+
+.mm-compare__buyers-title {
+	margin: 24px 0 12px;
+	font-size: 1.15rem;
+}
+
+.mm-compare__buyers {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.mm-compare__buyer {
+	padding: 20px 24px;
+
+	h3 {
+		margin: 0 0 10px;
+		font-size: 1rem;
+	}
+
+	p:last-child {
+		margin-bottom: 0;
 	}
 }

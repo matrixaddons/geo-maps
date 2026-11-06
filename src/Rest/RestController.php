@@ -821,7 +821,7 @@ final class RestController
 
         // Visitors get a generic message: provider errors can name the service, settings or key problems.
         if (!current_user_can('edit_matrixmaps') && 'matrixmap_geocode_query' !== $code) {
-            $message = 429 === $status ? __('Too many searches. Please wait a minute and try again.', 'geo-maps') : __('Address search is not available right now. Please try again later.', 'geo-maps');
+            $message = 'matrixmap_geocode_busy' === $code ? __('The address search is busy. Please try again in a moment.', 'geo-maps') : (429 === $status ? __('Too many searches. Please wait a minute and try again.', 'geo-maps') : __('Address search is not available right now. Please try again later.', 'geo-maps'));
 
             return new WP_Error(429 === $status ? 'matrixmap_busy' : 'matrixmap_geocode_unavailable', $message, array('status' => $status));
         }

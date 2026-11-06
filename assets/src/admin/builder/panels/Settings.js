@@ -128,7 +128,7 @@ export default function Settings( { config, update, useCurrentView } ) {
 									] }
 									onChange={ ( v ) => set( 'list', { position: v } ) }
 								/>
-								<ToggleControl __nextHasNoMarginBottom label={ __( 'Search box above the list', 'geo-maps' ) } checked={ config.list.search } onChange={ ( v ) => set( 'list', { search: v } ) } />
+								<ToggleControl __nextHasNoMarginBottom label={ __( 'Search box above the list', 'geo-maps' ) } help={ __( 'Shows when the map has more than 5 places.', 'geo-maps' ) } checked={ config.list.search } onChange={ ( v ) => set( 'list', { search: v } ) } />
 							</>
 						) : null }
 						<ToggleControl __nextHasNoMarginBottom label={ __( 'Category filter buttons', 'geo-maps' ) } checked={ config.filter.enabled } onChange={ ( v ) => set( 'filter', { enabled: v } ) } />

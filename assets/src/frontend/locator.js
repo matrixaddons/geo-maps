@@ -450,6 +450,7 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 
 	// --- Search ------------------------------------------------------------
 	let busy = false;
+	let queued = null;
 
 	// The searched address gets its own dot, so visitors see where distances are measured from.
 	let searchedHandle = null;
@@ -488,6 +489,8 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 
 	async function search( params, label ) {
 		if ( busy ) {
+			// The newest request wins: it runs as soon as the current one ends.
+			queued = [ params, label ];
 			return;
 		}
 		busy = true;
@@ -578,9 +581,20 @@ mm.mounters.locator = async ( el, payload, settings ) => {
 		} catch ( e ) {
 			setStatus( e.message || i18n.searchFailed );
 		} finally {
-			busy = false;
 			el.classList.remove( 'is-searching' );
 			keepFocus( had );
+			if ( queued ) {
+				// The site looks up one address a second: right after a quick search,
+				// the next address would be refused. Still busy meanwhile, so a newer one replaces it.
+				window.setTimeout( () => {
+					const next = queued;
+					queued = null;
+					busy = false;
+					search( next[ 0 ], next[ 1 ] );
+				}, queued[ 0 ].q ? 1100 : 0 );
+			} else {
+				busy = false;
+			}
 		}
 	}
 

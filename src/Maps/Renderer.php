@@ -183,7 +183,12 @@ final class Renderer
         } elseif ('leaflet' === $engine) {
             $payload['source'] = Styles::resolve_raster('' !== $config['source'] ? $config['source'] : (string) Settings::get('leaflet_source'));
         } else {
-            $payload['google'] = array('mapId' => '' !== (string) Settings::get('google_map_id') ? (string) Settings::get('google_map_id') : 'DEMO_MAP_ID');
+            $payload['google'] = array(
+                'mapId' => '' !== (string) Settings::get('google_map_id') ? (string) Settings::get('google_map_id') : 'DEMO_MAP_ID',
+                'traffic' => !empty($config['googleLayers']['traffic']),
+                'transit' => !empty($config['googleLayers']['transit']),
+                'streetView' => !empty($config['googleLayers']['streetView']),
+            );
         }
 
         $markers = self::markers($config['markers']);
@@ -510,6 +515,7 @@ final class Renderer
             'tz' => $loc['timezone'],
             'url' => $loc['url'],
             'details' => $loc['details'],
+            'social' => $loc['social'],
             'link' => array('url' => $loc['url'], 'label' => '', 'newTab' => false),
         ), $loc);
     }

@@ -70,7 +70,10 @@ final class Menu
              * @since 2.0.0
              */
             do_action('matrixmap_analytics_page');
+        } elseif (!Upsell::enabled()) {
+            echo '<div class="wrap mm-page"><p>' . esc_html__('Store locator analytics are part of MatrixMap Pro.', 'geo-maps') . '</p></div>';
         } else {
+            Upsell::analytics_sample();
             UI::pro_preview(
                 __('Know what your visitors are looking for', 'geo-maps'),
                 __('Store locator analytics show demand you are missing and which locations perform best. Anonymous daily totals only: no cookies, no IP addresses, no consent banner needed.', 'geo-maps'),
@@ -79,7 +82,8 @@ final class Menu
                     __('Directions, calls, website clicks and messages per location', 'geo-maps'),
                     __('Top locations and a demand map', 'geo-maps'),
                     __('7, 30, 90 and 365-day views', 'geo-maps'),
-                )
+                ),
+                'analytics'
             );
         }
 
@@ -144,7 +148,7 @@ final class Menu
 
         // One quiet upgrade link while Pro isn't installed.
         if (!UI::pro()) {
-            $links['matrixmap_pro'] = '<a class="mm-row-upgrade" href="' . esc_url(UI::pro_url()) . '" target="_blank" rel="noopener" aria-label="' . esc_attr__('Upgrade to MatrixMap Pro (opens in a new tab)', 'geo-maps') . '" style="color:#7c3aed;font-weight:600">' . esc_html__('Upgrade to Pro', 'geo-maps') . '</a>';
+            $links['matrixmap_pro'] = '<a class="mm-row-upgrade" href="' . esc_url(UI::pro_url('plugins-row')) . '" target="_blank" rel="noopener" aria-label="' . esc_attr__('Upgrade to MatrixMap Pro (opens in a new tab)', 'geo-maps') . '" style="color:#7c3aed;font-weight:600">' . esc_html__('Upgrade to Pro', 'geo-maps') . '</a>';
         }
 
         return $links;

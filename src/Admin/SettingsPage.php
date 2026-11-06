@@ -427,7 +427,8 @@ final class SettingsPage
             UI::pro_preview(
                 __('Know where every visitor is — on any host', 'geo-maps'),
                 __('A local copy of the free DB-IP database answers "where is this visitor?" on your own server: city-level "near you" results and geo-targeted content, with no per-visit service and no IP addresses stored.', 'geo-maps'),
-                array(__('City or country database, updated monthly', 'geo-maps'), __('Geo content block: show anything by country or distance', 'geo-maps'), __('Nearest location block', 'geo-maps'))
+                array(__('City or country database, updated monthly', 'geo-maps'), __('Geo content block: show anything by country or distance', 'geo-maps'), __('Nearest location block', 'geo-maps')),
+                'settings-visitor'
             );
         }
     }
@@ -448,7 +449,7 @@ final class SettingsPage
      */
     public static function section_performance()
     {
-        UI::card_start(__('Loading', 'geo-maps'), __('Nothing loads on pages without a map. On pages with one, a 2 KB loader fetches only what that map needs.', 'geo-maps'));
+        UI::card_start(__('Loading', 'geo-maps'), __('Nothing loads on pages without a map. On pages with one, a loader of about 4 KB fetches only what that map needs.', 'geo-maps'));
         UI::row(__('Lazy loading', 'geo-maps'), UI::toggle(self::name('lazy'), (bool) Settings::get('lazy'), __('Load a map only when it scrolls into view', 'geo-maps'), 'mm-lazy'), __('Recommended. Keeps pages fast when the map is further down.', 'geo-maps'));
         UI::row(__('Scrolling over maps', 'geo-maps'), self::select('gestures', array('cooperative' => __('Page scrolls; two fingers or Ctrl + scroll move the map', 'geo-maps'), 'greedy' => __('The map captures scrolling and dragging', 'geo-maps'))), __('The first option avoids trapping visitors on mobile.', 'geo-maps'), 'mm-gestures');
         UI::card_end();
@@ -514,7 +515,7 @@ final class SettingsPage
                 echo '<h2 class="mm-section__title">' . esc_html($s['label']) . (!empty($s['pro']) && !UI::pro() ? ' <span class="mm-badge mm-badge--pro">' . esc_html__('Pro', 'geo-maps') . '</span>' : '') . (isset($docs[$id]) ? ' ' . UI::learn_more($docs[$id][0], $docs[$id][1]) : '') . '</h2>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- learn_more() returns escaped HTML.
 
                 if (empty($s['render'])) {
-                    UI::pro_preview($s['preview'][0], $s['preview'][1], isset($s['preview'][2]) ? $s['preview'][2] : array());
+                    UI::pro_preview($s['preview'][0], $s['preview'][1], isset($s['preview'][2]) ? $s['preview'][2] : array(), 'settings-' . $id);
                 } elseif (isset($s['form']) && false === $s['form']) {
                     call_user_func($s['render']);
                 } else {

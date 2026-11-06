@@ -22,6 +22,7 @@ final class MapPostType
     public static function init()
     {
         add_action('init', array(__CLASS__, 'register'));
+        add_action('rest_api_init', array(__CLASS__, 'rest_fields'));
         add_filter('wp_untrash_post_status', array(__CLASS__, 'untrash_status'), 10, 3);
     }
 
@@ -40,6 +41,21 @@ final class MapPostType
         $types = array(self::POST_TYPE, \MatrixMap\Locations\LocationPostType::POST_TYPE);
 
         return in_array(get_post_type($post_id), $types, true) && in_array($previous, array('publish', 'private', 'pending', 'draft', 'future'), true) ? $previous : $status;
+    }
+
+    /**
+     * The map type in the REST API, for the block editor's map pickers.
+     */
+    public static function rest_fields()
+    {
+        register_rest_field(self::POST_TYPE, 'mm_type', array(
+            'get_callback' => static function ($post) {
+                $config = MapConfig::for_map((int) $post['id']);
+
+                return is_array($config) && isset($config['type']) ? (string) $config['type'] : 'markers';
+            },
+            'schema' => array('type' => 'string', 'context' => array('edit'), 'readonly' => true),
+        ));
     }
 
     /**

@@ -143,6 +143,14 @@ final class Wizard
         $dismissed[] = $id;
         update_user_option(get_current_user_id(), 'matrixmap_dismissed', array_values(array_unique(array_filter($dismissed))));
 
+        /**
+         * Fires when a user dismisses a MatrixMap notice.
+         *
+         * @param string $id Notice ID.
+         * @since 2.2.0
+         */
+        do_action('matrixmap_notice_dismissed', $id);
+
         wp_safe_redirect(wp_get_referer() ? wp_get_referer() : admin_url());
         exit;
     }

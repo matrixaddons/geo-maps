@@ -295,6 +295,10 @@ final class Assets
             'call' => __('Call', 'geo-maps'),
             'email' => __('Email', 'geo-maps'),
             'website' => __('Website', 'geo-maps'),
+            /* translators: 1: this place's position, 2: places at this spot */
+            'stackCount' => __('%1$d of %2$d here', 'geo-maps'),
+            'stackPrev' => __('Previous place here', 'geo-maps'),
+            'stackNext' => __('Next place here', 'geo-maps'),
             'moreInfo' => __('More info', 'geo-maps'),
             'close' => __('Close', 'geo-maps'),
             'showMore' => __('Show more', 'geo-maps'),

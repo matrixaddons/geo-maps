@@ -70,6 +70,7 @@ final class Plugin
             Admin\Tools::init();
             Admin\SampleData::init();
             Admin\Wizard::init();
+            Admin\Upsell::init();
             Diagnostics\SiteHealth::init();
             Privacy\Privacy::init();
         }

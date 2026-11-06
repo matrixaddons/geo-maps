@@ -307,6 +307,16 @@
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 8px;
+
+	+ .components-base-control {
+		margin-top: 12px;
+	}
+}
+
+// "Zoom in on" and other token fields: the same field look as the inputs around them.
+.mm-b .components-form-token-field__input-container {
+	border-color: #c7d0dc;
+	border-radius: 8px;
 }
 
 .mm-b-thumb {
@@ -1030,6 +1040,20 @@
 	color: #475569;
 }
 
+.mm-pro-teaser__points {
+	margin: 0 0 10px 16px;
+	list-style: disc;
+	color: #334155;
+	font-size: 13px;
+}
+
+.mm-pro-teaser__assure {
+	margin: 8px 0 0;
+	color: #64748b;
+	font-size: 11px;
+	line-height: 1.5;
+}
+
 /* ==========================================================================
    Builder redesign: grey tool panel with white cards, framed live stage.
    ========================================================================== */
@@ -1168,7 +1192,7 @@
 	padding: 0;
 
 	.components-panel__body-toggle.components-button {
-		padding: 14px 16px;
+		padding: 14px 44px 14px 16px; // Room for the arrow: long titles and Pro tags stay clear of it.
 		color: var(--mm-b-ink);
 		font-size: 14px;
 		font-weight: 650;
@@ -1664,6 +1688,11 @@
 }
 
 @media (max-width: 960px) {
+	// In a column, a 360px basis is a fixed height: the rest of the panel could not be reached.
+	.mm-b__side {
+		flex-basis: auto;
+	}
+
 	.mm-b__rail {
 		flex-direction: row;
 		flex-basis: auto;
@@ -1924,6 +1953,36 @@
 
 	.mm-create__go {
 		padding: 0 26px;
+	}
+}
+
+// A laptop screen (1440x900): both rows of templates fit above the fixed footer.
+@media (min-width: 1100px) and (max-height: 1000px) {
+	.mm-b:not(.mm-b--modal) {
+		.mm-create__inner {
+			padding-top: 8px;
+		}
+
+		.mm-create__eyebrow {
+			display: none;
+		}
+
+		.mm-create__lead {
+			margin-bottom: 12px;
+		}
+
+		.mm-create__hint {
+			margin: 6px 0 12px;
+		}
+
+		.mm-create__art {
+			height: 116px;
+			margin-bottom: 4px;
+		}
+
+		.mm-create__card {
+			padding-bottom: 12px;
+		}
 	}
 }
 

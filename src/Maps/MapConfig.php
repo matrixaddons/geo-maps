@@ -53,6 +53,8 @@ final class MapConfig
             'filter' => array('enabled' => true, 'style' => 'chips'),
             // A category legend over the map (colour + name). Off so existing maps keep their look.
             'legend' => array('enabled' => false, 'position' => 'bottom-left'),
+            // Google Maps only; off so existing maps keep their look.
+            'googleLayers' => array('traffic' => false, 'transit' => false, 'streetView' => false),
             'directions' => array('enabled' => true),
             'locations' => array('source' => 'none', 'categories' => array()),
             'consent' => '',
@@ -348,6 +350,13 @@ final class MapConfig
             'scrollZoom' => self::pick($in, 'scrollZoom', array('ctrl', 'always', 'never'), 'ctrl'),
             'drag' => self::bool($in, 'drag', true),
             'gestures' => self::pick($in, 'gestures', array('', 'cooperative', 'greedy'), ''),
+        );
+
+        $gl = self::arr($raw, 'googleLayers');
+        $c['googleLayers'] = array(
+            'traffic' => self::bool($gl, 'traffic', false),
+            'transit' => self::bool($gl, 'transit', false),
+            'streetView' => self::bool($gl, 'streetView', false),
         );
 
         $p = self::arr($raw, 'popup');

@@ -35,7 +35,7 @@ export default function Layers( { config, update } ) {
 			<Button variant="secondary" onClick={ () => pickMedia( { title: __( 'Choose a GPX, KML or GeoJSON file', 'geo-maps' ), button: __( 'Add to map', 'geo-maps' ) }, ( att ) => add( { attachment: att.id, url: att.url, format: formatOf( att.filename || att.url ), title: att.title || att.filename } ) ) }>
 				{ __( 'Upload or choose a file', 'geo-maps' ) }
 			</Button>
-			<div className="mm-b-inline" style={ { marginTop: 8 } }>
+			<div className="mm-b-inline" style={ { marginTop: 8, alignItems: 'flex-end' } }>
 				<TextControl __nextHasNoMarginBottom label={ __( 'Or a file URL', 'geo-maps' ) } value={ url } onChange={ setUrl } placeholder="https://…/route.gpx" />
 				<Button variant="secondary" disabled={ ! /^https?:\/\//.test( url ) } onClick={ () => {
 					add( { url, format: formatOf( url ), title: url.split( '/' ).pop() } );

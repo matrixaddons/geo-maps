@@ -62,6 +62,14 @@ export default function DataPanel( { config, update, onDone } ) {
 		const added = [];
 		const errors = [];
 
+		// A map holds a limited number of places: saving would silently drop the rest.
+		const max = data.maxMarkers || 5000;
+		const room = Math.max( 0, max - config.markers.length );
+		if ( rows.length > room ) {
+			errors.push( sprintf( /* translators: 1: places a map can hold, 2: rows left out */ __( 'A map holds up to %1$d places: the last %2$d rows were not added.', 'geo-maps' ), max, rows.length - room ) );
+			rows = rows.slice( 0, room );
+		}
+
 		for ( let i = 0; i < rows.length; i++ ) {
 			if ( stopRef.current ) {
 				break;

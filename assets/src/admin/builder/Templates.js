@@ -245,7 +245,7 @@ export default function Templates( { onPick, onBlank } ) {
 							onClick={ () => setChosen( t.id ) }
 							onDoubleClick={ () => onPick( t, name ) }
 						>
-							<svg className="mm-create__art" viewBox="0 0 160 96" aria-hidden="true" focusable="false">
+							<svg className="mm-create__art" viewBox="0 0 160 96" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
 								{ ART[ t.id ] }
 							</svg>
 							<span className="mm-create__cardtitle">{ t.title }</span>

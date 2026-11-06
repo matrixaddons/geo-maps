@@ -153,7 +153,7 @@ final class Docs
                     // A Pro feature: its value, and (without Pro) one way to get it.
                     echo '<div class="mm-docs__pro"><span class="mm-badge mm-badge--pro">' . esc_html__('Pro', 'geo-maps') . '</span><p>' . wp_kses($b[1], $k) . '</p>';
                     if (!UI::pro()) {
-                        echo '<a class="mm-btn mm-btn--secondary mm-btn--sm" href="' . esc_url(UI::pro_url()) . '" target="_blank" rel="noopener">' . esc_html__('Get MatrixMap Pro', 'geo-maps') . '</a>';
+                        echo '<a class="mm-btn mm-btn--secondary mm-btn--sm" href="' . esc_url(UI::pro_url('docs')) . '" target="_blank" rel="noopener">' . esc_html__('Get MatrixMap Pro', 'geo-maps') . '</a>';
                     }
                     echo '</div>';
                     break;
@@ -240,7 +240,7 @@ final class Docs
                 __('Download the sample CSV from <strong>Import & Tools → Import locations</strong> and fill it in (name, address, city, postcode, country; latitude/longitude if you have them; phone, email, website, category, hours).', 'geo-maps'),
                 __('Upload it, check how each column is matched, and start the import. Rows without coordinates are looked up by address; very large files take a while with the free OpenStreetMap search (about one address per second).', 'geo-maps'),
                 __('Go to <strong>Add New Map</strong> → <strong>Store locator</strong>. Choose which categories it searches, the radius choices, whether the search radius is drawn on the map as a circle (on for new locators; maps made before keep their look until you turn it on), and what happens when the page opens.', 'geo-maps'),
-                __('Publish and add it to a page with the Store Locator block or its shortcode. Optionally add a <strong>Store Search</strong> box on your home page that sends visitors to the locator.', 'geo-maps'),
+                __('Publish, then click <strong>Create page</strong>, or add it to a page with the <strong>MatrixMap</strong> block or its shortcode. (The Store Locator block builds a separate locator inside the page; it doesn’t use this one.) Optionally add a <strong>Store Search</strong> box on your home page that sends visitors to the locator.', 'geo-maps'),
             )),
             array('h', 'howto-data-map', __('Make a data map (colour countries or states by value)', 'geo-maps')),
             array('ol', array(
@@ -396,7 +396,7 @@ final class Docs
             array('p', __('Maps from WP Go Maps, MapPress, WP Maps (WP Google Map Plugin), Interactive Geo Maps / MapGeo, Maps Marker Pro / Leaflet Maps Marker (layers and markers become maps; <code>[mapsmarker]</code> keeps working) and others can be imported. Maps kept inside pages (Leaflet Map shortcodes, WP Map Block) can be shown by MatrixMap once the original plugin is deactivated.', 'geo-maps')),
             array('h', 'data-maintenance', __('Maintenance', 'geo-maps')),
             array('p', __('Rebuild the location index if the locator misses locations after a direct database import; clear the address search cache if an address moved.', 'geo-maps')),
-            array('pro', __('Pro adds scheduled data sync from Google Sheets, CSV or JSON: stable IDs, change detection, a preview, a log and email alerts, and a safety check that stops a run from unpublishing most of your locations. Sources may be up to 25 MB and 20,000 rows, served as CSV or JSON (a web page is refused); every download is pinned to the address that passed MatrixMap’s private-network check, redirects included.', 'geo-maps')),
+            array('pro', __('Pro adds scheduled data sync from Google Sheets, CSV or JSON: stable IDs, change detection, a preview, a log and email alerts, and, for sources of 20 rows or more, a safety check that stops a run from unpublishing most of your locations. Sources may be up to 25 MB and 20,000 rows, served as CSV or JSON (a web page is refused); every download is pinned to the address that passed MatrixMap’s private-network check, redirects included.', 'geo-maps')),
             array('h', 'data-private-sheets', __('Private Google Sheets (Pro)', 'geo-maps')),
             array('p', __('Sheets that must stay private are read by a Google service account instead of a public link:', 'geo-maps')),
             array('ol', array(
@@ -502,7 +502,7 @@ final class Docs
             array('p', __('Turn on <strong>Settings → Advanced → Allow maps to be embedded on other websites</strong>. Each published map’s editor bar then has a <strong>Copy embed code</strong> button (the <code>&lt;iframe&gt;</code> code); the frame loads <code>/?matrixmap_embed=ID</code>, a page with nothing but the map (marked “noindex”). Only published maps are served; while the setting is off the address answers 404.', 'geo-maps')),
             array('h', 'embed-sample', __('Sample data', 'geo-maps')),
             array('p', __('New site? <strong>Dashboard → Add sample data</strong> creates ten locations in three categories, a store locator, a map with places and a data map, so you can see every kind of map at once. <strong>Remove sample data</strong> deletes exactly those again (a category you started using for your own locations is kept).', 'geo-maps')),
-            array('pro', __('Pro shortcodes: <code>[matrixmap_nearest]</code>, <code>[matrixmap_geo]</code>, <code>[matrixmap_posts]</code>, <code>[matrixmap_where_to_buy]</code>, <code>[matrixmap_submit]</code>, <code>[matrixmap_my_locations]</code>, <code>[matrixmap_lead]</code>, <code>[matrixmap_static id="12"]</code> (a PNG of a map), <code>[matrixmap_compare left="12" right="13"]</code> (two maps with a slider), plus the Nearest location, Geo content, Submit a location, Dealer enquiry, Compare maps and Posts map (Query Loop) blocks.', 'geo-maps')),
+            array('pro', __('Pro shortcodes: <code>[matrixmap_nearest]</code>, <code>[matrixmap_geo]</code>, <code>[matrixmap_posts]</code>, <code>[matrixmap_where_to_buy]</code>, <code>[matrixmap_submit]</code>, <code>[matrixmap_my_locations]</code>, <code>[matrixmap_lead]</code>, <code>[matrixmap_static id="12"]</code> (a PNG of a map), <code>[matrixmap_compare left="12" right="13"]</code> (two maps with a slider), plus the Nearest location, Geo content, Submit a location, Dealer enquiry, Compare maps, Service area check and Posts map (Query Loop) blocks. <code>[matrixmap_service_check map="12" url="/book/"]</code> asks visitors for an address and checks it against the areas and circles drawn on that map.', 'geo-maps')),
         );
     }
 
@@ -517,6 +517,7 @@ final class Docs
             array('p', __('MatrixMap works inside the page builders and form plugins you already use. Everything here is a map or field you pick from a list — no shortcodes to type.', 'geo-maps')),
             array('h', 'builders-elementor', __('Elementor', 'geo-maps')),
             array('p', __('The <strong>MatrixMap</strong> widget (category “MatrixMap”) shows any saved map — a map, a store locator or a region map — with a live preview in the editor. Choose the map and, if you like, a height.', 'geo-maps')),
+            array('pro', __('Pro adds a Directory under Settings → Location pages (locations need a country to be listed), and signed webhooks under Settings → Events &amp; reports: <code>X-MatrixMap-Signature</code> is <code>sha256=</code> plus the HMAC-SHA256 of the <code>X-MatrixMap-Timestamp</code> value, a dot and the raw body, made with the secret. The <code>matrixmap_pro_report_mail</code> filter changes the monthly report.', 'geo-maps')),
             array('pro', __('Pro adds a <strong>MatrixMap location</strong> group of dynamic tags for single location templates (Theme Builder → Single Post → Locations): Location name, Address, Street, City, Postcode, Country, Coordinates, Phone, Email, Opening hours, Open now, Directions link, Website link, Call link, Location page link, Photo and Map image. Each tag reads the current location, or one you pick. The “Map” tag feeds the widget’s map picker, so a template can choose its map dynamically. The Map image tag needs a Google, MapTiler or Mapbox key under Settings → Providers & API keys.', 'geo-maps')),
             array('h', 'builders-others', __('Bricks, Divi, WPBakery and Oxygen', 'geo-maps')),
             array('pro', __('Pro adds a MatrixMap element to Bricks, Divi (4 and 5), WPBakery and Oxygen: pick a map, set a height. Oxygen: “+ Add” → Other → MatrixMap.', 'geo-maps')),
@@ -555,7 +556,8 @@ final class Docs
                 array('<code>matrixmap_region_maps</code>', __('Add or change region maps in the map library.', 'geo-maps')),
                 array('<code>matrixmap_pre_geocode</code>', __('Short-circuit an address lookup (custom providers, tests).', 'geo-maps')),
                 array('<code>matrixmap_client_ip</code>', __('Filter the visitor IP address used for rate limits.', 'geo-maps')),
-                array('<code>matrixmap_pro_url</code>', __('Change the “Get MatrixMap Pro” link.', 'geo-maps')),
+                array('<code>matrixmap_pro_url</code>', __('Change the “Get MatrixMap Pro” link (URL, and where it is shown).', 'geo-maps')),
+                array('<code>matrixmap_show_upgrade_prompts</code>', __('Return false to hide the prompts about Pro that depend on what a site does, for example on client sites.', 'geo-maps')),
                 array('<code>matrixmap_settings_sections</code>, <code>matrixmap_tools_sections</code>, <code>matrixmap_admin_nav</code>', __('Add sections and navigation to the admin screens.', 'geo-maps')),
                 array('<code>matrixmap_settings_defaults</code>', __('Change default settings (for example on every new site of a network).', 'geo-maps')),
                 array('<code>matrixmap_settings_export</code>, <code>matrixmap_settings_import</code>', __('Add your own data to the settings file, and read it back on import.', 'geo-maps')),

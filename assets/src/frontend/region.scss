@@ -265,7 +265,8 @@
 		text-align: start;
 	}
 
-	td {
+	td,
+	thead th:last-child {
 		text-align: end;
 		font-variant-numeric: tabular-nums;
 	}
@@ -365,6 +366,7 @@
 .mm-region__details-title {
 	margin: 0 0 4px;
 	font-size: 1.15em;
+	font-weight: 700;
 	line-height: 1.3;
 
 	&:focus {

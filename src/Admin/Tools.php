@@ -69,6 +69,7 @@ final class Tools
             'external_id' => __('Reference ID', 'geo-maps'),
             'hours' => __('Opening hours (e.g. Mon-Fri 09:00-17:00; Sat 10:00-14:00)', 'geo-maps'),
             'detail' => __('Extra detail (column name as the label)', 'geo-maps'),
+            'social' => __('Social links (web addresses)', 'geo-maps'),
         );
     }
 
@@ -213,7 +214,7 @@ final class Tools
             echo '<h2 class="mm-section__title">' . esc_html($s['label']) . (!empty($s['pro']) && !UI::pro() ? ' <span class="mm-badge mm-badge--pro">' . esc_html__('Pro', 'geo-maps') . '</span>' : '') . (isset($docs[$current]) ? ' ' . UI::learn_more($docs[$current][0], $docs[$current][1]) : '') . '</h2>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- learn_more() returns escaped HTML.
 
             if (empty($s['render'])) {
-                UI::pro_preview($s['preview'][0], $s['preview'][1], isset($s['preview'][2]) ? $s['preview'][2] : array());
+                UI::pro_preview($s['preview'][0], $s['preview'][1], isset($s['preview'][2]) ? $s['preview'][2] : array(), 'tools-' . $id);
             } else {
                 call_user_func($s['render']);
             }
@@ -230,8 +231,17 @@ final class Tools
         $job = self::job_get();
 
         if (is_array($job) && self::job_count($job) > 0) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+            if (!empty($_GET['mm_import_busy'])) {
+                echo '<div class="notice notice-warning inline"><p>' . esc_html__('This import is not finished. Start it or cancel it below, then choose the next source.', 'geo-maps') . '</p></div>';
+            }
             self::render_mapping($job);
             return;
+        }
+
+        $moment = Upsell::moment('import');
+        if ($moment) {
+            Upsell::print_moment($moment);
         }
 
         $sample = wp_nonce_url(admin_url('admin-post.php?action=matrixmap_tools&task=sample_csv'), 'matrixmap_tools');
@@ -345,7 +355,7 @@ final class Tools
             UI::card_start(__('Maintenance', 'geo-maps'));
             UI::row(__('Location index', 'geo-maps'), '<button type="submit" class="mm-btn mm-btn--secondary" name="task" value="rebuild_index">' . esc_html__('Rebuild index', 'geo-maps') . '</button>', __('Use if the store locator misses locations after a direct database import.', 'geo-maps'));
             /* translators: %s: number of cached addresses */
-            UI::row(__('Geocoding cache', 'geo-maps'), '<button type="submit" class="mm-btn mm-btn--secondary" name="task" value="clear_cache">' . esc_html__('Clear cache', 'geo-maps') . '</button>', sprintf(__('%s addresses are cached, so each is looked up only once. Clear it if an address moved.', 'geo-maps'), number_format_i18n(GeocodeCache::count())));
+            UI::row(__('Geocoding cache', 'geo-maps'), '<button type="submit" class="mm-btn mm-btn--secondary" name="task" value="clear_cache">' . esc_html__('Clear cache', 'geo-maps') . '</button>', sprintf(/* translators: %s: number of addresses */ _n('%s address is cached, so it is looked up only once. Clear it if the address moved.', '%s addresses are cached, so each is looked up only once. Clear it if an address moved.', GeocodeCache::count(), 'geo-maps'), number_format_i18n(GeocodeCache::count())));
             UI::card_end();
             ?>
         </form>
@@ -373,7 +383,7 @@ final class Tools
             /* translators: %s: file name */
             sprintf(__('Import %s', 'geo-maps'), $job['name']),
             /* translators: %s: number of rows */
-            sprintf(__('%s rows. Match each column in your file to a location field, then start the import.', 'geo-maps'), number_format_i18n($total)),
+            sprintf(_n('%s row. Match each column in your file to a location field, then start the import.', '%s rows. Match each column in your file to a location field, then start the import.', $total, 'geo-maps'), number_format_i18n($total)),
             'mm-import'
         );
         $start = isset($job['next']) ? min(max(0, (int) $job['next']), $total) : 0;
@@ -793,6 +803,7 @@ final class Tools
             'country' => array('country', 'country code'),
             'address' => array('address', 'full address', 'location address'),
             'lat' => array('lat', 'latitude', 'y'),
+            'social' => array('social', 'social links', 'facebook', 'instagram', 'twitter', 'linkedin', 'youtube', 'tiktok', 'pinterest'),
             'lng' => array('lng', 'lon', 'long', 'longitude', 'x'),
             'phone' => array('phone', 'telephone', 'tel', 'phone number'),
             'email' => array('email', 'e-mail', 'mail'),
@@ -808,7 +819,8 @@ final class Tools
         foreach ($header as $i => $h) {
             $h = strtolower(trim(preg_replace('/[_\-]+/', ' ', (string) $h)));
             foreach ($aliases as $field => $names) {
-                if (in_array($h, $names, true) && !in_array($field, $out, true)) {
+                // Each field once, except social links: separate Facebook and Instagram columns add up.
+                if (in_array($h, $names, true) && ('social' === $field || !in_array($field, $out, true))) {
                     $out[$i] = $field;
                     break;
                 }
@@ -860,6 +872,9 @@ final class Tools
                 if ('detail' === $field) {
                     // Several columns can be details; the header is the label.
                     $data['details'][] = array('label' => isset($job['header'][$i]) ? (string) $job['header'][$i] : '', 'value' => self::csv_unsafe(trim((string) $row[$i])));
+                } elseif ('social' === $field) {
+                    // Separate Facebook, Instagram… columns add up.
+                    $data['social'][] = self::csv_unsafe(trim((string) $row[$i]));
                 } else {
                     $data[$field] = self::csv_unsafe(trim((string) $row[$i]));
                 }
@@ -906,6 +921,10 @@ final class Tools
         $next = isset($wait) ? $wait : $offset + $done;
 
         if ($next >= self::job_count($job)) {
+            // Marked as imported only now: opening the mapping screen imports nothing.
+            if (!empty($job['store_source'])) {
+                \MatrixMap\Migrate\Migrate::store_imported((string) $job['store_source']);
+            }
             self::job_delete();
         } else {
             // Remember the progress: an import interrupted (page closed, connection lost) continues here.
@@ -1522,7 +1541,7 @@ final class Tools
         }
         $labels = array_keys($labels);
 
-        fputcsv($out, array_map(array(__CLASS__, 'csv_safe'), array_merge(array('external_id', 'name', 'street', 'city', 'state', 'postcode', 'country', 'latitude', 'longitude', 'phone', 'email', 'website', 'category', 'hours', 'description'), $labels)), ',', '"', '\\');
+        fputcsv($out, array_map(array(__CLASS__, 'csv_safe'), array_merge(array('external_id', 'name', 'street', 'city', 'state', 'postcode', 'country', 'latitude', 'longitude', 'phone', 'email', 'website', 'category', 'hours', 'description', 'social'), $labels)), ',', '"', '\\');
 
         foreach (self::export_chunks(true) as $ids) {
             foreach ($ids as $id) {
@@ -1557,6 +1576,7 @@ final class Tools
                     implode(', ', wp_list_pluck($loc['categories'], 'name')),
                     implode('; ', $hours),
                     wp_strip_all_tags($loc['content']),
+                    implode(' ', $loc['social']),
                 ), array_values($extra))), ',', '"', '\\');
                 ++$count;
             }

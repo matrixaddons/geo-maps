@@ -53,7 +53,7 @@ async function create( container, ctx ) {
 	window.gm_authFailure = () => emit( 'error', 'Google Maps rejected the API key. Check that the Maps JavaScript API is enabled and that this domain is allowed in the key\'s restrictions.' );
 
 	const maps = await loadGoogle( settings.google || {} );
-	const { Map, InfoWindow } = await maps.importLibrary( 'maps' );
+	const { Map, InfoWindow, TrafficLayer, TransitLayer } = await maps.importLibrary( 'maps' );
 	const { AdvancedMarkerElement } = await maps.importLibrary( 'marker' );
 
 	let gestureHandling = 'cooperative';
@@ -72,9 +72,17 @@ async function create( container, ctx ) {
 		gestureHandling,
 		disableDefaultUI: true,
 		scaleControl: !! ( payload.controls && payload.controls.scale ),
+		streetViewControl: !! ( payload.google && payload.google.streetView ),
 		clickableIcons: false,
 		keyboardShortcuts: true,
 	} );
+
+	if ( payload.google && payload.google.traffic && TrafficLayer ) {
+		new TrafficLayer().setMap( map );
+	}
+	if ( payload.google && payload.google.transit && TransitLayer ) {
+		new TransitLayer().setMap( map );
+	}
 
 	map.addListener( 'idle', () => emit( 'moveend' ) );
 	map.addListener( 'click', ( e ) => e.latLng && emit( 'click', [ e.latLng.lng(), e.latLng.lat() ] ) );

@@ -61,7 +61,7 @@ function Edit( { attributes, setAttributes } ) {
 	};
 
 	const options = [ { label: __( '— Choose a map —', 'geo-maps' ), value: '0' } ].concat(
-		( maps || [] ).map( ( m ) => ( { label: ( m.title && ( m.title.raw || m.title.rendered ) ) || '#' + m.id + ( m.status === 'draft' ? ' (' + __( 'draft', 'geo-maps' ) + ')' : '' ), value: String( m.id ) } ) )
+		( maps || [] ).map( ( m ) => ( { label: ( ( m.title && ( m.title.raw || m.title.rendered ) ) || '#' + m.id ) + ( m.status === 'draft' ? ' (' + __( 'draft', 'geo-maps' ) + ')' : '' ), value: String( m.id ) } ) )
 	);
 
 	const builder = editing && mapId ? (

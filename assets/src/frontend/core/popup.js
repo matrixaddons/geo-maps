@@ -16,6 +16,18 @@ const ICONS = {
 };
 
 /**
+ * The name to show for a social link: the network's, or the site's own address.
+ *
+ * @param {string} url Web address.
+ * @return {string} Name.
+ */
+function socialName( url ) {
+	const host = url.replace( /^https?:\/\/(www\.|m\.)?/i, '' ).split( /[/?#]/ )[ 0 ].toLowerCase();
+	const known = { 'facebook.com': 'Facebook', 'fb.com': 'Facebook', 'instagram.com': 'Instagram', 'x.com': 'X', 'twitter.com': 'X', 'linkedin.com': 'LinkedIn', 'youtube.com': 'YouTube', 'youtu.be': 'YouTube', 'tiktok.com': 'TikTok', 'pinterest.com': 'Pinterest', 'threads.net': 'Threads', 'threads.com': 'Threads', 'bsky.app': 'Bluesky', 'whatsapp.com': 'WhatsApp', 'wa.me': 'WhatsApp', 'yelp.com': 'Yelp', 'tripadvisor.com': 'Tripadvisor' };
+	return known[ host ] || host;
+}
+
+/**
  * Open/closed badge.
  *
  * @param {Object} marker Marker (location).
@@ -126,6 +138,10 @@ export function popupContent( marker, ctx ) {
 			dl.appendChild( row );
 		} );
 		body.appendChild( dl );
+	}
+
+	if ( ! minimal && Array.isArray( marker.social ) && marker.social.length ) {
+		body.appendChild( h( 'p', { class: 'mm-popup__social' }, marker.social.map( ( url ) => h( 'a', { href: url, target: '_blank', rel: 'noopener', text: socialName( url ) } ) ) ) );
 	}
 
 	if ( ! minimal && marker.hours && Object.keys( marker.hours ).length ) {

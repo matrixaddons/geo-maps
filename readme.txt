@@ -4,7 +4,7 @@ Tags: maps, google maps, openstreetmap, store locator, interactive map
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.1.0
+Stable tag: 2.2.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -14,16 +14,16 @@ Maps that work without an API key: a visual map builder, a store locator with "n
 
 **[Live demo](https://playground.wordpress.net/?blueprint-url=https://ps.w.org/geo-maps/assets/blueprints/blueprint.json) | [Website](https://matrixaddons.com/plugins/matrixmap/) | [Features](https://matrixaddons.com/plugins/matrixmap/#features) | [Free vs Pro](https://matrixaddons.com/plugins/matrixmap/#compare) | [MatrixMap Pro](https://matrixaddons.com/plugins/matrixmap/#pro) | [Pricing](https://matrixaddons.com/plugins/matrixmap/#pricing) | [FAQ](https://matrixaddons.com/plugins/matrixmap/#faq) | [Documentation](https://matrixaddons.com/plugins/matrixmap/docs/) | [Support](https://wordpress.org/support/plugin/geo-maps/)**
 
-MatrixMap puts maps on your site in minutes, with **no API key, no account and no monthly bill**. Build a map with a visual editor, add a store locator that finds the nearest locations, or colour a world or country map with your own data. Everything is keyboard and screen reader accessible, and nothing loads until a visitor needs it. See it on the [MatrixMap website](https://matrixaddons.com/plugins/matrixmap/) or try the [live demo](https://playground.wordpress.net/?blueprint-url=https://ps.w.org/geo-maps/assets/blueprints/blueprint.json) right in your browser.
+MatrixMap puts maps on your site in minutes, with **no API key, no account and no monthly bill**. Build a map with a visual editor, add a store locator that finds the nearest locations, or colour a world or country map with your own data. Maps, popups and lists can be used with the keyboard, and every map has a text alternative. Nothing loads until a visitor needs it. See it on the [MatrixMap website](https://matrixaddons.com/plugins/matrixmap/) or try the [live demo](https://playground.wordpress.net/?blueprint-url=https://ps.w.org/geo-maps/assets/blueprints/blueprint.json) right in your browser.
 
 https://www.youtube.com/watch?v=v6zfepSNTt8
 
 = Why MatrixMap? =
 
-* **Free where others charge:** the store locator, 302 region maps (including every US county), CSV import and plugin importers are all in the free plugin, with no limits on maps, places or locations and no MatrixMap branding on your maps.
+* **Free where others charge:** the store locator, 302 region maps (including every US county), CSV import and plugin importers are all in the free plugin, with no limits on the number of maps or locations (up to 5,000 places on one map) and no MatrixMap branding on your maps.
 * **No API key, no billing account:** maps and address search work the moment you activate the plugin.
-* **Built for real sites:** privacy-friendly loading, keyboard and screen-reader support, and a 2 KB loader that only runs on pages with a map.
-* **Easy to switch:** bring your maps and stores over from eight popular map and store locator plugins without editing a page.
+* **Built for real sites:** privacy-friendly loading, keyboard and screen-reader support, and a loader of about 4 KB that only runs on pages with a map.
+* **Easy to switch:** bring your maps and stores over from nine popular map and store locator plugins without editing a page.
 
 = Made for =
 
@@ -36,7 +36,7 @@ See them in action on the [MatrixMap website](https://matrixaddons.com/plugins/m
 
 * **Maps with places.** Search for an address or click the map to drop a pin, then add a title, text, a photo, a phone number and a link. Group places into categories that visitors can filter. Draw areas, routes and circles, or add a GPX, KML or GeoJSON file.
 * **Store locator.** Keep your stores, dealers or offices as locations, each with an address, contact details, opening hours and your own extra details (parking, languages, services…). Visitors search by address or postcode, with suggestions from your own locations as they type, or tap **Use my location**. They get the nearest locations with distances, "Open now" status and one-tap directions in Google Maps, Apple Maps or Waze. Add the **Store Search** box to your home page or header to send visitors straight to their results.
-* **World and region maps — 302 of them, all free.** The world, continents, US states and **the counties of every US state**, the regions of 200+ countries, and detailed maps: French departments, Italian and Spanish provinces, UK local authorities, German districts, Indian districts, Australian council areas, New Zealand districts, Canadian economic regions, Philippine provinces and the municipalities of every Mexican state. Click a region on the map to edit it, edit many at once, or paste a spreadsheet to make a data map with a legend. Regions can link to pages or open their details in a panel beside the map or a pop-up window. Region maps load no map tiles and use no third-party services.
+* **World and region maps — 302 of them, all free.** The world and its continents, US states and **the counties of every US state**, the regions of 200+ countries, and detailed maps: French departments, Italian and Spanish provinces, UK local authorities, German districts, Indian districts, Australian council areas, New Zealand districts, Canadian economic regions, Philippine provinces and the municipalities of every Mexican state. Click a region on the map to edit it, edit many at once, or paste a spreadsheet to make a data map with a legend. Regions can link to pages or open their details in a panel beside the map or a pop-up window. Region maps load no map tiles and use no third-party services.
 * **Region maps your way:** colour each region or colour by value, bubbles, labels, groups, lines between places, pins or dots or your own icons with names beside them, start zoomed in on the regions you choose, limit the zoom, tooltips on hover or on click, and fade or hide regions without data.
 
 = Built around location =
@@ -54,10 +54,10 @@ Maps use free OpenStreetMap-based map styles (from OpenFreeMap) out of the box. 
 = Privacy, speed and accessibility =
 
 * **GDPR-friendly loading:** with a consent plugin (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs, iubenda), maps wait for consent. Visitors can also load a single map with one click.
-* **Nothing on pages without a map.** On pages with a map, a 2 KB loader waits until the map scrolls into view and then loads only what that map needs.
+* **Nothing on pages without a map.** On pages with a map, a loader of about 4 KB waits until the map scrolls into view and then loads only what that map needs.
 * **Accessible:** markers are real buttons, popups can be used with the keyboard, and each map comes with a text list of its places. Region maps include a data table.
 * **No scroll-jacking:** on mobile the page scrolls normally and two fingers move the map; on desktop, Ctrl + scroll zooms.
-* Works with WP Rocket, LiteSpeed Cache, Perfmatters, SiteGround Optimizer, Autoptimize and FlyingPress.
+* Tells WP Rocket, LiteSpeed Cache, Perfmatters, SiteGround Optimizer, Autoptimize and FlyingPress not to delay or combine its loader.
 
 = Made for the block editor =
 
@@ -84,7 +84,7 @@ MatrixMap imports your maps from **WP Go Maps**, **MapPress**, **WP Maps** and *
 
 = MatrixMap Pro =
 
-Everything above is free, with no limits on maps, places or locations. **[MatrixMap Pro](https://matrixaddons.com/plugins/matrixmap/#pro)** is an optional add-on for businesses that want their maps to bring in customers. It adds:
+Everything above is free, with no limits on the number of maps or locations (up to 5,000 places on one map). **[MatrixMap Pro](https://matrixaddons.com/plugins/matrixmap/#pro)** is an optional add-on for businesses that want their maps to bring in customers. It adds:
 
 https://www.youtube.com/watch?v=cWmUX5fn68k
 
@@ -162,7 +162,7 @@ Up to 5,000 places per map, and thousands of store locator locations. Maps with 
 
 = Can I show a map of only my country? =
 
-Yes. Add a Region Map block and pick one of 302 maps: the world, continents, US states and counties, the states, provinces and regions of 200+ countries, or a detailed map (departments, provinces, districts, municipalities). You can also start the map zoomed in on the regions you choose, or hide the regions you don't use.
+Yes. Add a Region Map block and pick one of 302 maps: the world and its continents, US states and counties, the states, provinces and regions of 200+ countries, or a detailed map (departments, provinces, districts, municipalities). You can also start the map zoomed in on the regions you choose, or hide the regions you don't use.
 
 = Can I move maps to another site? =
 
@@ -259,6 +259,27 @@ Bundled libraries: MapLibre GL JS (BSD-3-Clause), Leaflet (BSD-2-Clause), Superc
 
 == Changelog ==
 
+= 2.2.0 =
+* New: social links on locations (location editor and CSV), shown in map popups.
+* New: Google Maps options per map: live traffic, public transport lines and a Street View button. Off by default.
+* New: the Store Locator and Region Map blocks can use a saved map.
+* New: popups can step through places at the same spot.
+* New: suggestions on MatrixMap's own screens that fit what your site does, each dismissible and quiet for 14 days after. A filter (`matrixmap_show_upgrade_prompts`) turns them off.
+* Fixed: pasting into a region map split on commas, so "1,234,567" became 1 and "Washington, DC" coloured Washington state.
+* Fixed: full-screen maps stayed small on block themes.
+* Fixed: an import of more than 5,000 places reported success and silently kept 5,000; it now says so.
+* Fixed: Leaflet clusters were wrong until the map moved.
+* Fixed: Enter in a builder field reloaded the editor.
+* Fixed: places added by clicking could be titled with a house number.
+* Fixed: choosing a second store locator to import overwrote an unfinished import, and marked the store locator as imported before anything was imported.
+* Fixed: a store locator search made while another ran was dropped; the newest now runs next.
+* Fixed: Esc did not close a popup opened with the mouse.
+* Fixed: on narrower screens most of the builder's side panel was cut off, and the new-map footer covered templates on short screens.
+* Fixed: CSV import now keeps separate Facebook and Instagram columns.
+* Improved: map popups no longer sit under the attribution bar or the map buttons.
+* Improved: "Create page" now tells you the page is a draft to publish.
+* Improved: the readme and screens state the limits as they are: 5,000 places per map, a loader of about 4 KB.
+
 = 2.1.0 =
 * New: one-click sample data on the Dashboard (10 locations, a store locator, a places map and a data map), removed again with one click.
 * New: builder undo and redo (buttons and Ctrl/⌘ + Z), and Ctrl/⌘ + S to save.
@@ -335,6 +356,9 @@ MatrixMaps is now **MatrixMap**, rebuilt from the ground up. All 1.x maps, short
 * Initial release.
 
 == Upgrade Notice ==
+
+= 2.2.0 =
+Social links, Google traffic and transit options, saved maps in the locator and region blocks, and fixes for region paste, full-screen maps and imports.
 
 = 2.1.0 =
 Sample data, builder undo/redo, map legends, locator sorting and sharing, embedding and many reliability fixes. Update MatrixMap Pro to 1.1.0 with it.

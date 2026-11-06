@@ -162,7 +162,7 @@ final class EditorData
     {
         return array(
             'pro' => UI::pro(),
-            'proUrl' => UI::pro_url(),
+            'proUrl' => UI::pro_url('blocks'),
             'locationsUrl' => admin_url('edit.php?post_type=' . LocationPostType::POST_TYPE),
             'addLocationUrl' => admin_url('post-new.php?post_type=' . LocationPostType::POST_TYPE),
             'units' => (string) Settings::get('units'),
@@ -202,7 +202,9 @@ final class EditorData
         return apply_filters('matrixmap_builder_data', array(
             'rest' => esc_url_raw(rest_url('matrixmap/v1/')),
             'pro' => UI::pro(),
-            'proUrl' => UI::pro_url(),
+            'proUrl' => UI::pro_url('builder'),
+            'proTeasers' => Upsell::enabled(),
+            'proAssurance' => UI::pro_assurance(),
             'detailLabels' => self::detail_labels(),
             'defaults' => array(
                 'markers' => MapConfig::defaults('markers'),

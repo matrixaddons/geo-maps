@@ -28,6 +28,8 @@ final class MapEditor
     public static function init()
     {
         add_action('edit_form_after_title', array(__CLASS__, 'render'));
+        add_action('enqueue_block_editor_assets', array(__CLASS__, 'page_created_notice'));
+        add_action('admin_notices', array(__CLASS__, 'page_created_notice'));
         add_action('edit_form_top', array(__CLASS__, 'editbar'));
 
         // Revisions keep the whole map, not only its title (WordPress 6.4+).
@@ -308,8 +310,32 @@ final class MapEditor
             wp_die(esc_html($page->get_error_message()));
         }
 
-        wp_safe_redirect(admin_url('post.php?action=edit&post=' . (int) $page));
+        wp_safe_redirect(admin_url('post.php?action=edit&post=' . (int) $page . '&mm_page_created=1'));
         exit;
+    }
+
+    /**
+     * After "Create page": the map is on a draft, so say that it isn't live yet.
+     *
+     * @since 2.2.0
+     */
+    public static function page_created_notice()
+    {
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+        if (empty($_GET['mm_page_created']) || empty($_GET['post']) || 'draft' !== get_post_status(absint($_GET['post']))) {
+            return;
+        }
+
+        $text = __('Your map is on this draft page. Publish the page to put it live.', 'geo-maps');
+
+        if ('enqueue_block_editor_assets' === current_action()) {
+            wp_add_inline_script('wp-notices', 'wp.domReady(function(){wp.data.dispatch("core/notices").createInfoNotice(' . wp_json_encode($text) . ',{id:"matrixmap-page-created"});});');
+            wp_enqueue_script('wp-dom-ready');
+            return;
+        }
+
+        // Only the classic editor has this hook's notices on screen.
+        echo '<div class="notice notice-info is-dismissible"><p>' . esc_html($text) . '</p></div>';
     }
 
     /**

@@ -186,6 +186,11 @@ export default function MapBuilder( { mapId, mode = 'page', isNew = false, templ
 	// redo outside text fields, where the browser's own text undo keeps working.
 	useEffect( () => {
 		const onKey = ( e ) => {
+			// Enter in a builder field must not submit the page's post form (it saved and reloaded the editor).
+			if ( e.key === 'Enter' && e.target && e.target.tagName === 'INPUT' && e.target.form && e.target.form.id === 'post' && e.target.closest( '.mm-b' ) ) {
+				e.preventDefault();
+				return;
+			}
 			if ( ! ( e.metaKey || e.ctrlKey ) || e.altKey ) {
 				return;
 			}

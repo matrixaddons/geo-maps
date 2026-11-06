@@ -452,6 +452,13 @@ final class Migrate
         } elseif ('stores' === $task) {
             $source = isset($_POST['source']) ? sanitize_key(wp_unslash($_POST['source'])) : '';
 
+            // An unfinished import would be overwritten: finish or cancel it first.
+            $running = \MatrixMap\Admin\Tools::job_get();
+            if (is_array($running) && \MatrixMap\Admin\Tools::job_count($running) > 0) {
+                wp_safe_redirect(admin_url('admin.php?page=' . \MatrixMap\Admin\Tools::SLUG . '&section=import&mm_import_busy=1'));
+                exit;
+            }
+
             if (self::prepare_stores($source)) {
                 // Continue on the location import screen (preview, then batches with progress).
                 wp_safe_redirect(admin_url('admin.php?page=' . \MatrixMap\Admin\Tools::SLUG . '&section=import'));
@@ -511,13 +518,23 @@ final class Migrate
             }, $fields),
             'rows' => $values,
             'guess' => $fields,
+            'store_source' => $source_id,
         ));
 
+        return true;
+    }
+
+    /**
+     * A store locator's import ran to the end.
+     *
+     * @param string $source_id Store source.
+     * @since 2.2.0
+     */
+    public static function store_imported($source_id)
+    {
         $log = self::log();
         $log['stores'][$source_id] = time();
         self::save_log($log);
-
-        return true;
     }
 
     /**

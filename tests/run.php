@@ -1390,6 +1390,151 @@ if (!$mm_cr_pre_terms['Outlet']) {
     wp_delete_term((int) term_exists('Outlet', 'mm_location_category')['term_id'], 'mm_location_category');
 }
 
+// Upgrade prompts.
+$mm_up_url = \MatrixMap\Admin\UI::pro_url('header');
+mm_check('Pro link: names the screen it was clicked on and still lands on the pricing section', false !== strpos($mm_up_url, 'utm_content=header') && '#pricing' === substr($mm_up_url, -8), $mm_up_url);
+mm_check('Pro link: can land on what Pro does instead of the prices', '#pro' === substr(\MatrixMap\Admin\UI::pro_url('x', 'pro'), -4));
+mm_check('Pro link: without a source it stays valid', false !== strpos(\MatrixMap\Admin\UI::pro_url(), 'utm_content=general'));
+$mm_up_seen = null;
+$mm_up_filter = function ($url, $source) use (&$mm_up_seen) {
+    $mm_up_seen = $source;
+    return 'https://example.test/affiliate';
+};
+add_filter('matrixmap_pro_url', $mm_up_filter, 10, 2);
+mm_check('Pro link: the filter still replaces the URL and receives the source', 'https://example.test/affiliate' === \MatrixMap\Admin\UI::pro_url('docs') && 'docs' === $mm_up_seen);
+remove_filter('matrixmap_pro_url', $mm_up_filter, 10);
+$mm_up_prev = get_current_user_id();
+$mm_up_admin = get_users(array('role' => 'administrator', 'number' => 1, 'fields' => 'ID'));
+wp_set_current_user((int) $mm_up_admin[0]);
+$mm_up_ids = array();
+if (!\MatrixMap\Admin\UI::pro()) {
+    // Only count what this test adds: the site may already hold locations.
+    $mm_up_base = (int) wp_count_posts('mm_location')->publish;
+    for ($mm_up_i = $mm_up_base; $mm_up_i < 3; $mm_up_i++) {
+        $mm_up_ids[] = wp_insert_post(array('post_type' => 'mm_location', 'post_status' => 'publish', 'post_title' => 'Prompt test ' . $mm_up_i));
+    }
+    wp_cache_flush();
+    $mm_up_old_dismissed = get_user_option('matrixmap_dismissed');
+    $mm_up_old_quiet = get_user_option('matrixmap_prompts_quiet');
+    delete_user_option(get_current_user_id(), 'matrixmap_dismissed');
+    delete_user_option(get_current_user_id(), 'matrixmap_prompts_quiet');
+    $mm_up_m = \MatrixMap\Admin\Upsell::moment('locations');
+    mm_check('prompts: a site with locations gets one on the Locations list', is_array($mm_up_m) && in_array($mm_up_m['id'], array('pro_pages', 'pro_sync'), true));
+    add_filter('matrixmap_show_upgrade_prompts', '__return_false');
+    mm_check('prompts: the filter turns them off', null === \MatrixMap\Admin\Upsell::moment('locations'));
+    remove_filter('matrixmap_show_upgrade_prompts', '__return_false');
+    update_user_option(get_current_user_id(), 'matrixmap_dismissed', array($mm_up_m['id']));
+    mm_check('prompts: a dismissed prompt stays away', null === \MatrixMap\Admin\Upsell::moment('locations'));
+    delete_user_option(get_current_user_id(), 'matrixmap_dismissed');
+    \MatrixMap\Admin\Upsell::on_dismiss('pro_analytics');
+    mm_check('prompts: one dismissal silences the others for a while', \MatrixMap\Admin\Upsell::quiet() && null === \MatrixMap\Admin\Upsell::moment('locations'));
+    delete_user_option(get_current_user_id(), 'matrixmap_prompts_quiet');
+    \MatrixMap\Admin\Upsell::on_dismiss('welcome');
+    mm_check('prompts: dismissing an ordinary notice does not count', !\MatrixMap\Admin\Upsell::quiet());
+    if ($mm_up_old_dismissed) {
+        update_user_option(get_current_user_id(), 'matrixmap_dismissed', $mm_up_old_dismissed);
+    }
+    if ($mm_up_old_quiet) {
+        update_user_option(get_current_user_id(), 'matrixmap_prompts_quiet', $mm_up_old_quiet);
+    }
+    foreach ($mm_up_ids as $mm_up_id) {
+        wp_delete_post($mm_up_id, true);
+    }
+} else {
+    mm_check('prompts: none at all when Pro is active', null === \MatrixMap\Admin\Upsell::moment('locations') && !\MatrixMap\Admin\Upsell::enabled());
+}
+$mm_up_first = get_option(\MatrixMap\Admin\Upsell::FIRST_SEEN);
+$mm_up_review = get_user_option('matrixmap_dismissed');
+delete_user_option(get_current_user_id(), 'matrixmap_dismissed');
+update_option(\MatrixMap\Admin\Upsell::FIRST_SEEN, time() - 3 * DAY_IN_SECONDS, false);
+mm_check('review: not asked for in the first week', !\MatrixMap\Admin\Upsell::suggest_review(1));
+update_option(\MatrixMap\Admin\Upsell::FIRST_SEEN, time() - 8 * DAY_IN_SECONDS, false);
+mm_check('review: not asked for unless a map is on a page', !\MatrixMap\Admin\Upsell::suggest_review(0));
+mm_check('review: asked for after a week with a map in use', \MatrixMap\Admin\Upsell::suggest_review(1));
+false === $mm_up_first ? delete_option(\MatrixMap\Admin\Upsell::FIRST_SEEN) : update_option(\MatrixMap\Admin\Upsell::FIRST_SEEN, $mm_up_first, false);
+if ($mm_up_review) {
+    update_user_option(get_current_user_id(), 'matrixmap_dismissed', $mm_up_review);
+}
+wp_set_current_user($mm_up_prev);
+
+// Functional audit 2026-11 (real browser): regressions in built assets and text.
+$mm_fa_read = function ($f) {
+    return (string) file_get_contents(MATRIXMAP_DIR . $f); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+};
+$mm_fa_css = $mm_fa_read('build/frontend/app.css');
+mm_check('full screen: the pseudo mode beats a block theme\'s content width', (bool) preg_match('/\.is-pseudo-fullscreen\{[^}]*max-width:none!important/', $mm_fa_css));
+mm_check('full screen: the map fills the height left by the list and filters', (bool) preg_match('/\.matrixmap:fullscreen[^{]*\{[^}]*flex-direction:column/', $mm_fa_css) && false !== strpos($mm_fa_css, 'has-list--below'));
+mm_check('full screen: the locator shares the height too', false !== strpos($mm_fa_read('build/frontend/locator.css'), 'mm-locator.is-fullscreen'));
+mm_check('locator: selects keep their arrow on themes that style selects', (bool) preg_match('/\.mm-loc__select\{[^}]*appearance:auto/', $mm_fa_read('build/frontend/locator.css')));
+mm_check('Leaflet: clusters are drawn again after the map fits its places', (bool) preg_match('/this\.fitInitial\(\);\s*(\/\/[^\n]*\s*)*if \( this\.clustering \) \{\s*this\.renderClusters/', $mm_fa_read('assets/src/frontend/core/MapView.js')));
+$mm_fa_src = $mm_fa_read('assets/src/admin/builder/panels/RegionEditor.js');
+mm_check('region paste: tabs win over commas and semicolons ("1,234,567", "Korea, South")', false !== strpos($mm_fa_src, "line.includes( '\\t' ) ? /\\t/ : line.includes( ';' ) ? /;/"));
+mm_check('builder: an address that starts with a house number keeps its street in the title', false !== strpos($mm_fa_read('assets/src/admin/builder/util.js'), '/^\\d+[a-z]?$/i.test( parts[ 0 ] )'));
+mm_check('builder: Enter in a field does not submit the post form', false !== strpos($mm_fa_read('assets/src/admin/builder/MapBuilder.js'), "e.target.form.id === 'post'"));
+mm_check('builder import: rows beyond the place limit are reported, not silently dropped', false !== strpos($mm_fa_read('assets/src/admin/builder/panels/Data.js'), 'data.maxMarkers') && \MatrixMap\Maps\MapConfig::MAX_MARKERS > 0);
+foreach (array('builder.js' => 'admin/builder.js') as $mm_fa_b) {
+    mm_check('built builder has the place limit message', false !== strpos($mm_fa_read('build/' . $mm_fa_b), 'A map holds up to'));
+}
+
+// Store Locator and Region Map blocks can show a saved map.
+$mm_sb_id = wp_insert_post(array('post_type' => 'geo-maps', 'post_status' => 'publish', 'post_title' => 'Saved locator test'));
+MapConfig::save($mm_sb_id, array_merge(MapConfig::defaults('locator'), array('type' => 'locator')));
+$mm_sb_plain = \MatrixMap\Blocks\Blocks::render_locator(array());
+$mm_sb_html = \MatrixMap\Blocks\Blocks::render_locator(array('map_id' => (string) $mm_sb_id));
+$mm_sb_title = function ($html) {
+    return false !== strpos($html, 'Saved locator test');
+};
+mm_check('Store Locator block: shows the chosen saved locator, and its default when none is chosen', $mm_sb_title($mm_sb_html) && !$mm_sb_title($mm_sb_plain), substr($mm_sb_html, 0, 300));
+$mm_sb_prev = get_current_user_id();
+$mm_sb_admin = get_users(array('role' => 'administrator', 'number' => 1, 'fields' => 'ID'));
+wp_set_current_user((int) $mm_sb_admin[0]);
+$mm_sb_req = new WP_REST_Request('GET', '/wp/v2/matrixmap-maps/' . $mm_sb_id);
+$mm_sb_req->set_param('context', 'edit');
+$mm_sb_res = rest_do_request($mm_sb_req)->get_data();
+mm_check('map type is in the REST API for the block pickers', isset($mm_sb_res['mm_type']) && 'locator' === $mm_sb_res['mm_type']);
+wp_set_current_user($mm_sb_prev);
+wp_delete_post($mm_sb_id, true);
+
+// 2.2.0: social links, Google options, store import queue.
+mm_check('social links: text becomes a clean list of web addresses', '["https://a.example/x","https://b.example"]' === \MatrixMap\Locations\Location::sanitize_social_json("https://a.example/x\nhttps://b.example https://a.example/x"));
+mm_check('social links: scripts and other schemes are dropped', '' === \MatrixMap\Locations\Location::sanitize_social_json('javascript:alert(1) data:text/html,x'));
+mm_check('social links: at most eight', 8 === count(json_decode(\MatrixMap\Locations\Location::sanitize_social_json(array_map(function ($n) {
+    return 'https://s' . $n . '.example';
+}, range(1, 12))), true)));
+$mm_sl = wp_insert_post(array('post_type' => \MatrixMap\Locations\LocationPostType::POST_TYPE, 'post_status' => 'publish', 'post_title' => 'Social test'));
+\MatrixMap\Locations\Location::save_fields($mm_sl, array('lat' => 1, 'lng' => 2, 'social' => array('https://www.instagram.com/x', 'https://facebook.com/y')));
+$mm_sl_loc = \MatrixMap\Locations\Location::get($mm_sl);
+mm_check('social links: stored and read back', array('https://www.instagram.com/x', 'https://facebook.com/y') === $mm_sl_loc['social']);
+\MatrixMap\Locations\Location::save_fields($mm_sl, array('details' => array(array('label' => 'Zzq parking', 'value' => 'Yes'))));
+$mm_sl_out = fopen('php://temp', 'w+'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+\MatrixMap\Admin\Tools::export_to('csv', $mm_sl_out);
+rewind($mm_sl_out);
+$mm_sl_head = array_map(function ($c) {
+    return ltrim((string) $c, "\xEF\xBB\xBF");
+}, (array) fgetcsv($mm_sl_out, 0, ',', '"', '\\'));
+$mm_sl_row = array();
+while (($mm_sl_csv = fgetcsv($mm_sl_out, 0, ',', '"', '\\')) !== false) {
+    if (count($mm_sl_head) === count($mm_sl_csv) && 'Social test' === $mm_sl_csv[array_search('name', $mm_sl_head, true)]) {
+        $mm_sl_row = array_combine($mm_sl_head, $mm_sl_csv);
+    }
+}
+fclose($mm_sl_out); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+mm_check('social links: exported in their own column, and details stay under their label', isset($mm_sl_row['social'], $mm_sl_row['Zzq parking']) && 'https://www.instagram.com/x https://facebook.com/y' === $mm_sl_row['social'] && 'Yes' === $mm_sl_row['Zzq parking'], wp_json_encode($mm_sl_row));
+mm_check('social links: separate Facebook and Instagram columns are both matched', array('social', 'social', 'title') === array_values(\MatrixMap\Admin\Tools::guess(array('Facebook', 'Instagram', 'Name'))));
+mm_check('locator: a queued address search waits for the one-a-second address lookup', false !== strpos((string) file_get_contents(MATRIXMAP_DIR . 'build/frontend/locator.js'), '1100')); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+wp_delete_post($mm_sl, true);
+$mm_gd = MapConfig::defaults('markers');
+mm_check('Google options are off by default', array('traffic' => false, 'transit' => false, 'streetView' => false) === $mm_gd['googleLayers']);
+$mm_gs = MapConfig::sanitize(array_merge($mm_gd, array('type' => 'markers', 'googleLayers' => array('traffic' => '1', 'transit' => 0, 'streetView' => true, 'bad' => 'x'))));
+mm_check('Google options: kept as true or false, nothing else', array('traffic' => true, 'transit' => false, 'streetView' => true) === $mm_gs['googleLayers']);
+$mm_sq_log = get_option('matrixmap_migrated');
+\MatrixMap\Migrate\Migrate::store_imported('test-source');
+$mm_sq_new = \MatrixMap\Migrate\Migrate::log();
+mm_check('store import: marked as imported only by the finished import', !empty($mm_sq_new['stores']['test-source']));
+false === $mm_sq_log ? delete_option('matrixmap_migrated') : update_option('matrixmap_migrated', $mm_sq_log);
+$mm_cb = \MatrixMap\Admin\Compare::buyers();
+mm_check('Free vs Pro: three buyers, each with points', 3 === count($mm_cb) && 4 === count($mm_cb['network']['points']));
+
 printf("\n%d passed, %d failed\n", $GLOBALS['mm_t']['pass'], $GLOBALS['mm_t']['fail']);
 if ($GLOBALS['mm_t']['fail']) {
     exit(1);

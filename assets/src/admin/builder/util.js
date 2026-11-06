@@ -128,7 +128,9 @@ export function reverse( lat, lng ) {
  * @return {string} First part.
  */
 export function shortLabel( label ) {
-	return String( label || '' ).split( ',' )[ 0 ].trim();
+	const parts = String( label || '' ).split( ',' ).map( ( p ) => p.trim() );
+	// "6, Rue Meslay, Paris" (a house number first, as OpenStreetMap writes it) → "6 Rue Meslay", not "6".
+	return /^\d+[a-z]?$/i.test( parts[ 0 ] ) && parts[ 1 ] ? parts[ 0 ] + ' ' + parts[ 1 ] : parts[ 0 ];
 }
 
 /**

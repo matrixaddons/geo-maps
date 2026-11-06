@@ -1,7 +1,7 @@
 /**
  * Style: engine and basemap.
  */
-import { Notice } from '@wordpress/components';
+import { Notice, ToggleControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { data, radioKeys, radioTab } from '../util';
 
@@ -64,10 +64,34 @@ export default function Style( { config, update } ) {
 				</>
 			) : null }
 
+			{ effective === 'leaflet' && ( config.source || g.source ) === 'opnvkarte' ? (
+				<Notice status="info" isDismissible={ false }>
+					{ __( 'This tile server blocks the editor preview, so the preview stays empty. Visitors see the map as usual.', 'geo-maps' ) }
+				</Notice>
+			) : null }
+
 			{ effective === 'google' ? (
 				<Notice status="info" isDismissible={ false }>
 					{ __( 'The builder preview uses OpenStreetMap; visitors see Google Maps. Google map styling is managed with a Map ID in the Google Cloud Console.', 'geo-maps' ) }
 				</Notice>
+			) : null }
+
+			{ effective === 'google' ? (
+				<div className="mm-b-google-layers">
+					{ [
+						[ 'traffic', __( 'Live traffic', 'geo-maps' ) ],
+						[ 'transit', __( 'Public transport lines', 'geo-maps' ) ],
+						[ 'streetView', __( 'Street View button', 'geo-maps' ) ],
+					].map( ( [ key, label ] ) => (
+						<ToggleControl
+							key={ key }
+							__nextHasNoMarginBottom
+							label={ label }
+							checked={ !! ( config.googleLayers && config.googleLayers[ key ] ) }
+							onChange={ ( v ) => update( { googleLayers: { ...( config.googleLayers || {} ), [ key ]: v } } ) }
+						/>
+					) ) }
+				</div>
 			) : null }
 
 			<p>

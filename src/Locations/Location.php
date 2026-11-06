@@ -46,6 +46,7 @@ final class Location
             'mm_external_id' => array('type' => 'string', 'sanitize' => $text),
             'mm_icon_color' => array('type' => 'string', 'sanitize' => 'sanitize_hex_color'),
             'mm_details' => array('type' => 'string', 'sanitize' => array(__CLASS__, 'sanitize_details_json')),
+            'mm_social' => array('type' => 'string', 'sanitize' => array(__CLASS__, 'sanitize_social_json')),
         );
     }
 
@@ -100,6 +101,7 @@ final class Location
             'externalId' => $meta['external_id'],
             'iconColor' => $meta['icon_color'],
             'details' => self::decode($meta['details'], array()),
+            'social' => self::decode($meta['social'], array()),
             'categories' => $categories,
             'url' => is_post_type_viewable(LocationPostType::POST_TYPE) ? get_permalink($post) : '',
         );
@@ -419,6 +421,40 @@ final class Location
         }
 
         return $out ? wp_json_encode($out) : '';
+    }
+
+    /**
+     * Social links: a JSON list of web addresses, from JSON, a list or text with one or more
+     * addresses (one per line, or separated by spaces or commas).
+     *
+     * @param mixed $v Value.
+     * @return string JSON ('' when empty).
+     * @since 2.2.0
+     */
+    public static function sanitize_social_json($v)
+    {
+        $decoded = is_array($v) ? $v : json_decode((string) $v, true);
+        $parts = is_array($decoded) ? $decoded : array($v);
+        $out = array();
+
+        foreach ($parts as $part) {
+            foreach (preg_split('/\s+|,(?=https?:)/i', is_scalar($part) ? (string) $part : '', -1, PREG_SPLIT_NO_EMPTY) as $url) {
+                $url = rtrim($url, ',');
+                // "instagram.com/x" is fine; esc_url_raw() alone would turn any word into a link.
+                if (!preg_match('#^https?://#i', $url)) {
+                    if (!preg_match('#^[a-z0-9-]+(\.[a-z0-9-]+)+(/|$)#i', $url)) {
+                        continue;
+                    }
+                    $url = 'https://' . $url;
+                }
+                $url = esc_url_raw($url, array('http', 'https'));
+                if ('' !== $url && !in_array($url, $out, true) && count($out) < 8) {
+                    $out[] = $url;
+                }
+            }
+        }
+
+        return $out ? (string) wp_json_encode($out, JSON_UNESCAPED_SLASHES) : '';
     }
 
     /**

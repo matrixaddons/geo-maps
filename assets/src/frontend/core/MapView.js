@@ -143,6 +143,11 @@ export default class MapView {
 		this.loadLayers();
 		this.refresh();
 		this.fitInitial();
+		// Leaflet moves at once, before the moveend listener below exists: without this the
+		// clusters stay as they were for the zoom before the map fitted its places.
+		if ( this.clustering ) {
+			this.renderClusters();
+		}
 
 		if ( this.viewport && ! this.payload.deferLean ) {
 			await this.loadViewport();
@@ -181,6 +186,11 @@ export default class MapView {
 				if ( back ) {
 					back.focus();
 				}
+			}
+		} );
+		document.addEventListener( 'keydown', ( e ) => {
+			if ( e.key === 'Escape' && this.popup && document.activeElement === document.body ) {
+				this.closePopup();
 			}
 		} );
 
@@ -641,6 +651,33 @@ export default class MapView {
 	 */
 
 	/**
+	 * Places at the very same spot (two shops in one mall) hide each other: only
+	 * the top pin can be clicked. Their popup steps through all of them.
+	 *
+	 * @param {Object}      m       Marker.
+	 * @param {HTMLElement} content Popup.
+	 */
+	addStackNav( m, content ) {
+		const key = ( x ) => Number( x.lat ).toFixed( 5 ) + ',' + Number( x.lng ).toFixed( 5 );
+		const here = key( m );
+		const stack = this.visibleMarkers().filter( ( x ) => key( x ) === here );
+		if ( stack.length < 2 ) {
+			return;
+		}
+		const at = stack.findIndex( ( x ) => String( x.id ) === String( m.id ) );
+		if ( at < 0 ) {
+			return;
+		}
+		const go = ( step ) => () => this.openPopup( stack[ ( at + step + stack.length ) % stack.length ].id, { focus: true } );
+		const nav = h( 'div', { class: 'mm-popup__stack' }, [
+			h( 'button', { type: 'button', class: 'mm-popup__stackbtn', 'aria-label': this.i18n.stackPrev || 'Previous place here', text: '‹', onclick: go( -1 ) } ),
+			h( 'span', { class: 'mm-popup__stackcount', text: ( this.i18n.stackCount || '%1$d of %2$d here' ).replace( '%1$d', at + 1 ).replace( '%2$d', stack.length ) } ),
+			h( 'button', { type: 'button', class: 'mm-popup__stackbtn', 'aria-label': this.i18n.stackNext || 'Next place here', text: '›', onclick: go( 1 ) } ),
+		] );
+		content.insertBefore( nav, content.firstChild );
+	}
+
+	/**
 	 * Open a marker's popup.
 	 *
 	 * @param {string} id   Marker ID.
@@ -685,6 +722,7 @@ export default class MapView {
 			view: this, // For popup actions (e.g. MatrixMap Pro's directions on the map).
 		} );
 
+		this.addStackNav( m, content );
 		this.showPopup( m, content );
 		if ( opts.focus ) {
 			window.setTimeout( () => {

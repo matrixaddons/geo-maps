@@ -165,6 +165,11 @@ final class Blocks
     public static function render_locator($attributes)
     {
         $ctx = self::ctx($attributes);
+
+        if (!empty($attributes['map_id']) && absint($attributes['map_id'])) {
+            return Renderer::render_map(absint($attributes['map_id']), $ctx);
+        }
+
         $config = MapConfig::sanitize(array_merge(isset($attributes['config']) && is_array($attributes['config']) ? $attributes['config'] : array(), array('type' => 'locator')));
 
         if (empty($ctx['title'])) {
@@ -183,6 +188,11 @@ final class Blocks
     public static function render_region($attributes)
     {
         $ctx = self::ctx($attributes);
+
+        if (!empty($attributes['map_id']) && absint($attributes['map_id'])) {
+            return Renderer::render_map(absint($attributes['map_id']), $ctx);
+        }
+
         $config = MapConfig::sanitize(array_merge(isset($attributes['config']) && is_array($attributes['config']) ? $attributes['config'] : array(), array('type' => 'region')));
 
         if (empty($ctx['title'])) {

@@ -10,6 +10,7 @@ import ServerSideRender from '@wordpress/server-side-render';
 import metadata from './block.json';
 import { RegionData, RegionAppearance, RegionMapPicker, hasData } from '../../admin/builder/panels/RegionEditor';
 import { useEditorData } from '../editor-data';
+import { SavedMapPanel } from '../saved-map';
 import './editor.scss';
 
 const editorData = window.matrixmapEditor || {};
@@ -43,6 +44,17 @@ function Edit( { attributes, setAttributes } ) {
 
 	const set = ( patch ) => setAttributes( { config: Object.assign( {}, config, { type: 'region', region: Object.assign( {}, region, patch ) } ) } );
 
+	if ( parseInt( attributes.map_id, 10 ) ) {
+		return (
+			<div { ...blockProps }>
+				<InspectorControls>
+					<SavedMapPanel type="region" attributes={ attributes } setAttributes={ setAttributes } />
+				</InspectorControls>
+				<ServerSideRender block={ metadata.name } attributes={ attributes } />
+			</div>
+		);
+	}
+
 	return (
 		<div { ...blockProps }>
 			<BlockControls>
@@ -53,6 +65,7 @@ function Edit( { attributes, setAttributes } ) {
 				</ToolbarGroup>
 			</BlockControls>
 			<InspectorControls>
+				<SavedMapPanel type="region" attributes={ attributes } setAttributes={ setAttributes } />
 				<PanelBody title={ __( 'Map', 'geo-maps' ) }>
 					{ ready ? <RegionMapPicker value={ region.map } onChange={ ( v ) => set( { map: v } ) } /> : <Spinner /> }
 					<p>

@@ -268,7 +268,9 @@ export function RegionData( { region, setRegions, selected, setSelected, onMapCh
 			.map( ( l ) => l.trim() )
 			.filter( Boolean )
 			.forEach( ( line ) => {
-				const cells = line.split( /\t|;|,(?=(?:[^"]*"[^"]*")*[^"]*$)/ ).map( ( c ) => c.trim().replace( /^"|"$/g, '' ) );
+				// Spreadsheets paste tabs; then commas are part of a cell ("1,234,567", "Korea, South"), and
+				// after semicolons they are decimal commas ("Maine;1.234,5").
+				const cells = line.split( line.includes( '\t' ) ? /\t/ : line.includes( ';' ) ? /;/ : /,(?=(?:[^"]*"[^"]*")*[^"]*$)/ ).map( ( c ) => c.trim().replace( /^"|"$/g, '' ) );
 				const id = index[ fold( cells[ 0 ] ) ] || index[ bare( cells[ 0 ] ) ];
 				if ( ! id ) {
 					if ( cells[ 0 ] && ! /^(code|region|name|country|state|province)$/i.test( cells[ 0 ] ) ) {

@@ -39,19 +39,43 @@ final class UI
     }
 
     /**
-     * Where MatrixMap Pro can be bought.
+     * Where MatrixMap Pro can be bought. The link names the screen it was clicked
+     * on, so the website can tell which prompts help; nothing is sent until a click.
      *
+     * @param string $source Where the link is shown.
+     * @param string $section Section of the page: "pricing" to buy, "pro" to see what Pro does.
      * @return string
      */
-    public static function pro_url()
+    public static function pro_url($source = '', $section = 'pricing')
     {
+        $url = add_query_arg(
+            array(
+                'utm_source' => 'matrixmap-free',
+                'utm_medium' => 'plugin',
+                'utm_campaign' => 'upgrade',
+                'utm_content' => '' !== $source ? sanitize_key($source) : 'general',
+            ),
+            'https://matrixaddons.com/plugins/matrixmap/#' . ('pro' === $section ? 'pro' : 'pricing')
+        );
+
         /**
          * Filters the "Get MatrixMap Pro" link.
          *
          * @param string $url URL.
+         * @param string $source Where the link is shown (since 2.2.0).
          * @since 2.0.0
          */
-        return (string) apply_filters('matrixmap_pro_url', 'https://matrixaddons.com/plugins/matrixmap/#pricing');
+        return (string) apply_filters('matrixmap_pro_url', $url, $source);
+    }
+
+    /**
+     * What a buyer wants to know next to the button.
+     *
+     * @return string
+     */
+    public static function pro_assurance()
+    {
+        return __('From $49 a year or $129 once · 14-day money-back guarantee · If a licence lapses, your maps keep working', 'geo-maps');
     }
 
     /**
@@ -228,8 +252,8 @@ final class UI
                     <?php echo self::icon('help', 18); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG. ?>
                     <span><?php esc_html_e('Help', 'geo-maps'); ?></span>
                 </a>
-                <?php if (!self::pro()) : ?>
-                    <a class="mm-btn mm-btn--pro mm-btn--sm" href="<?php echo esc_url(self::pro_url()); ?>" target="_blank" rel="noopener"><?php echo self::icon('spark', 16); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG. ?><?php esc_html_e('Get Pro', 'geo-maps'); ?></a>
+                <?php if (Upsell::enabled()) : ?>
+                    <a class="mm-btn mm-btn--pro mm-btn--sm" href="<?php echo esc_url(self::pro_url('header')); ?>" target="_blank" rel="noopener"><?php echo self::icon('spark', 16); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG. ?><?php esc_html_e('Get Pro', 'geo-maps'); ?></a>
                 <?php endif; ?>
                 <?php if (in_array($screen, array('maps', 'dashboard'), true) && current_user_can('edit_matrixmaps')) : ?>
                     <a class="mm-btn mm-btn--primary mm-btn--sm" href="<?php echo esc_url(admin_url('post-new.php?post_type=' . MapPostType::POST_TYPE)); ?>"><?php echo self::icon('plus', 16); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG. ?><?php esc_html_e('New map', 'geo-maps'); ?></a>
@@ -493,8 +517,9 @@ final class UI
      * @param string $title Title.
      * @param string $text Text.
      * @param array $points Bullet points.
+     * @param string $source Where the preview is shown.
      */
-    public static function pro_preview($title, $text, $points = array())
+    public static function pro_preview($title, $text, $points = array(), $source = 'preview')
     {
         ?>
         <section class="mm-card mm-pro-preview">
@@ -509,7 +534,9 @@ final class UI
                         <?php endforeach; ?>
                     </ul>
                 <?php endif; ?>
-                <p><a class="mm-btn mm-btn--pro" href="<?php echo esc_url(self::pro_url()); ?>" target="_blank" rel="noopener"><?php echo self::icon('spark', 16); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG. ?><?php esc_html_e('Get MatrixMap Pro', 'geo-maps'); ?></a></p>
+                <p><a class="mm-btn mm-btn--pro" href="<?php echo esc_url(self::pro_url($source)); ?>" target="_blank" rel="noopener"><?php echo self::icon('spark', 16); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG. ?><?php esc_html_e('Get MatrixMap Pro', 'geo-maps'); ?></a></p>
+                <p class="mm-pro-preview__assure"><?php echo esc_html(self::pro_assurance()); ?></p>
+                <?php Upsell::already_bought(); ?>
             </div>
         </section>
         <?php

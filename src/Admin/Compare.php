@@ -2,7 +2,8 @@
 /**
  * MatrixMap → Free vs Pro: what the free plugin includes and what Pro adds.
  *
- * Prices live on the website (they change); this page links to them.
+ * The full offer lives on the website; the prices here are repeated so nobody
+ * has to leave to find out what it costs. Keep them in step with the store.
  *
  * @package MatrixMap
  */
@@ -29,11 +30,11 @@ final class Compare
     {
         $rows = array(
             __('Maps', 'geo-maps') => array(
-                array(__('Unlimited maps with no API key; optional Google, MapTiler, Thunderforest and Mapbox', 'geo-maps'), true, true),
+                array(__('Unlimited maps with no API key; optional Google (with traffic, transit and Street View), MapTiler, Thunderforest and Mapbox', 'geo-maps'), true, true),
                 array(__('Visual builder with a live preview and starter templates', 'geo-maps'), true, true),
                 array(__('Markers, popups, categories, clustering, shapes and GPX, KML or GeoJSON files', 'geo-maps'), true, true),
                 array(__('Blocks, shortcodes and the Elementor widget', 'geo-maps'), true, __('+ Bricks, Divi, WPBakery and a Query Loop map block', 'geo-maps')),
-                array(__('Elementor dynamic tags for location templates (address, hours, open now, directions, map image)', 'geo-maps'), false, true),
+                array(__('Elementor dynamic tags for location templates, with Elementor Pro (address, hours, open now, directions, map image)', 'geo-maps'), false, true),
                 array(__('Oxygen element, JetEngine dynamic sources and a Meta Box location field', 'geo-maps'), false, true),
                 array(__('Locations from WPForms, Fluent Forms and Gravity Forms entries', 'geo-maps'), false, true),
                 array(__('Maps from your posts (any post type, ACF or Meta Box map field, or an address)', 'geo-maps'), false, true),
@@ -47,7 +48,7 @@ final class Compare
             ),
             __('Store locator', 'geo-maps') => array(
                 array(__('Search by address or “near me”, radius, categories and suggestions', 'geo-maps'), true, true),
-                array(__('Locations with opening hours, holidays, closures and extra details', 'geo-maps'), true, true),
+                array(__('Locations with opening hours, holidays, closures, extra details and social links', 'geo-maps'), true, true),
                 array(__('“Open now” badges and directions links (Google Maps, Apple Maps, Waze)', 'geo-maps'), true, true),
                 array(__('“Open now only” filter', 'geo-maps'), false, true),
                 array(__('Directions drawn on your map, with turn-by-turn steps', 'geo-maps'), false, true),
@@ -55,6 +56,8 @@ final class Compare
                 array(__('Messages to locations', 'geo-maps'), false, true),
                 array(__('A search-friendly page for every location (LocalBusiness schema)', 'geo-maps'), false, true),
                 array(__('Analytics: searches, directions, calls, clicks and a demand map', 'geo-maps'), false, true),
+                array(__('Directory pages for every country, state and city', 'geo-maps'), false, true),
+                array(__('“Do you serve my address?”: visitors check an address against the areas you draw', 'geo-maps'), false, true),
             ),
             __('Region maps', 'geo-maps') => array(
                 array(__('302 maps: the world, US states and counties, the regions of 200+ countries and detailed maps', 'geo-maps'), true, true),
@@ -63,6 +66,7 @@ final class Compare
                 array(__('Click actions: picture gallery, video, page or web page in a lightbox', 'geo-maps'), false, true),
                 array(__('Drill down from the world to states and counties', 'geo-maps'), false, true),
                 array(__('Combined maps and your own maps from SVG or GeoJSON', 'geo-maps'), false, true),
+                array(__('Floor plans from a PNG, JPG or WebP picture: draw the areas on it', 'geo-maps'), false, true),
                 array(__('Region values from your content, a Google Sheet or a feed', 'geo-maps'), false, true),
                 array(__('Value bubbles that grow in and pulse', 'geo-maps'), false, true),
             ),
@@ -70,16 +74,10 @@ final class Compare
                 array(__('CSV import and export, map and settings export', 'geo-maps'), true, true),
                 array(__('Switch from other map and store locator plugins', 'geo-maps'), true, true),
                 array(__('Scheduled sync from Google Sheets, CSV or JSON', 'geo-maps'), false, true),
+                array(__('Signed webhooks for Zapier, Make or a CRM; Google Analytics and Meta events; a monthly report email', 'geo-maps'), false, true),
                 array(__('WooCommerce “Where to buy” with stock badges', 'geo-maps'), false, true),
                 array(__('WooCommerce pickup location at checkout (block and classic)', 'geo-maps'), false, true),
                 array(__('Private Google Sheets sync through a service account', 'geo-maps'), false, true),
-                array(__('WP-CLI commands (import, export, geocode, sync, maps, settings, status, activity…)', 'geo-maps'), false, true),
-                array(__('Feeds and downloads checked against private and internal addresses, pinned through redirects', 'geo-maps'), false, true),
-                array(__('Activity log: who changed maps, locations and settings, with retention and CSV export', 'geo-maps'), false, true),
-                array(__('Location revisions with address, position, hours and details (compare and restore)', 'geo-maps'), false, true),
-                array(__('Approval workflow for location changes', 'geo-maps'), false, true),
-                array(__('Per-map editors (users and roles who may edit a map)', 'geo-maps'), false, true),
-                array(__('Multisite: network defaults, locked settings, shared API keys and a shared location library', 'geo-maps'), false, true),
             ),
             __('Visitors and growth', 'geo-maps') => array(
                 array(__('Consent placeholder and no third party until the visitor agrees', 'geo-maps'), true, true),
@@ -89,6 +87,15 @@ final class Compare
                 array(__('Geo-targeted content and a Nearest location block', 'geo-maps'), false, true),
                 array(__('Location submissions and dealer sign-up', 'geo-maps'), false, true),
                 array(__('Enquiries sent to the nearest dealer', 'geo-maps'), false, true),
+            ),
+            __('Teams, developers and large sites', 'geo-maps') => array(
+                array(__('WP-CLI commands (import, export, geocode, sync, maps, settings, status, activity…)', 'geo-maps'), false, true),
+                array(__('Feeds and downloads checked against private and internal addresses, pinned through redirects', 'geo-maps'), false, true),
+                array(__('Activity log: who changed maps, locations and settings, with retention and CSV export', 'geo-maps'), false, true),
+                array(__('Location revisions with address, position, hours and details (compare and restore)', 'geo-maps'), false, true),
+                array(__('Approval workflow for location changes', 'geo-maps'), false, true),
+                array(__('Per-map editors (users and roles who may edit a map)', 'geo-maps'), false, true),
+                array(__('Multisite: network defaults, locked settings, shared API keys and a shared location library', 'geo-maps'), false, true),
             ),
             __('Privacy and support', 'geo-maps') => array(
                 array(__('Consent-aware loading, no cookies, no tracking', 'geo-maps'), true, true),
@@ -109,6 +116,45 @@ final class Compare
     }
 
     /**
+     * Who buys Pro, and what each of them gets.
+     *
+     * @return array key → title, points
+     * @since 2.2.0
+     */
+    public static function buyers()
+    {
+        return array(
+            'locations' => array(
+                'title' => __('You run several locations', 'geo-maps'),
+                'points' => array(
+                    __('A page for every location, and directory pages by country, state and city', 'geo-maps'),
+                    __('Analytics: what people search for, and where you have no location', 'geo-maps'),
+                    __('Your location list stays up to date from a Google Sheet', 'geo-maps'),
+                    __('Results that match your brand: cards, photos, compact', 'geo-maps'),
+                ),
+            ),
+            'network' => array(
+                'title' => __('You sell through dealers or a shop', 'geo-maps'),
+                'points' => array(
+                    __('Dealers sign up and keep their own details current', 'geo-maps'),
+                    __('Enquiries go to the nearest dealer, and on to your CRM', 'geo-maps'),
+                    __('“Where to buy” on WooCommerce products, with stock badges', 'geo-maps'),
+                    __('Store pickup at checkout', 'geo-maps'),
+                ),
+            ),
+            'data' => array(
+                'title' => __('You build sites or data maps', 'geo-maps'),
+                'points' => array(
+                    __('Maps from any post type, ACF or Meta Box field', 'geo-maps'),
+                    __('Regions filled from a sheet, a feed or your content, with drill down', 'geo-maps'),
+                    __('Floor plans and your own maps from a picture, SVG or GeoJSON', 'geo-maps'),
+                    __('“Do you serve my address?” checks against the areas you draw', 'geo-maps'),
+                ),
+            ),
+        );
+    }
+
+    /**
      * Render the page.
      */
     public static function render()
@@ -116,7 +162,7 @@ final class Compare
         $pro = UI::pro();
 
         echo '<div class="wrap mm-page mm-compare">';
-        UI::page_head(__('Free vs Pro', 'geo-maps'), __('MatrixMap is complete on its own — no limits on maps, places or locations. Pro adds tools for store locators, data maps and growing a network of locations.', 'geo-maps'));
+        UI::page_head(__('Free vs Pro', 'geo-maps'), __('MatrixMap is complete on its own — no limits on the number of maps or locations, and up to 5,000 places on one map. Pro adds tools for store locators, data maps and growing a network of locations.', 'geo-maps'));
 
         if ($pro) {
             echo '<section class="mm-card mm-compare__hero mm-compare__hero--active"><div>';
@@ -131,26 +177,39 @@ final class Compare
             echo '<h2 class="mm-compare__title">' . esc_html__('Turn your maps into a lead source', 'geo-maps') . '</h2>';
             echo '<ul class="mm-checks">';
             foreach (array(
-                __('Directions on your own map, with turn-by-turn steps', 'geo-maps'),
                 __('Analytics that show where customers look for you', 'geo-maps'),
-                __('A search-friendly page for every location', 'geo-maps'),
-                __('Dealer sign-up and enquiries sent to the nearest dealer', 'geo-maps'),
+                __('A search-friendly page for every location and place', 'geo-maps'),
+                __('Enquiries sent to the nearest dealer, and on to your CRM', 'geo-maps'),
+                __('No monthly fee per location or per view, unlike hosted store locators', 'geo-maps'),
             ) as $point) {
                 echo '<li>' . UI::icon('check', 16) . esc_html($point) . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
             }
             echo '</ul>';
-            echo '<p class="mm-compare__actions"><a class="mm-btn mm-btn--pro" href="' . esc_url(UI::pro_url()) . '" target="_blank" rel="noopener">' . UI::icon('spark', 16) . esc_html__('See plans and pricing', 'geo-maps') . '<span class="screen-reader-text"> ' . esc_html__('(opens in a new tab)', 'geo-maps') . '</span></a></p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
+            echo '<p class="mm-compare__actions"><a class="mm-btn mm-btn--pro" href="' . esc_url(UI::pro_url('compare-top')) . '" target="_blank" rel="noopener">' . UI::icon('spark', 16) . esc_html__('See plans and pricing', 'geo-maps') . '<span class="screen-reader-text"> ' . esc_html__('(opens in a new tab)', 'geo-maps') . '</span></a></p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
             echo '<p class="mm-compare__text mm-muted">' . esc_html__('From $49 a year for one website, or pay once for a lifetime licence. 14-day money-back guarantee. If a licence lapses, every map keeps working; only updates and support stop.', 'geo-maps') . '</p>';
             echo '</div><div class="mm-compare__plans">';
             foreach (array(
-                array(__('Personal', 'geo-maps'), __('1 website', 'geo-maps')),
-                array(__('Plus', 'geo-maps'), __('5 websites', 'geo-maps')),
-                array(__('Agency', 'geo-maps'), __('25 websites', 'geo-maps')),
+                array(__('Personal', 'geo-maps'), __('1 website · $49 a year or $129 once', 'geo-maps')),
+                array(__('Plus', 'geo-maps'), __('5 websites · $99 a year or $249 once', 'geo-maps')),
+                array(__('Agency', 'geo-maps'), __('25 websites · $149 a year or $399 once', 'geo-maps')),
             ) as $plan) {
                 echo '<div class="mm-compare__plan"><strong>' . esc_html($plan[0]) . '</strong><span>' . esc_html($plan[1]) . '</span></div>';
             }
-            echo '<p class="mm-compare__note">' . esc_html__('Yearly or lifetime. Pro installs next to the free plugin; your maps and settings stay as they are.', 'geo-maps') . '</p>';
+            echo '<p class="mm-compare__note">' . esc_html__('Every plan has every Pro feature. Pro installs next to the free plugin; your maps and settings stay as they are.', 'geo-maps') . '</p>';
+            Upsell::already_bought();
             echo '</div></section>';
+        }
+
+        if (!$pro) {
+            echo '<h2 class="mm-compare__buyers-title">' . esc_html__('What Pro does for you', 'geo-maps') . '</h2><div class="mm-compare__buyers">';
+            foreach (self::buyers() as $key => $buyer) {
+                echo '<section class="mm-card mm-compare__buyer"><h3>' . esc_html($buyer['title']) . '</h3><ul class="mm-checks">';
+                foreach ($buyer['points'] as $point) {
+                    echo '<li>' . UI::icon('check', 16) . esc_html($point) . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
+                }
+                echo '</ul><p><a href="' . esc_url(UI::pro_url('compare-' . $key, 'pro')) . '" target="_blank" rel="noopener">' . esc_html__('See how it works', 'geo-maps') . '<span class="screen-reader-text"> ' . esc_html__('(opens in a new tab)', 'geo-maps') . '</span></a></p></section>';
+            }
+            echo '</div>';
         }
 
         echo '<div class="mm-card mm-compare__table-wrap"><table class="mm-compare__table">';
@@ -171,7 +230,7 @@ final class Compare
         echo '</table></div>';
 
         if (!$pro) {
-            echo '<p class="mm-compare__footer"><a class="mm-btn mm-btn--pro" href="' . esc_url(UI::pro_url()) . '" target="_blank" rel="noopener">' . esc_html__('See plans and pricing', 'geo-maps') . '<span class="screen-reader-text"> ' . esc_html__('(opens in a new tab)', 'geo-maps') . '</span></a> <a class="mm-btn mm-btn--ghost" href="' . esc_url(UI::docs_url('pro')) . '">' . esc_html__('Read about Pro features', 'geo-maps') . '</a></p>';
+            echo '<p class="mm-compare__footer"><a class="mm-btn mm-btn--pro" href="' . esc_url(UI::pro_url('compare-bottom')) . '" target="_blank" rel="noopener">' . esc_html__('See plans and pricing', 'geo-maps') . '<span class="screen-reader-text"> ' . esc_html__('(opens in a new tab)', 'geo-maps') . '</span></a> <a class="mm-btn mm-btn--ghost" href="' . esc_url(UI::docs_url('pro')) . '">' . esc_html__('Read about Pro features', 'geo-maps') . '</a></p>';
         }
 
         echo '</div>';

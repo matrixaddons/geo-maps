@@ -11,7 +11,7 @@
 	// A popup that cannot be panned clear of the buttons on a small map: they step aside
 	// (see the MapLibre engine's popup fit) so the popup's close button stays reachable.
 	&.is-under-popup {
-		opacity: 0.35;
+		visibility: hidden;
 
 		* {
 			pointer-events: none;

@@ -11,6 +11,7 @@
 	"textdomain": "geo-maps",
 	"attributes": {
 		"config": { "type": "object", "default": {} },
+		"map_id": { "type": "string", "default": "" },
 		"title": { "type": "string", "default": "" }
 	},
 	"supports": {

@@ -61,7 +61,7 @@ function matrixmap_uninstall_site()
     $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}matrixmap_geo"); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange
     $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}matrixmap_geocode"); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange
 
-    foreach (array('matrixmap_settings', 'matrixmap_caps_version', 'matrixmap_db_version', 'matrixmap_upgraded_from', 'matrixmap_migrated', 'matrixmap_compat', 'geo_maps_version', 'geo_maps_first_install_time', 'widget_matrixmap_widget', 'matrixmap_locations_ver', 'matrixmap_migrate_log', 'matrixmap_migrated_sources') as $matrixmap_option) {
+    foreach (array('matrixmap_settings', 'matrixmap_caps_version', 'matrixmap_db_version', 'matrixmap_upgraded_from', 'matrixmap_migrated', 'matrixmap_compat', 'geo_maps_version', 'geo_maps_first_install_time', 'widget_matrixmap_widget', 'matrixmap_locations_ver', 'matrixmap_migrate_log', 'matrixmap_migrated_sources', 'matrixmap_first_seen') as $matrixmap_option) {
         delete_option($matrixmap_option);
     }
 
@@ -69,6 +69,7 @@ function matrixmap_uninstall_site()
     $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '\\_transient\\_matrixmap\\_%' OR option_name LIKE '\\_transient\\_timeout\\_matrixmap\\_%'"); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
     // Dismissed notices are stored per site (and, before 2.0, once per user).
     delete_metadata('user', 0, $wpdb->get_blog_prefix() . 'matrixmap_dismissed', '', true);
+    delete_metadata('user', 0, $wpdb->get_blog_prefix() . 'matrixmap_prompts_quiet', '', true);
     if (!is_multisite()) {
         delete_metadata('user', 0, 'matrixmap_dismissed', '', true);
     }
