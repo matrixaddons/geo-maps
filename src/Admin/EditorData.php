@@ -201,6 +201,7 @@ final class EditorData
          */
         return apply_filters('matrixmap_builder_data', array(
             'rest' => esc_url_raw(rest_url('matrixmap/v1/')),
+            'tokenHelp' => is_wp_version_compatible('7.1'),
             'pro' => UI::pro(),
             'proUrl' => UI::pro_url('builder'),
             'proTeasers' => Upsell::enabled(),

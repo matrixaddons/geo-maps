@@ -2,9 +2,9 @@
 Contributors: MatrixAddons
 Tags: maps, google maps, openstreetmap, store locator, interactive map
 Requires at least: 6.5
-Tested up to: 7.1
+Tested up to: 7.2
 Requires PHP: 7.4
-Stable tag: 2.2.0
+Stable tag: 2.2.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -259,6 +259,10 @@ Bundled libraries: MapLibre GL JS (BSD-3-Clause), Leaflet (BSD-2-Clause), Superc
 
 == Changelog ==
 
+= 2.2.1 =
+* Compatibility: tested with WordPress 7.2.
+* Fixed: the map builder no longer uses a field option that WordPress 7.1 and later report as deprecated.
+
 = 2.2.0 =
 * New: social links on locations (location editor and CSV), shown in map popups.
 * New: Google Maps options per map: live traffic, public transport lines and a Street View button. Off by default.
@@ -356,6 +360,9 @@ MatrixMaps is now **MatrixMap**, rebuilt from the ground up. All 1.x maps, short
 * Initial release.
 
 == Upgrade Notice ==
+
+= 2.2.1 =
+Ready for WordPress 7.2.
 
 = 2.2.0 =
 Social links, Google traffic and transit options, saved maps in the locator and region blocks, and fixes for region paste, full-screen maps and imports.

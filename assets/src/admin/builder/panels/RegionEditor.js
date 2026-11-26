@@ -12,6 +12,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { applyFilters } from '@wordpress/hooks';
 import RichTextField from '../RichTextField';
 import SwatchPicker from '../SwatchPicker';
+import { noHowTo } from '../util';
 
 const editorData = window.matrixmapEditor || window.matrixmapBuilder || {};
 
@@ -492,7 +493,7 @@ function RegionViewPanel( { region, set } ) {
 				suggestions={ names.map( ( n ) => n.name ) }
 				maxSuggestions={ 12 }
 				onChange={ ( tokens ) => setView( { focus: tokens.map( ( t ) => byName[ String( t ).toLowerCase() ] || ( byId[ String( t ).toUpperCase() ] ? String( t ).toUpperCase() : '' ) ).filter( Boolean ).join( ',' ) } ) }
-				__experimentalShowHowTo={ false }
+				{ ...noHowTo }
 			/>
 			<p className="components-base-control__help mm-b-help">{ __( 'Leave empty to show the whole map. With several regions the view fits all of them — e.g. just Europe on the world map.', 'geo-maps' ) }</p>
 			{ focus.length ? (

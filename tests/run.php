@@ -372,7 +372,7 @@ $reset_assets = function () {
     foreach (array('printed', 'google_printed') as $prop) {
         $rp = new ReflectionProperty('MatrixMap\Maps\Assets', $prop);
         if (PHP_VERSION_ID < 80100) {
-            $rp->setAccessible(true);
+            PHP_VERSION_ID < 80100 && $rp->setAccessible(true);
         }
         $rp->setValue(null, false);
     }
@@ -677,7 +677,7 @@ mm_check('geocoding answers in an unexpected shape give an error or real results
 // Map data file: a short write (disk full) must never leave broken JSON in place.
 $mm_write = new ReflectionMethod(\MatrixMap\Locations\LocationsCache::class, 'write');
 if (PHP_VERSION_ID < 80100) {
-    $mm_write->setAccessible(true); // Needed before PHP 8.1 only (deprecated in 8.5).
+    PHP_VERSION_ID < 80100 && $mm_write->setAccessible(true); // Needed before PHP 8.1 only (deprecated in 8.5).
 }
 $mm_ro = fopen('php://memory', 'r'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 set_error_handler(function () {
@@ -695,7 +695,7 @@ $mm_blob = \MatrixMap\Locations\LocationsCache::get('full', array());
 delete_transient('matrixmap_cache_write_failed');
 $mm_prop = new ReflectionProperty(\MatrixMap\Locations\JsonBlob::class, 'json');
 if (PHP_VERSION_ID < 80100) {
-    $mm_prop->setAccessible(true); // Needed before PHP 8.1 only (deprecated in 8.5).
+    PHP_VERSION_ID < 80100 && $mm_prop->setAccessible(true); // Needed before PHP 8.1 only (deprecated in 8.5).
 }
 $mm_json = $mm_blob instanceof \MatrixMap\Locations\JsonBlob ? json_decode((string) $mm_prop->getValue($mm_blob), true) : null;
 mm_check('after a failed write the map data is still served (complete JSON, without the file)', is_array($mm_json) && isset($mm_json['features']), is_object($mm_blob) ? get_class($mm_blob) : gettype($mm_blob));
@@ -843,9 +843,9 @@ $sc_one = function ($d) {
 };
 \MatrixMap\Admin\Tools::prime_matches($sc_rows);
 $sc_prop = new ReflectionProperty(\MatrixMap\Admin\Tools::class, 'matches');
-$sc_prop->setAccessible(true);
+PHP_VERSION_ID < 80100 && $sc_prop->setAccessible(true);
 $sc_key = new ReflectionMethod(\MatrixMap\Admin\Tools::class, 'match_key');
-$sc_key->setAccessible(true);
+PHP_VERSION_ID < 80100 && $sc_key->setAccessible(true);
 $sc_primed = $sc_prop->getValue();
 $sc_same = true;
 $sc_hits = 0;
@@ -872,7 +872,7 @@ for ($i = 0; $i < 401; $i++) {
 }
 $wpdb->query("INSERT INTO {$wpdb->posts} (post_author, post_title, post_status, post_type, post_date, post_date_gmt, post_content, post_excerpt, to_ping, pinged, post_content_filtered) VALUES " . implode(',', $sc_fill)); // phpcs:ignore
 $sc_lm = new ReflectionMethod(\MatrixMap\Maps\Renderer::class, 'location_markers');
-$sc_lm->setAccessible(true);
+PHP_VERSION_ID < 80100 && $sc_lm->setAccessible(true);
 $mm_q = array();
 add_filter('query', $mm_spy);
 $sc_out = $sc_lm->invoke(null, MapConfig::sanitize(array('type' => 'markers', 'locations' => array('source' => 'all'))));
@@ -920,7 +920,7 @@ mm_check('locations.geojson handles ?_fields (no fatal error)', 200 === $sc_r->g
 
 // Dashboard: the located-places count is not recounted on every visit.
 $sc_counts = new ReflectionMethod(\MatrixMap\Admin\Dashboard::class, 'counts');
-$sc_counts->setAccessible(true);
+PHP_VERSION_ID < 80100 && $sc_counts->setAccessible(true);
 delete_transient('matrixmap_dash_placed');
 $sc_first = $sc_counts->invoke(null);
 $mm_q = array();
@@ -948,11 +948,11 @@ mm_check('an interrupted import continues from the row it reached', false !== st
 
 // UX: regressions from the visual / accessibility pass.
 $ux_strings = new ReflectionMethod(\MatrixMap\Maps\Assets::class, 'strings');
-$ux_strings->setAccessible(true);
+PHP_VERSION_ID < 80100 && $ux_strings->setAccessible(true);
 $ux_s = $ux_strings->invoke(null);
 mm_check('locator has a "no locations yet" message and a singular count', !empty($ux_s['noLocations']) && !empty($ux_s['onePlace']));
 $ux_notice = new ReflectionMethod(\MatrixMap\Admin\Wizard::class, 'notice');
-$ux_notice->setAccessible(true);
+PHP_VERSION_ID < 80100 && $ux_notice->setAccessible(true);
 ob_start();
 $ux_notice->invoke(null, 'welcome', 'success', 'T', array('L'), array('https://a.example/' => 'A', 'https://b.example/' => 'B'));
 $ux_html = ob_get_clean();
@@ -1185,7 +1185,7 @@ $ux2_read = function ($f) {
     return (string) file_get_contents(MATRIXMAP_DIR . $f); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 };
 $ux2_strings = new ReflectionMethod(\MatrixMap\Maps\Assets::class, 'strings');
-$ux2_strings->setAccessible(true);
+PHP_VERSION_ID < 80100 && $ux2_strings->setAccessible(true);
 $ux2_s = $ux2_strings->invoke(null);
 // The radius circle: off for maps saved before it existed, on for new locators made in the editor.
 mm_check('a locator config without "circle" sanitizes to off (saved maps keep their look)', false === MapConfig::sanitize(array('type' => 'locator'))['locator']['circle'] && false === MapConfig::defaults('locator')['locator']['circle']);

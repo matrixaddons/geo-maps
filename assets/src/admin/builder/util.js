@@ -5,6 +5,9 @@ import apiFetch from '@wordpress/api-fetch';
 
 export const data = window.matrixmapBuilder || {};
 
+// FormTokenField's how-to line: hidden with `help` since WordPress 7.1, with the old prop before.
+export const noHowTo = data.tokenHelp ? { help: '' } : { __experimentalShowHowTo: false };
+
 /**
  * Arrow keys in a radio group (role=radiogroup of role=radio buttons): move to
  * the next or previous option and choose it, like native radio buttons.

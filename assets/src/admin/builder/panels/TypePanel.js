@@ -3,7 +3,7 @@
  */
 import { SelectControl, TextControl, ToggleControl, RangeControl, CheckboxControl, FormTokenField } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { data } from '../util';
+import { data, noHowTo } from '../util';
 
 function Locator( { config, update } ) {
 	const loc = config.locator;
@@ -62,7 +62,7 @@ function Locator( { config, update } ) {
 				maxLength={ 5 }
 				onChange={ ( v ) => set( { detailFilters: v } ) }
 				__experimentalExpandOnFocus
-				__experimentalShowHowTo={ false }
+				{ ...noHowTo }
 			/>
 			<p className="mm-b-muted">
 				{ ( data.detailLabels || [] ).length
